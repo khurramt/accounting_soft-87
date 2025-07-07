@@ -270,6 +270,14 @@ async def reset_password(
 ):
     """Reset password with token"""
     try:
+        # Validate password strength manually
+        is_valid, error_message = await auth_service.validate_password_strength(reset_data.new_password)
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_message
+            )
+        
         await auth_service.reset_password(
             db=db,
             token=reset_data.token,
