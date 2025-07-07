@@ -103,7 +103,7 @@ async def login(
                 details={"user_agent": user_agent}
             )
         
-        return JSONResponse(content={
+        return {
             "user": {
                 "user_id": str(user.user_id),
                 "email": user.email,
@@ -119,7 +119,7 @@ async def login(
             "refresh_token": refresh_token,
             "token_type": "bearer",
             "expires_in": 900
-        })
+        }
         
     except HTTPException:
         # Log failed login attempt
