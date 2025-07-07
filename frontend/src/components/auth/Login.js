@@ -31,9 +31,14 @@ const Login = () => {
 
   const handleDemoLogin = async () => {
     setIsLoading(true);
+    console.log("Demo login clicked");
     try {
-      await login({ email: "demo@quickbooks.com", password: "password123" });
+      console.log("Calling login function...");
+      const result = await login({ email: "demo@quickbooks.com", password: "password123" });
+      console.log("Login result:", result);
+      console.log("Navigating to company selection...");
       navigate("/select-company");
+      console.log("Navigation called");
     } catch (error) {
       console.error("Demo login failed:", error);
     } finally {
