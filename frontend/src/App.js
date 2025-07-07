@@ -32,6 +32,8 @@ import TimeTracking from "./components/time/TimeTracking";
 import CompanyInfo from "./components/company/CompanyInfo";
 import TransactionMatching from "./components/banking/TransactionMatching";
 import ProfitLossReport from "./components/reports/ProfitLossReport";
+import BalanceSheetReport from "./components/reports/BalanceSheetReport";
+import CreditCardCharges from "./components/banking/CreditCardCharges";
 import "./App.css";
 
 // Protected Route Component
