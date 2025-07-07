@@ -109,7 +109,7 @@ class SecurityService:
             )
         
         # Increment counter
-        pipe = redis.pipeline()
+        pipe = await redis.pipeline()
         pipe.incr(ip_key)
         pipe.expire(ip_key, 60)
         await pipe.execute()
@@ -125,7 +125,7 @@ class SecurityService:
                     detail="User rate limit exceeded"
                 )
             
-            pipe = redis.pipeline()
+            pipe = await redis.pipeline()
             pipe.incr(user_key)
             pipe.expire(user_key, 60)
             await pipe.execute()
