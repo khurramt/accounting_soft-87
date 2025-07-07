@@ -22,6 +22,7 @@ import MakeDeposit from "./components/banking/MakeDeposit";
 import TransferFunds from "./components/banking/TransferFunds";
 import BankReconciliation from "./components/banking/BankReconciliation";
 import ReportCenter from "./components/reports/ReportCenter";
+import ReportCustomization from "./components/reports/ReportCustomization";
 import PayrollCenter from "./components/payroll/PayrollCenter";
 import TimeTracking from "./components/time/TimeTracking";
 import CompanyInfo from "./components/company/CompanyInfo";
