@@ -379,10 +379,11 @@ class AuthService:
             )
         
         # Check password strength
-        if not await self.check_password_strength(new_password):
+        is_valid, error_message = await self.validate_password_strength(new_password)
+        if not is_valid:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Password does not meet strength requirements"
+                detail=error_message
             )
         
         # Check password history
