@@ -71,19 +71,24 @@ class AuthService:
                 detail="Invalid token"
             )
     
+    async def validate_password_strength(self, password: str) -> tuple[bool, str]:
+        """Validate password strength and return detailed error if invalid"""
+        if len(password) < 8:
+            return False, "Password must be at least 8 characters long"
+        if not any(c.isupper() for c in password):
+            return False, "Password must contain at least one uppercase letter"
+        if not any(c.islower() for c in password):
+            return False, "Password must contain at least one lowercase letter"
+        if not any(c.isdigit() for c in password):
+            return False, "Password must contain at least one digit"
+        if not any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in password):
+            return False, "Password must contain at least one special character"
+        return True, "Password is strong"
+    
     async def check_password_strength(self, password: str) -> bool:
         """Check password strength"""
-        if len(password) < 8:
-            return False
-        if not any(c.isupper() for c in password):
-            return False
-        if not any(c.islower() for c in password):
-            return False
-        if not any(c.isdigit() for c in password):
-            return False
-        if not any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in password):
-            return False
-        return True
+        is_valid, _ = await self.validate_password_strength(password)
+        return is_valid
     
     async def is_password_in_history(self, user: User, password: str) -> bool:
         """Check if password was used recently"""
