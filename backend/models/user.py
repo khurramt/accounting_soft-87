@@ -54,7 +54,7 @@ class User(Base):
     
     # Relationships
     sessions = relationship("UserSession", back_populates="user", cascade="all, delete-orphan")
-    company_memberships = relationship("CompanyMembership", back_populates="user")
+    company_memberships = relationship("CompanyMembership", back_populates="user", foreign_keys="CompanyMembership.user_id")
     
     def __repr__(self):
         return f"<User {self.email}>"
