@@ -192,21 +192,32 @@ async def logout(
             )
         
         token = auth_header.split(" ")[1]
-        payload = auth_service.decode_access_token(token)
-        session_id = payload.get("session_id")
         
-        await auth_service.logout_user(db=db, session_id=session_id)
-        
-        return MessageResponse(message="Successfully logged out")
+        try:
+            payload = auth_service.decode_access_token(token)
+            session_id = payload.get("session_id")
+            
+            if not session_id:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid token - no session ID"
+                )
+            
+            await auth_service.logout_user(db=db, session_id=session_id)
+            
+            return MessageResponse(message="Successfully logged out")
+            
+        except HTTPException as token_error:
+            # If token is invalid, still return success for security
+            logger.warning("Logout with invalid token", error=str(token_error))
+            return MessageResponse(message="Successfully logged out")
         
     except HTTPException:
         raise
     except Exception as e:
         logger.error("Logout failed", error=str(e))
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Logout failed"
-        )
+        # Even if logout fails, return success for security
+        return MessageResponse(message="Successfully logged out")
 
 @router.post("/forgot-password", response_model=MessageResponse)
 async def forgot_password(
