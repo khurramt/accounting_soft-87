@@ -40,10 +40,12 @@ DropdownMenuTrigger.displayName = "DropdownMenuTrigger";
 
 const DropdownMenuContent = React.forwardRef(({ className, align = "center", children, ...props }, ref) => {
   const context = React.useContext(DropdownMenuContext);
+  const internalRef = React.useRef(null);
+  const resolvedRef = ref || internalRef;
   
   React.useEffect(() => {
     const handleClickOutside = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
+      if (resolvedRef && resolvedRef.current && !resolvedRef.current.contains(event.target)) {
         context?.setIsOpen(false);
       }
     };
@@ -52,7 +54,7 @@ const DropdownMenuContent = React.forwardRef(({ className, align = "center", chi
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [context?.isOpen, ref]);
+  }, [context?.isOpen, resolvedRef]);
 
   if (!context?.isOpen) return null;
 
@@ -64,7 +66,7 @@ const DropdownMenuContent = React.forwardRef(({ className, align = "center", chi
 
   return (
     <div
-      ref={ref}
+      ref={resolvedRef}
       className={cn(
         "absolute z-50 mt-1 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
         alignmentClasses[align],
