@@ -157,7 +157,7 @@ class SecurityService:
             return True
         
         # Add current IP to recent IPs
-        pipe = redis.pipeline()
+        pipe = await redis.pipeline()
         pipe.sadd(recent_ips_key, ip_address)
         pipe.expire(recent_ips_key, 3600)  # 1 hour
         await pipe.execute()
