@@ -120,6 +120,7 @@ class CompanyMembership(Base):
     
     # Relationships
     user = relationship("User", back_populates="company_memberships", foreign_keys=[user_id])
+    company = relationship("Company", back_populates="memberships", foreign_keys=[company_id])
     inviter = relationship("User", foreign_keys=[invited_by])
     
     def __repr__(self):
