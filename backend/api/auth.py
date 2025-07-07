@@ -80,6 +80,7 @@ async def register(
 @router.post("/login")
 async def login(
     request: Request,
+    response: Response,
     login_data: LoginRequest,
     db: AsyncSession = Depends(get_db),
     _: None = Depends(check_rate_limit)
@@ -126,7 +127,7 @@ async def login(
         }
         
     except HTTPException as e:
-        # Log failed login attempt (no await in except block)
+        # Log failed login attempt
         try:
             await security_service.log_security_event(
                 event_type="failed_login",
@@ -135,13 +136,15 @@ async def login(
             )
         except Exception as log_error:
             logger.error("Failed to log security event", error=str(log_error))
-        raise e
+        
+        # Return error response manually
+        response.status_code = e.status_code
+        return {"detail": e.detail}
+        
     except Exception as e:
         logger.error("Login failed", error=str(e))
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Login failed"
-        )
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        return {"detail": "Login failed"}
 
 @router.post("/refresh-token", response_model=RefreshTokenResponse)
 async def refresh_token(
