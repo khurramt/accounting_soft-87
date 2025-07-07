@@ -169,7 +169,7 @@ const MainLayout = () => {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <span className="mr-3">{item.icon}</span>
+                <span className="mr-3">{React.createElement(item.icon)}</span>
                 {sidebarOpen && <span>{item.title}</span>}
               </button>
 
