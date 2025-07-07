@@ -144,7 +144,11 @@ async def refresh_token(
             refresh_token=refresh_data.refresh_token
         )
         
-        return RefreshTokenResponse(access_token=access_token)
+        return JSONResponse(content={
+            "access_token": access_token,
+            "token_type": "bearer",
+            "expires_in": 900
+        })
         
     except HTTPException:
         raise
