@@ -618,7 +618,7 @@ const PayrollForms = () => {
                 {selectedForm.canFile && (
                   <>
                     <Button variant="outline">
-                      <Print className="w-4 h-4 mr-2" />
+                      <Printer className="w-4 h-4 mr-2" />
                       Print
                     </Button>
                     <Button>
