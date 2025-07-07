@@ -19,16 +19,6 @@ export const AuthProvider = ({ children }) => {
     const storedUser = localStorage.getItem("qb_user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
-    } else {
-      // For demo purposes, auto-login with a mock user
-      const mockUser = {
-        id: "1",
-        email: "demo@quickbooks.com",
-        name: "Demo User",
-        role: "admin"
-      };
-      setUser(mockUser);
-      localStorage.setItem("qb_user", JSON.stringify(mockUser));
     }
     setIsLoading(false);
   }, []);
