@@ -6,24 +6,41 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Checkbox } from "../ui/checkbox";
+import { Alert, AlertDescription } from "../ui/alert";
 
 const Login = () => {
   const [email, setEmail] = useState("demo@quickbooks.com");
-  const [password, setPassword] = useState("password123");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const [errorMessage, setErrorMessage] = useState("");
+  const { login, error } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage("");
     
     try {
       await login({ email, password });
       navigate("/select-company");
     } catch (error) {
       console.error("Login failed:", error);
+      if (error.response) {
+        // Handle specific error status codes
+        if (error.response.status === 401) {
+          setErrorMessage("Invalid email or password");
+        } else if (error.response.status === 400) {
+          setErrorMessage(error.response.data.detail || "Invalid request");
+        } else if (error.response.status === 423) {
+          setErrorMessage("Account is locked due to too many failed attempts");
+        } else {
+          setErrorMessage("Login failed. Please try again later.");
+        }
+      } else {
+        setErrorMessage("Network error. Please check your connection.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -31,16 +48,18 @@ const Login = () => {
 
   const handleDemoLogin = async () => {
     setIsLoading(true);
-    console.log("Demo login clicked");
+    setErrorMessage("");
+    
     try {
-      console.log("Calling login function...");
-      const result = await login({ email: "demo@quickbooks.com", password: "password123" });
-      console.log("Login result:", result);
-      console.log("Navigating to company selection...");
+      await login({ email: "demo@quickbooks.com", password: "Password123!" });
       navigate("/select-company");
-      console.log("Navigation called");
     } catch (error) {
       console.error("Demo login failed:", error);
+      if (error.response) {
+        setErrorMessage(`Demo login failed: ${error.response.data.detail || error.message}`);
+      } else {
+        setErrorMessage("Network error. Please check your connection.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +116,14 @@ const Login = () => {
               <CardDescription>Sign in to your account</CardDescription>
             </CardHeader>
             <CardContent>
+              {(errorMessage || error) && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertDescription>
+                    {errorMessage || error}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
