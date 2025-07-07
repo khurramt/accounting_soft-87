@@ -163,6 +163,24 @@ const AppRouter = () => {
         
         {/* Company Management */}
         <Route path="company/info" element={<CompanyInfo />} />
+        <Route path="company/preferences" element={<CompanyPreferences />} />
+        <Route path="company/users" element={<UsersPasswords />} />
+        <Route path="company/backup" element={<BackupRestore />} />
+        <Route path="company/advanced" element={<AdvancedOptions />} />
+        
+        {/* Security & Users */}
+        <Route path="security/users" element={<UserManagement />} />
+        <Route path="security/access" element={<AccessControl />} />
+        <Route path="security/activity" element={<ActivityTracking />} />
+        
+        {/* Help & Support */}
+        <Route path="help" element={<HelpCenter />} />
+        <Route path="help/learning" element={<LearningCenter />} />
+        <Route path="help/product-info" element={<ProductInfo />} />
+        
+        {/* Template Customization */}
+        <Route path="templates" element={<TemplateDesigner />} />
+        <Route path="templates/designer" element={<TemplateDesigner />} />
       </Route>
     </Routes>
   );
