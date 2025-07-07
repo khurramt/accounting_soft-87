@@ -1,11 +1,14 @@
 from sqlalchemy import Column, String, Boolean, Integer, DateTime, Text, ForeignKey, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID, INET, JSONB
+from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database.connection import Base
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
+from sqlalchemy import String as SQLString
+import sqlalchemy as sa
 
 class UserRole(str, Enum):
     ADMIN = "admin"
@@ -17,7 +20,7 @@ class UserRole(str, Enum):
 class User(Base):
     __tablename__ = "users"
     
-    user_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(SQLString(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     first_name = Column(String(100))
@@ -38,8 +41,8 @@ class User(Base):
     failed_login_attempts = Column(Integer, default=0)
     account_locked_until = Column(DateTime(timezone=True))
     
-    # Password history for security
-    password_history = Column(JSONB, default=list)
+    # Password history for security (JSON for SQLite compatibility)
+    password_history = Column(JSON, default=lambda: [])
     
     # Account status
     is_active = Column(Boolean, default=True)
@@ -69,13 +72,13 @@ class User(Base):
 class UserSession(Base):
     __tablename__ = "user_sessions"
     
-    session_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False)
+    session_id = Column(SQLString(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(SQLString(36), ForeignKey("users.user_id"), nullable=False)
     refresh_token = Column(String(255), unique=True, nullable=False)
     
-    # Device and location info
-    device_info = Column(JSONB)
-    ip_address = Column(INET)
+    # Device and location info (JSON for SQLite compatibility)
+    device_info = Column(JSON)
+    ip_address = Column(String(45))  # IPv6 compatible
     user_agent = Column(Text)
     
     # Session status
@@ -95,19 +98,19 @@ class UserSession(Base):
 class CompanyMembership(Base):
     __tablename__ = "company_memberships"
     
-    membership_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False)
-    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.company_id"), nullable=False)
+    membership_id = Column(SQLString(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(SQLString(36), ForeignKey("users.user_id"), nullable=False)
+    company_id = Column(SQLString(36), ForeignKey("companies.company_id"), nullable=False)
     
     # Role and permissions
     role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.EMPLOYEE)
-    permissions = Column(JSONB, default=dict)
+    permissions = Column(JSON, default=lambda: {})
     
     # Membership status
     is_active = Column(Boolean, default=True)
     
     # Invitation tracking
-    invited_by = Column(UUID(as_uuid=True), ForeignKey("users.user_id"))
+    invited_by = Column(SQLString(36), ForeignKey("users.user_id"))
     invited_at = Column(DateTime(timezone=True), default=func.now())
     accepted_at = Column(DateTime(timezone=True))
     
@@ -125,12 +128,12 @@ class CompanyMembership(Base):
 class Company(Base):
     __tablename__ = "companies"
     
-    company_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id = Column(SQLString(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable=False)
     legal_name = Column(String(255))
     
-    # Company details
-    address = Column(JSONB)
+    # Company details (JSON for SQLite compatibility)
+    address = Column(JSON)
     phone = Column(String(20))
     email = Column(String(255))
     website = Column(String(255))
@@ -141,8 +144,8 @@ class Company(Base):
     business_type = Column(String(100))
     fiscal_year_start = Column(DateTime(timezone=True))
     
-    # Company settings
-    settings = Column(JSONB, default=dict)
+    # Company settings (JSON for SQLite compatibility)
+    settings = Column(JSON, default=lambda: {})
     
     # Status
     is_active = Column(Boolean, default=True)
