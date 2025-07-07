@@ -94,6 +94,7 @@ const AppRouter = () => {
         <Route path="banking" element={<Navigate to="/accounts" replace />} />
         <Route path="accounts" element={<ChartOfAccounts />} />
         <Route path="banking/feeds" element={<BankFeeds />} />
+        <Route path="banking/transaction-matching" element={<TransactionMatching />} />
         <Route path="banking/deposits/new" element={<MakeDeposit />} />
         <Route path="banking/transfers/new" element={<TransferFunds />} />
         <Route path="banking/reconcile" element={<BankReconciliation />} />
