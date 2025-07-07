@@ -63,6 +63,15 @@ import ProductInfo from "./components/help/ProductInfo";
 // Template Customization Components
 import TemplateDesigner from "./components/templates/TemplateDesigner";
 
+// Inventory Components  
+import InventoryCenter from "./components/inventory/InventoryCenter";
+
+// Additional Customer Components
+import CreateEstimate from "./components/customers/CreateEstimate";
+
+// Additional Help Components
+import AdvancedFind from "./components/help/AdvancedFind";
+
 import "./App.css";
 
 // Protected Route Component
