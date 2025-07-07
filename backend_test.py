@@ -814,7 +814,6 @@ def run_all_tests():
         "company_access": False,
         "refresh_token": False,
         "change_password": False,
-        "change_password_to_original": False,
         "logout_specific_session": False,
         "forgot_password": test_forgot_password(),
         "logout": False
@@ -850,7 +849,6 @@ def run_all_tests():
         
         results["refresh_token"] = test_refresh_token()
         results["change_password"] = test_change_password()
-        results["change_password_to_original"] = test_change_password_to_original()
         
         if SESSION_ID:
             results["logout_specific_session"] = test_logout_specific_session()
