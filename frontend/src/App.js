@@ -26,8 +26,12 @@ import ReportCustomization from "./components/reports/ReportCustomization";
 import MemorizedReports from "./components/reports/MemorizedReports";
 import ReportViewer from "./components/reports/ReportViewer";
 import PayrollCenter from "./components/payroll/PayrollCenter";
+import EmployeeSetup from "./components/payroll/EmployeeSetup";
+import RunPayroll from "./components/payroll/RunPayroll";
 import TimeTracking from "./components/time/TimeTracking";
 import CompanyInfo from "./components/company/CompanyInfo";
+import TransactionMatching from "./components/banking/TransactionMatching";
+import ProfitLossReport from "./components/reports/ProfitLossReport";
 import "./App.css";
 
 // Protected Route Component
