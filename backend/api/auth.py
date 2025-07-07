@@ -52,7 +52,7 @@ async def register(
             ip_address=security_service.get_client_ip(request)
         )
         
-        return JSONResponse(content={
+        return {
             "user_id": str(user.user_id),
             "email": user.email,
             "first_name": user.first_name,
@@ -62,7 +62,7 @@ async def register(
             "is_active": user.is_active,
             "last_login": user.last_login.isoformat() if user.last_login else None,
             "created_at": user.created_at.isoformat() if user.created_at else None
-        }, status_code=201)
+        }
         
     except HTTPException:
         raise
