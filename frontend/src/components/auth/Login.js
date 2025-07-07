@@ -8,8 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { Checkbox } from "../ui/checkbox";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("demo@quickbooks.com");
+  const [password, setPassword] = useState("password123");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -24,6 +24,18 @@ const Login = () => {
       navigate("/select-company");
     } catch (error) {
       console.error("Login failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    try {
+      await login({ email: "demo@quickbooks.com", password: "password123" });
+      navigate("/select-company");
+    } catch (error) {
+      console.error("Demo login failed:", error);
     } finally {
       setIsLoading(false);
     }
