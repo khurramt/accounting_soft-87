@@ -27,9 +27,10 @@ async def test_endpoint():
     """Simple test endpoint"""
     return {"message": "Auth endpoints are working"}
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post("/register")
 async def register(
     request: Request,
+    response: Response,
     user_data: RegisterRequest,
     db: AsyncSession = Depends(get_db),
     _: None = Depends(check_rate_limit)
@@ -51,6 +52,9 @@ async def register(
             user_id=str(user.user_id),
             ip_address=security_service.get_client_ip(request)
         )
+        
+        # Set status code to 201 for created
+        response.status_code = status.HTTP_201_CREATED
         
         return {
             "user_id": str(user.user_id),
