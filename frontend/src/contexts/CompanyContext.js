@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { mockCompanies } from "../data/mockData";
 
 const CompanyContext = createContext();
 
@@ -15,15 +16,23 @@ export const CompanyProvider = ({ children }) => {
   const [companies, setCompanies] = useState([]);
 
   useEffect(() => {
-    // Load companies from localStorage
+    // Load companies from localStorage or use mock data
     const storedCompanies = localStorage.getItem("qb_companies");
     if (storedCompanies) {
       setCompanies(JSON.parse(storedCompanies));
+    } else {
+      setCompanies(mockCompanies);
+      localStorage.setItem("qb_companies", JSON.stringify(mockCompanies));
     }
 
     const storedCurrentCompany = localStorage.getItem("qb_current_company");
     if (storedCurrentCompany) {
       setCurrentCompany(JSON.parse(storedCurrentCompany));
+    } else {
+      // For demo purposes, auto-select first company
+      const defaultCompany = mockCompanies[0];
+      setCurrentCompany(defaultCompany);
+      localStorage.setItem("qb_current_company", JSON.stringify(defaultCompany));
     }
   }, []);
 
