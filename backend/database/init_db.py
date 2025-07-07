@@ -1,7 +1,7 @@
 import asyncio
 import os
 from sqlalchemy.ext.asyncio import create_async_engine
-from database.connection import Base
+from database.connection import Base, DATABASE_URL, ASYNC_DATABASE_URL
 from models.user import User, UserSession, CompanyMembership, Company
 import structlog
 
@@ -9,14 +9,9 @@ logger = structlog.get_logger()
 
 async def create_tables():
     """Create all database tables"""
-    database_url = os.getenv("DATABASE_URL")
-    if not database_url:
-        raise ValueError("DATABASE_URL environment variable is required")
+    logger.info("Creating database tables", database_url=ASYNC_DATABASE_URL)
     
-    # Convert to async URL
-    async_url = database_url.replace("postgresql://", "postgresql+asyncpg://")
-    
-    engine = create_async_engine(async_url, echo=True)
+    engine = create_async_engine(ASYNC_DATABASE_URL, echo=True)
     
     try:
         async with engine.begin() as conn:
