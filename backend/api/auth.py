@@ -125,14 +125,17 @@ async def login(
             "expires_in": 900
         }
         
-    except HTTPException:
-        # Log failed login attempt
-        await security_service.log_security_event(
-            event_type="failed_login",
-            ip_address=security_service.get_client_ip(request),
-            details={"email": login_data.email}
-        )
-        raise
+    except HTTPException as e:
+        # Log failed login attempt (no await in except block)
+        try:
+            await security_service.log_security_event(
+                event_type="failed_login",
+                ip_address=security_service.get_client_ip(request),
+                details={"email": login_data.email}
+            )
+        except Exception as log_error:
+            logger.error("Failed to log security event", error=str(log_error))
+        raise e
     except Exception as e:
         logger.error("Login failed", error=str(e))
         raise HTTPException(
