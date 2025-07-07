@@ -169,25 +169,24 @@ const MainLayout = () => {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <item.icon className="w-5 h-5 mr-3" />
+                <span className="mr-3">{item.icon}</span>
                 {sidebarOpen && <span>{item.title}</span>}
-                {sidebarOpen && item.children.length > 0 && (
-                  <ChevronDown className="w-4 h-4 ml-auto" />
-                )}
               </button>
-              {sidebarOpen && item.children.length > 0 && (
-                <div className="ml-8 mt-1 space-y-1">
-                  {item.children.map((child) => (
+
+              {/* Submenu */}
+              {item.subItems && (
+                <div className={`ml-6 mt-1 space-y-1 ${sidebarOpen ? 'block' : 'hidden'}`}>
+                  {item.subItems.map((subItem) => (
                     <button
-                      key={child.path}
-                      onClick={() => navigate(child.path)}
-                      className={`w-full text-left px-3 py-1 text-sm rounded transition-colors ${
-                        isActive(child.path)
-                          ? 'bg-green-50 text-green-700'
+                      key={subItem.title}
+                      onClick={() => navigate(subItem.path)}
+                      className={`w-full flex items-center px-3 py-2 text-left text-sm rounded transition-colors ${
+                        isActive(subItem.path)
+                          ? 'bg-green-50 text-green-600'
                           : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     >
-                      {child.title}
+                      {subItem.title}
                     </button>
                   ))}
                 </div>
@@ -195,6 +194,7 @@ const MainLayout = () => {
             </div>
           ))}
         </nav>
+        </div>
       </div>
 
       {/* Main Content */}
