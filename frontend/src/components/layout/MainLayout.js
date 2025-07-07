@@ -107,6 +107,8 @@ const MainLayout = () => {
       path: "/reports",
       children: [
         { title: "Report Center", path: "/reports" },
+        { title: "Report Categories", path: "/reports/categories" },
+        { title: "Cash Flow Reports", path: "/reports/cash-flow" },
         { title: "Company & Financial", path: "/reports/company" },
         { title: "Customers & Receivables", path: "/reports/customers" },
         { title: "Vendors & Payables", path: "/reports/vendors" }
