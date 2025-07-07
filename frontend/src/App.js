@@ -84,6 +84,7 @@ const AppRouter = () => {
         <Route path="items" element={<ItemsList />} />
         
         {/* Banking Routes */}
+        <Route path="banking" element={<Navigate to="/accounts" replace />} />
         <Route path="accounts" element={<ChartOfAccounts />} />
         <Route path="banking/feeds" element={<BankFeeds />} />
         <Route path="banking/deposits/new" element={<MakeDeposit />} />
