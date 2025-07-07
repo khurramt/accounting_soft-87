@@ -8,15 +8,22 @@ import CompanySetup from "./components/auth/CompanySetup";
 import MainLayout from "./components/layout/MainLayout";
 import Dashboard from "./components/dashboard/Dashboard";
 import CustomerCenter from "./components/customers/CustomerCenter";
+import CreateInvoice from "./components/customers/CreateInvoice";
+import ReceivePayment from "./components/customers/ReceivePayment";
+import CreateSalesReceipt from "./components/customers/CreateSalesReceipt";
 import VendorCenter from "./components/vendors/VendorCenter";
+import EnterBills from "./components/vendors/EnterBills";
+import PayBills from "./components/vendors/PayBills";
+import WriteCheck from "./components/vendors/WriteCheck";
 import ItemsList from "./components/items/ItemsList";
 import ChartOfAccounts from "./components/banking/ChartOfAccounts";
+import BankFeeds from "./components/banking/BankFeeds";
+import MakeDeposit from "./components/banking/MakeDeposit";
+import TransferFunds from "./components/banking/TransferFunds";
+import BankReconciliation from "./components/banking/BankReconciliation";
 import ReportCenter from "./components/reports/ReportCenter";
 import PayrollCenter from "./components/payroll/PayrollCenter";
 import TimeTracking from "./components/time/TimeTracking";
-import CreateInvoice from "./components/customers/CreateInvoice";
-import EnterBills from "./components/vendors/EnterBills";
-import BankFeeds from "./components/banking/BankFeeds";
 import CompanyInfo from "./components/company/CompanyInfo";
 import "./App.css";
 
@@ -60,16 +67,39 @@ const AppRouter = () => {
       }>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
+        
+        {/* Customer Routes */}
         <Route path="customers" element={<CustomerCenter />} />
         <Route path="customers/invoice/new" element={<CreateInvoice />} />
+        <Route path="customers/payments/new" element={<ReceivePayment />} />
+        <Route path="customers/sales-receipt/new" element={<CreateSalesReceipt />} />
+        
+        {/* Vendor Routes */}
         <Route path="vendors" element={<VendorCenter />} />
         <Route path="vendors/bills/new" element={<EnterBills />} />
+        <Route path="vendors/bills/pay" element={<PayBills />} />
+        <Route path="vendors/checks/new" element={<WriteCheck />} />
+        
+        {/* Items & Inventory */}
         <Route path="items" element={<ItemsList />} />
+        
+        {/* Banking Routes */}
         <Route path="accounts" element={<ChartOfAccounts />} />
         <Route path="banking/feeds" element={<BankFeeds />} />
+        <Route path="banking/deposits/new" element={<MakeDeposit />} />
+        <Route path="banking/transfers/new" element={<TransferFunds />} />
+        <Route path="banking/reconcile" element={<BankReconciliation />} />
+        
+        {/* Reports */}
         <Route path="reports" element={<ReportCenter />} />
+        
+        {/* Payroll */}
         <Route path="payroll" element={<PayrollCenter />} />
+        
+        {/* Time Tracking */}
         <Route path="time-tracking" element={<TimeTracking />} />
+        
+        {/* Company Management */}
         <Route path="company/info" element={<CompanyInfo />} />
       </Route>
     </Routes>
