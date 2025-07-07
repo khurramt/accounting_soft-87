@@ -71,11 +71,10 @@ async def register(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("Registration failed", error=str(e), exc_info=True)
-        print(f"Registration error: {e}")  # Debug print
+        logger.error("Registration failed", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Registration failed: {str(e)}"
+            detail="Registration failed"
         )
 
 @router.post("/login")
