@@ -22,7 +22,12 @@ logger = structlog.get_logger()
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.get("/test")
+async def test_endpoint():
+    """Simple test endpoint"""
+    return {"message": "Auth endpoints are working"}
+
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(
     request: Request,
     user_data: RegisterRequest,
