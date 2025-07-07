@@ -21,10 +21,14 @@ if not BACKEND_URL:
 API_URL = f"{BACKEND_URL}/api"
 print(f"Using API URL: {API_URL}")
 
+# Set a timeout for all requests
+TIMEOUT = 10  # seconds
+
 def test_root_endpoint():
     """Test the root endpoint"""
     try:
-        response = requests.get(f"{API_URL}/")
+        print("Testing root endpoint...")
+        response = requests.get(f"{API_URL}/", timeout=TIMEOUT)
         if response.status_code == 200:
             data = response.json()
             if data.get("message") == "Hello World":
@@ -36,6 +40,9 @@ def test_root_endpoint():
         else:
             print(f"❌ Root endpoint test failed: Status code {response.status_code}")
             return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Root endpoint test failed: Request timed out after {TIMEOUT} seconds")
+        return False
     except Exception as e:
         print(f"❌ Root endpoint test failed: {str(e)}")
         return False
@@ -43,8 +50,9 @@ def test_root_endpoint():
 def test_create_status_check():
     """Test creating a status check"""
     try:
+        print("Testing create status check endpoint...")
         payload = {"client_name": "TestClient"}
-        response = requests.post(f"{API_URL}/status", json=payload)
+        response = requests.post(f"{API_URL}/status", json=payload, timeout=TIMEOUT)
         if response.status_code == 200:
             data = response.json()
             if data.get("client_name") == "TestClient" and "id" in data and "timestamp" in data:
@@ -56,6 +64,9 @@ def test_create_status_check():
         else:
             print(f"❌ Create status check test failed: Status code {response.status_code}")
             return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create status check test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
     except Exception as e:
         print(f"❌ Create status check test failed: {str(e)}")
         return False, None
@@ -63,7 +74,8 @@ def test_create_status_check():
 def test_get_status_checks():
     """Test getting status checks"""
     try:
-        response = requests.get(f"{API_URL}/status")
+        print("Testing get status checks endpoint...")
+        response = requests.get(f"{API_URL}/status", timeout=TIMEOUT)
         if response.status_code == 200:
             data = response.json()
             if isinstance(data, list):
@@ -75,6 +87,9 @@ def test_get_status_checks():
         else:
             print(f"❌ Get status checks test failed: Status code {response.status_code}")
             return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get status checks test failed: Request timed out after {TIMEOUT} seconds")
+        return False
     except Exception as e:
         print(f"❌ Get status checks test failed: {str(e)}")
         return False
