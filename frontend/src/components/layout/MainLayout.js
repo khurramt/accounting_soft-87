@@ -94,9 +94,11 @@ const MainLayout = () => {
       children: [
         { title: "Chart of Accounts", path: "/accounts" },
         { title: "Bank Feeds", path: "/banking/feeds" },
+        { title: "Advanced Bank Feeds", path: "/banking/feeds/advanced" },
         { title: "Make Deposits", path: "/banking/deposits/new" },
         { title: "Transfer Funds", path: "/banking/transfers/new" },
-        { title: "Reconcile", path: "/banking/reconcile" }
+        { title: "Reconcile", path: "/banking/reconcile" },
+        { title: "Credit Card Charges", path: "/banking/credit-cards/new" }
       ]
     },
     {
