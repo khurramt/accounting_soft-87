@@ -105,11 +105,13 @@ const AppRouter = () => {
         <Route path="banking" element={<Navigate to="/accounts" replace />} />
         <Route path="accounts" element={<ChartOfAccounts />} />
         <Route path="banking/feeds" element={<BankFeeds />} />
+        <Route path="banking/feeds/center" element={<BankFeedsCenter />} />
         <Route path="banking/feeds/advanced" element={<AdvancedBankFeeds />} />
         <Route path="banking/transaction-matching" element={<TransactionMatching />} />
         <Route path="banking/deposits/new" element={<MakeDeposit />} />
         <Route path="banking/transfers/new" element={<TransferFunds />} />
         <Route path="banking/reconcile" element={<BankReconciliation />} />
+        <Route path="banking/reconcile/enhanced" element={<EnhancedReconciliation />} />
         <Route path="banking/credit-cards/new" element={<CreditCardCharges />} />
         
         {/* Reports */}
@@ -117,7 +119,9 @@ const AppRouter = () => {
         <Route path="reports/categories" element={<ReportCategories />} />
         <Route path="reports/cash-flow" element={<CashFlowReport />} />
         <Route path="reports/customize" element={<ReportCustomization />} />
+        <Route path="reports/customizer" element={<ReportCustomizer />} />
         <Route path="reports/memorized" element={<MemorizedReports />} />
+        <Route path="reports/memorized/manager" element={<MemorizedReportsManager />} />
         <Route path="reports/scheduled" element={<MemorizedReports />} />
         <Route path="reports/view" element={<ReportViewer />} />
         <Route path="reports/profit-loss" element={<ProfitLossReport />} />
