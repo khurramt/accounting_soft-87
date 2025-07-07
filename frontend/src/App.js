@@ -110,6 +110,8 @@ const AppRouter = () => {
         
         {/* Reports */}
         <Route path="reports" element={<ReportCenter />} />
+        <Route path="reports/categories" element={<ReportCategories />} />
+        <Route path="reports/cash-flow" element={<CashFlowReport />} />
         <Route path="reports/customize" element={<ReportCustomization />} />
         <Route path="reports/memorized" element={<MemorizedReports />} />
         <Route path="reports/scheduled" element={<MemorizedReports />} />
