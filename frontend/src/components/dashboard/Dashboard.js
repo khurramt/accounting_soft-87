@@ -26,7 +26,7 @@ const Dashboard = () => {
 
   const quickActions = [
     { title: "Create Invoice", path: "/customers/invoice/new", icon: FileText, color: "bg-blue-500" },
-    { title: "Receive Payment", path: "/customers/payments", icon: DollarSign, color: "bg-green-500" },
+    { title: "Receive Payment", path: "/customers/payments/new", icon: DollarSign, color: "bg-green-500" },
     { title: "Write Check", path: "/vendors/checks/new", icon: FileText, color: "bg-red-500" },
     { title: "Enter Bill", path: "/vendors/bills/new", icon: FileText, color: "bg-orange-500" }
   ];
