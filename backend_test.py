@@ -539,18 +539,40 @@ def test_change_password():
             if "message" in data and data.get("message") == "Password changed successfully":
                 print("✅ Change password test passed")
                 
-                # Change back to original password for other tests
+                # Try to change back to original password (should fail with 400)
                 payload = {
                     "current_password": "NewPassword123!",
                     "new_password": "Password123!"
                 }
                 
                 response = requests.put(f"{API_URL}/auth/change-password", headers=headers, json=payload, timeout=TIMEOUT)
-                if response.status_code == 200:
-                    print("✅ Password changed back to original")
-                    return True
+                print(f"Status Code for changing back: {response.status_code}")
+                
+                try:
+                    data = response.json()
+                    print(f"Response: {json.dumps(data, indent=2)}")
+                except:
+                    print(f"Response: {response.text}")
+                
+                # We expect this to fail with 400 Bad Request
+                if response.status_code == 400 and "reuse" in data.get("error", "").lower():
+                    print("✅ Password reuse correctly rejected with 400 status code")
+                    
+                    # Change to a different password for cleanup
+                    payload = {
+                        "current_password": "NewPassword123!",
+                        "new_password": "DifferentPassword123!"
+                    }
+                    
+                    response = requests.put(f"{API_URL}/auth/change-password", headers=headers, json=payload, timeout=TIMEOUT)
+                    if response.status_code == 200:
+                        print("✅ Successfully changed to different password for cleanup")
+                        return True
+                    else:
+                        print(f"❌ Failed to change to different password: Status code {response.status_code}")
+                        return False
                 else:
-                    print(f"❌ Failed to change password back to original: Status code {response.status_code}")
+                    print(f"❌ Password reuse test failed: Expected 400 with reuse message, got {response.status_code}")
                     return False
             else:
                 print(f"❌ Change password test failed: Unexpected response")
