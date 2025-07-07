@@ -109,6 +109,12 @@ const AppRouter = () => {
         
         {/* Payroll */}
         <Route path="payroll" element={<PayrollCenter />} />
+        <Route path="payroll/setup" element={<EmployeeSetup />} />
+        <Route path="payroll/run" element={<RunPayroll />} />
+        <Route path="payroll/run/:payrollId" element={<RunPayroll />} />
+        <Route path="employees/new" element={<EmployeeSetup />} />
+        <Route path="employees/:employeeId" element={<EmployeeSetup />} />
+        <Route path="employees/:employeeId/edit" element={<EmployeeSetup />} />
         
         {/* Time Tracking */}
         <Route path="time-tracking" element={<TimeTracking />} />
