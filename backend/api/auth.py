@@ -73,7 +73,7 @@ async def register(
             detail="Registration failed"
         )
 
-@router.post("/login", response_model=LoginResponse)
+@router.post("/login")
 async def login(
     request: Request,
     login_data: LoginRequest,
