@@ -13,7 +13,6 @@ import structlog
 from fastapi import HTTPException, status
 import uuid
 from pydantic import BaseModel, EmailStr
-import aioredis
 
 logger = structlog.get_logger()
 
