@@ -188,6 +188,7 @@ const AppRouter = () => {
         <Route path="help" element={<HelpCenter />} />
         <Route path="help/learning" element={<LearningCenter />} />
         <Route path="help/product-info" element={<ProductInfo />} />
+        <Route path="help/search" element={<AdvancedFind />} />
         
         {/* Template Customization */}
         <Route path="templates" element={<TemplateDesigner />} />
