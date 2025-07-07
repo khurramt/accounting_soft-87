@@ -447,7 +447,7 @@ const PayrollForms = () => {
                               size="sm"
                               onClick={() => handleFormAction(form.id, 'print')}
                             >
-                              <Print className="w-4 h-4" />
+                              <Printer className="w-4 h-4" />
                             </Button>
                           </>
                         )}
