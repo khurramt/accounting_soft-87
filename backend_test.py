@@ -565,6 +565,89 @@ def test_change_password():
         print(f"❌ Change password test failed: {str(e)}")
         return False
 
+def test_change_password_to_original():
+    """Test changing password back to original (should fail with 400)"""
+    global ACCESS_TOKEN
+    
+    if not ACCESS_TOKEN:
+        print("❌ Change password to original test skipped: No access token available")
+        return False
+    
+    try:
+        print("\n🔍 Testing change password to original (should fail)...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # First change password to something new
+        payload = {
+            "current_password": "Password123!",
+            "new_password": "NewPassword123!"
+        }
+        
+        response = requests.put(f"{API_URL}/auth/change-password", headers=headers, json=payload, timeout=TIMEOUT)
+        if response.status_code != 200:
+            print(f"❌ Setup for test failed: Could not change password initially")
+            return False
+        
+        print("✅ Successfully changed password to new password")
+        
+        # Now try to change back to original (should fail with 400)
+        payload = {
+            "current_password": "NewPassword123!",
+            "new_password": "Password123!"
+        }
+        
+        response = requests.put(f"{API_URL}/auth/change-password", headers=headers, json=payload, timeout=TIMEOUT)
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {json.dumps(data, indent=2)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        # We expect this to fail with 400 Bad Request
+        if response.status_code == 400:
+            if "detail" in data and "reuse" in data["detail"].lower():
+                print("✅ Change password to original correctly rejected with 400 status code")
+                
+                # Change to a different password for cleanup
+                payload = {
+                    "current_password": "NewPassword123!",
+                    "new_password": "DifferentPassword123!"
+                }
+                
+                response = requests.put(f"{API_URL}/auth/change-password", headers=headers, json=payload, timeout=TIMEOUT)
+                if response.status_code == 200:
+                    # Now change back to original for other tests
+                    payload = {
+                        "current_password": "DifferentPassword123!",
+                        "new_password": "Password123!"
+                    }
+                    
+                    response = requests.put(f"{API_URL}/auth/change-password", headers=headers, json=payload, timeout=TIMEOUT)
+                    if response.status_code == 200:
+                        print("✅ Successfully reset password to original for other tests")
+                        return True
+                    else:
+                        print(f"❌ Failed to reset password to original: Status code {response.status_code}")
+                        return False
+                else:
+                    print(f"❌ Failed to change to different password: Status code {response.status_code}")
+                    return False
+            else:
+                print(f"❌ Change password to original rejected but with wrong error message")
+                return False
+        else:
+            print(f"❌ Change password to original test failed: Expected 400, got {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Change password to original test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Change password to original test failed: {str(e)}")
+        return False
+
 def test_logout_specific_session():
     """Test logging out a specific session"""
     global ACCESS_TOKEN, SESSION_ID
