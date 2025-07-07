@@ -100,6 +100,7 @@ const AppRouter = () => {
         <Route path="banking/deposits/new" element={<MakeDeposit />} />
         <Route path="banking/transfers/new" element={<TransferFunds />} />
         <Route path="banking/reconcile" element={<BankReconciliation />} />
+        <Route path="banking/credit-cards/new" element={<CreditCardCharges />} />
         
         {/* Reports */}
         <Route path="reports" element={<ReportCenter />} />
