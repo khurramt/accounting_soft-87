@@ -373,38 +373,38 @@
   - task: "Advanced Banking Features"
     implemented: true
     working: true
-    file: "/app/frontend/src/components/banking/TransactionMatching.js, /app/frontend/src/components/banking/CreditCardCharges.js"
+    file: "/app/frontend/src/components/banking/TransactionMatching.js, /app/frontend/src/components/banking/CreditCardCharges.js, /app/frontend/src/components/banking/AdvancedBankFeeds.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
-          comment: "Implemented Transaction Matching with AI-powered categorization, Credit Card Charges interface, and enhanced Bank Feeds"
+          comment: "Implemented Transaction Matching with AI-powered categorization, Credit Card Charges interface, enhanced Bank Feeds, and new Advanced Bank Feeds with auto-rules and express mode processing"
 
   - task: "Advanced Reports Features"
     implemented: true
     working: true
-    file: "/app/frontend/src/components/reports/ProfitLossReport.js, /app/frontend/src/components/reports/BalanceSheetReport.js"
+    file: "/app/frontend/src/components/reports/ProfitLossReport.js, /app/frontend/src/components/reports/BalanceSheetReport.js, /app/frontend/src/components/reports/CashFlowReport.js, /app/frontend/src/components/reports/ReportCategories.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
-          comment: "Implemented detailed P&L Report and Balance Sheet Report with comparison periods, customization options, and professional formatting"
+          comment: "Implemented detailed P&L Report, Balance Sheet Report, comprehensive Cash Flow Reports (Statement of Cash Flows and Forecast), and detailed Report Categories with organized report browsing"
 
   - task: "Advanced Payroll Features"
     implemented: true
     working: true
-    file: "/app/frontend/src/components/payroll/EmployeeSetup.js, /app/frontend/src/components/payroll/RunPayroll.js"
+    file: "/app/frontend/src/components/payroll/EmployeeSetup.js, /app/frontend/src/components/payroll/RunPayroll.js, /app/frontend/src/components/payroll/PayLiabilities.js, /app/frontend/src/components/payroll/PayrollForms.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
-          comment: "Implemented comprehensive 10-step Employee Setup wizard and full Payroll Processing workflow with validation and confirmation"
+          comment: "Implemented comprehensive Employee Setup wizard, full Payroll Processing workflow, Pay Liabilities management with penalty tracking, and complete Payroll Forms system with quarterly/annual tax forms (941, 940, W-2, W-3, state forms)"
 
   - task: "Navigation and Routing"
     implemented: true
