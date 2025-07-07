@@ -87,11 +87,23 @@ async def login(
                 details={"user_agent": user_agent}
             )
         
-        return LoginResponse(
-            user=UserResponse.from_orm(user),
-            access_token=access_token,
-            refresh_token=refresh_token
-        )
+        return {
+            "user": {
+                "user_id": str(user.user_id),
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "phone": user.phone,
+                "is_email_verified": user.is_email_verified,
+                "is_active": user.is_active,
+                "last_login": user.last_login.isoformat() if user.last_login else None,
+                "created_at": user.created_at.isoformat() if user.created_at else None
+            },
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "expires_in": 900
+        }
         
     except HTTPException:
         # Log failed login attempt
