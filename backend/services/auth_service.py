@@ -372,13 +372,7 @@ class AuthService:
                 detail="Invalid or expired reset token"
             )
         
-        # Check password strength
-        is_valid, error_message = await self.validate_password_strength(new_password)
-        if not is_valid:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=error_message
-            )
+        # Password strength validation is handled in endpoints
         
         # Check password history
         if await self.is_password_in_history(user, new_password):
