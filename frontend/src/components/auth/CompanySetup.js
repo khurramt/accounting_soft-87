@@ -6,11 +6,22 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Textarea } from "../ui/textarea";
 import { Progress } from "../ui/progress";
+import { 
+  Building, 
+  MapPin, 
+  Briefcase,
+  CreditCard,
+  CheckCircle,
+  ArrowRight,
+  ArrowLeft
+} from "lucide-react";
 
 const CompanySetup = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [companyData, setCompanyData] = useState({
+    // Step 1: Company Information
     companyName: "",
     legalName: "",
     address: "",
@@ -20,295 +31,509 @@ const CompanySetup = () => {
     phone: "",
     email: "",
     website: "",
-    federalTaxId: "",
-    fiscalYearStart: "",
+    taxId: "",
+    fiscalYearStart: "01",
+    
+    // Step 2: Industry Selection
     industry: "",
     businessType: "",
-    companySize: ""
+    companySize: "",
+    
+    // Step 3: Chart of Accounts
+    accountTemplate: "standard",
+    
+    // Step 4: Initial Data
+    importCustomers: false,
+    importVendors: false,
+    importItems: false,
+    importEmployees: false
   });
 
-  const { createCompany } = useCompany();
   const navigate = useNavigate();
+  const { addCompany } = useCompany();
+
+  const totalSteps = 4;
+  const progress = (currentStep / totalSteps) * 100;
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setCompanyData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
   const handleNext = () => {
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      // Complete setup
-      const company = createCompany(formData);
-      navigate("/dashboard");
+    if (currentStep < totalSteps) {
+      setCurrentStep(prev => prev + 1);
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      setCurrentStep(prev => prev - 1);
     }
   };
 
-  const progress = (currentStep / 4) * 100;
+  const handleFinish = () => {
+    const newCompany = {
+      id: Date.now().toString(),
+      name: companyData.companyName,
+      legalName: companyData.legalName,
+      industry: companyData.industry,
+      lastAccessed: new Date().toISOString(),
+      fileSize: "0.1 MB",
+      ...companyData
+    };
+    
+    addCompany(newCompany);
+    console.log("Company setup completed:", newCompany);
+    navigate("/dashboard");
+  };
+
+  const isStepValid = () => {
+    switch (currentStep) {
+      case 1:
+        return companyData.companyName && companyData.address && companyData.city;
+      case 2:
+        return companyData.industry && companyData.businessType;
+      case 3:
+        return companyData.accountTemplate;
+      case 4:
+        return true;
+      default:
+        return false;
+    }
+  };
+
+  const industries = [
+    "Technology", "Retail", "Manufacturing", "Healthcare", "Education",
+    "Construction", "Real Estate", "Professional Services", "Restaurants",
+    "Non-profit", "Other"
+  ];
+
+  const businessTypes = [
+    "Sole Proprietorship", "Partnership", "LLC", "Corporation", "S-Corporation", "Non-profit"
+  ];
+
+  const companySizes = [
+    "1-5 employees", "6-25 employees", "26-100 employees", "100+ employees"
+  ];
+
+  const fiscalMonths = [
+    { value: "01", label: "January" },
+    { value: "02", label: "February" },
+    { value: "03", label: "March" },
+    { value: "04", label: "April" },
+    { value: "05", label: "May" },
+    { value: "06", label: "June" },
+    { value: "07", label: "July" },
+    { value: "08", label: "August" },
+    { value: "09", label: "September" },
+    { value: "10", label: "October" },
+    { value: "11", label: "November" },
+    { value: "12", label: "December" }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-4xl mx-auto">
+        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Company Setup</h1>
-          <p className="text-gray-600">Let's set up your company information</p>
+          <p className="text-gray-600">Let's set up your company file</p>
         </div>
 
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex space-x-4">
-              {[1, 2, 3, 4].map((step) => (
-                <div key={step} className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                  step <= currentStep ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'
-                }`}>
-                  {step}
-                </div>
-              ))}
+        {/* Progress Bar */}
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-medium">Step {currentStep} of {totalSteps}</span>
+              <span className="text-sm text-gray-600">{Math.round(progress)}% Complete</span>
             </div>
-            <div className="text-sm text-gray-600">Step {currentStep} of 4</div>
-          </div>
-          <Progress value={progress} className="w-full" />
-        </div>
+            <Progress value={progress} className="h-2" />
+            <div className="flex justify-between mt-4 text-xs text-gray-600">
+              <span className={currentStep >= 1 ? "text-blue-600 font-medium" : ""}>Company Info</span>
+              <span className={currentStep >= 2 ? "text-blue-600 font-medium" : ""}>Industry</span>
+              <span className={currentStep >= 3 ? "text-blue-600 font-medium" : ""}>Accounts</span>
+              <span className={currentStep >= 4 ? "text-blue-600 font-medium" : ""}>Data Import</span>
+            </div>
+          </CardContent>
+        </Card>
 
-        <Card className="w-full">
+        {/* Step Content */}
+        <Card>
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="flex items-center">
+              {currentStep === 1 && <Building className="w-6 h-6 mr-2" />}
+              {currentStep === 2 && <Briefcase className="w-6 h-6 mr-2" />}
+              {currentStep === 3 && <CreditCard className="w-6 h-6 mr-2" />}
+              {currentStep === 4 && <CheckCircle className="w-6 h-6 mr-2" />}
+              
               {currentStep === 1 && "Company Information"}
-              {currentStep === 2 && "Industry & Business Type"}
+              {currentStep === 2 && "Industry Selection"}
               {currentStep === 3 && "Chart of Accounts"}
               {currentStep === 4 && "Initial Data"}
             </CardTitle>
             <CardDescription>
               {currentStep === 1 && "Enter your company's basic information"}
               {currentStep === 2 && "Select your industry and business type"}
-              {currentStep === 3 && "Set up your chart of accounts"}
-              {currentStep === 4 && "Import or set up initial data"}
+              {currentStep === 3 && "Choose your chart of accounts template"}
+              {currentStep === 4 && "Import existing data (optional)"}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
+            
+            {/* Step 1: Company Information */}
             {currentStep === 1 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name *</Label>
-                  <Input
-                    id="companyName"
-                    value={formData.companyName}
-                    onChange={(e) => handleInputChange("companyName", e.target.value)}
-                    placeholder="Your Company Name"
-                  />
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="companyName">Company Name *</Label>
+                    <Input
+                      id="companyName"
+                      value={companyData.companyName}
+                      onChange={(e) => handleInputChange("companyName", e.target.value)}
+                      placeholder="Enter company name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="legalName">Legal Company Name</Label>
+                    <Input
+                      id="legalName"
+                      value={companyData.legalName}
+                      onChange={(e) => handleInputChange("legalName", e.target.value)}
+                      placeholder="Legal name (if different)"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="legalName">Legal Company Name</Label>
-                  <Input
-                    id="legalName"
-                    value={formData.legalName}
-                    onChange={(e) => handleInputChange("legalName", e.target.value)}
-                    placeholder="Legal Company Name"
-                  />
+
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <MapPin className="w-5 h-5 mr-2 text-gray-400" />
+                    <h3 className="font-semibold">Address Information</h3>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Street Address *</Label>
+                    <Input
+                      id="address"
+                      value={companyData.address}
+                      onChange={(e) => handleInputChange("address", e.target.value)}
+                      placeholder="123 Main Street"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">City *</Label>
+                      <Input
+                        id="city"
+                        value={companyData.city}
+                        onChange={(e) => handleInputChange("city", e.target.value)}
+                        placeholder="City"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="state">State</Label>
+                      <Input
+                        id="state"
+                        value={companyData.state}
+                        onChange={(e) => handleInputChange("state", e.target.value)}
+                        placeholder="State"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="zipCode">ZIP Code</Label>
+                      <Input
+                        id="zipCode"
+                        value={companyData.zipCode}
+                        onChange={(e) => handleInputChange("zipCode", e.target.value)}
+                        placeholder="12345"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => handleInputChange("address", e.target.value)}
-                    placeholder="Street Address"
-                  />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      value={companyData.phone}
+                      onChange={(e) => handleInputChange("phone", e.target.value)}
+                      placeholder="(555) 123-4567"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={companyData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      placeholder="contact@company.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      value={companyData.website}
+                      onChange={(e) => handleInputChange("website", e.target.value)}
+                      placeholder="www.company.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="taxId">Federal Tax ID</Label>
+                    <Input
+                      id="taxId"
+                      value={companyData.taxId}
+                      onChange={(e) => handleInputChange("taxId", e.target.value)}
+                      placeholder="12-3456789"
+                    />
+                  </div>
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange("city", e.target.value)}
-                    placeholder="City"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state">State</Label>
-                  <Input
-                    id="state"
-                    value={formData.state}
-                    onChange={(e) => handleInputChange("state", e.target.value)}
-                    placeholder="State"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="zipCode">ZIP Code</Label>
-                  <Input
-                    id="zipCode"
-                    value={formData.zipCode}
-                    onChange={(e) => handleInputChange("zipCode", e.target.value)}
-                    placeholder="ZIP Code"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="Phone Number"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    placeholder="Email Address"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange("website", e.target.value)}
-                    placeholder="Website URL"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="federalTaxId">Federal Tax ID</Label>
-                  <Input
-                    id="federalTaxId"
-                    value={formData.federalTaxId}
-                    onChange={(e) => handleInputChange("federalTaxId", e.target.value)}
-                    placeholder="Federal Tax ID"
-                  />
+                  <Label htmlFor="fiscalYearStart">Fiscal Year Starts</Label>
+                  <Select value={companyData.fiscalYearStart} onValueChange={(value) => handleInputChange("fiscalYearStart", value)}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fiscalMonths.map((month) => (
+                        <SelectItem key={month.value} value={month.value}>
+                          {month.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             )}
 
+            {/* Step 2: Industry Selection */}
             {currentStep === 2 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="industry">Industry</Label>
-                  <Select value={formData.industry} onValueChange={(value) => handleInputChange("industry", value)}>
+                  <Label htmlFor="industry">What industry are you in? *</Label>
+                  <Select value={companyData.industry} onValueChange={(value) => handleInputChange("industry", value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select industry" />
+                      <SelectValue placeholder="Select your industry" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="technology">Technology</SelectItem>
-                      <SelectItem value="consulting">Consulting</SelectItem>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                      <SelectItem value="services">Services</SelectItem>
-                      <SelectItem value="healthcare">Healthcare</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      {industries.map((industry) => (
+                        <SelectItem key={industry} value={industry}>
+                          {industry}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="businessType">Business Type</Label>
-                  <Select value={formData.businessType} onValueChange={(value) => handleInputChange("businessType", value)}>
+                  <Label htmlFor="businessType">What type of business entity? *</Label>
+                  <Select value={companyData.businessType} onValueChange={(value) => handleInputChange("businessType", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select business type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="sole-proprietorship">Sole Proprietorship</SelectItem>
-                      <SelectItem value="partnership">Partnership</SelectItem>
-                      <SelectItem value="llc">LLC</SelectItem>
-                      <SelectItem value="corporation">Corporation</SelectItem>
-                      <SelectItem value="s-corporation">S-Corporation</SelectItem>
-                      <SelectItem value="non-profit">Non-Profit</SelectItem>
+                      {businessTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="companySize">Company Size</Label>
-                  <Select value={formData.companySize} onValueChange={(value) => handleInputChange("companySize", value)}>
+                  <Label htmlFor="companySize">How many employees?</Label>
+                  <Select value={companyData.companySize} onValueChange={(value) => handleInputChange("companySize", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select company size" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1-5">1-5 employees</SelectItem>
-                      <SelectItem value="6-20">6-20 employees</SelectItem>
-                      <SelectItem value="21-100">21-100 employees</SelectItem>
-                      <SelectItem value="100+">100+ employees</SelectItem>
+                      {companySizes.map((size) => (
+                        <SelectItem key={size} value={size}>
+                          {size}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
             )}
 
+            {/* Step 3: Chart of Accounts */}
             {currentStep === 3 && (
-              <div className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">Chart of Accounts Template</h4>
-                  <p className="text-sm text-gray-600">We'll create a standard chart of accounts based on your industry selection. You can customize it later.</p>
-                </div>
-                <div className="space-y-2">
-                  <h5 className="font-medium">Preview of Standard Accounts:</h5>
-                  <ul className="text-sm space-y-1 text-gray-600">
-                    <li>• Checking Account</li>
-                    <li>• Accounts Receivable</li>
-                    <li>• Inventory Asset</li>
-                    <li>• Accounts Payable</li>
-                    <li>• Sales Revenue</li>
-                    <li>• Cost of Goods Sold</li>
-                    <li>• Office Expenses</li>
-                  </ul>
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <p className="text-gray-600">
+                    Choose a chart of accounts template that best matches your business type.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50" 
+                         onClick={() => handleInputChange("accountTemplate", "standard")}>
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="radio"
+                          name="accountTemplate"
+                          value="standard"
+                          checked={companyData.accountTemplate === "standard"}
+                          onChange={() => {}}
+                          className="text-blue-600"
+                        />
+                        <div>
+                          <h4 className="font-medium">Standard Business</h4>
+                          <p className="text-sm text-gray-600">
+                            Most common accounts for general business use
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50"
+                         onClick={() => handleInputChange("accountTemplate", "retail")}>
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="radio"
+                          name="accountTemplate"
+                          value="retail"
+                          checked={companyData.accountTemplate === "retail"}
+                          onChange={() => {}}
+                          className="text-blue-600"
+                        />
+                        <div>
+                          <h4 className="font-medium">Retail/Product Sales</h4>
+                          <p className="text-sm text-gray-600">
+                            Includes inventory and cost of goods sold accounts
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50"
+                         onClick={() => handleInputChange("accountTemplate", "service")}>
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="radio"
+                          name="accountTemplate"
+                          value="service"
+                          checked={companyData.accountTemplate === "service"}
+                          onChange={() => {}}
+                          className="text-blue-600"
+                        />
+                        <div>
+                          <h4 className="font-medium">Service-Based Business</h4>
+                          <p className="text-sm text-gray-600">
+                            Focused on service revenue without inventory
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
+            {/* Step 4: Initial Data */}
             {currentStep === 4 && (
-              <div className="space-y-4">
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">Initial Data Setup</h4>
-                  <p className="text-sm text-gray-600">You can import existing data or start fresh. This can be done later from the application.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Customer Import</Label>
-                    <div className="text-sm text-gray-600">
-                      <p>Import existing customers from:</p>
-                      <ul className="list-disc list-inside mt-1">
-                        <li>Excel/CSV file</li>
-                        <li>Other accounting software</li>
-                        <li>Manual entry later</li>
-                      </ul>
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <p className="text-gray-600">
+                    Do you want to import existing data from another system? (This is optional and can be done later)
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="importCustomers"
+                        checked={companyData.importCustomers}
+                        onChange={(e) => handleInputChange("importCustomers", e.target.checked)}
+                        className="rounded"
+                      />
+                      <Label htmlFor="importCustomers">Import customer list</Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="importVendors"
+                        checked={companyData.importVendors}
+                        onChange={(e) => handleInputChange("importVendors", e.target.checked)}
+                        className="rounded"
+                      />
+                      <Label htmlFor="importVendors">Import vendor list</Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="importItems"
+                        checked={companyData.importItems}
+                        onChange={(e) => handleInputChange("importItems", e.target.checked)}
+                        className="rounded"
+                      />
+                      <Label htmlFor="importItems">Import products/services</Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="importEmployees"
+                        checked={companyData.importEmployees}
+                        onChange={(e) => handleInputChange("importEmployees", e.target.checked)}
+                        className="rounded"
+                      />
+                      <Label htmlFor="importEmployees">Import employee list</Label>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Vendor Import</Label>
-                    <div className="text-sm text-gray-600">
-                      <p>Import existing vendors from:</p>
-                      <ul className="list-disc list-inside mt-1">
-                        <li>Excel/CSV file</li>
-                        <li>Other accounting software</li>
-                        <li>Manual entry later</li>
-                      </ul>
-                    </div>
+                </div>
+                
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">Setup Summary</h4>
+                  <div className="text-sm text-blue-800 space-y-1">
+                    <p><strong>Company:</strong> {companyData.companyName}</p>
+                    <p><strong>Industry:</strong> {companyData.industry}</p>
+                    <p><strong>Business Type:</strong> {companyData.businessType}</p>
+                    <p><strong>Account Template:</strong> {companyData.accountTemplate}</p>
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="flex justify-between mt-6">
-              <Button 
-                variant="outline" 
+            {/* Navigation Buttons */}
+            <div className="flex justify-between pt-6 border-t">
+              <Button
+                variant="outline"
                 onClick={handlePrevious}
                 disabled={currentStep === 1}
               >
+                <ArrowLeft className="w-4 h-4 mr-2" />
                 Previous
               </Button>
-              <Button onClick={handleNext}>
-                {currentStep === 4 ? "Finish Setup" : "Next"}
-              </Button>
+              
+              {currentStep < totalSteps ? (
+                <Button
+                  onClick={handleNext}
+                  disabled={!isStepValid()}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Next
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleFinish}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Finish Setup
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
