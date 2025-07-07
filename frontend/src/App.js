@@ -118,6 +118,7 @@ const AppRouter = () => {
         {/* Customer Routes */}
         <Route path="customers" element={<CustomerCenter />} />
         <Route path="customers/invoice/new" element={<CreateInvoice />} />
+        <Route path="customers/estimate/new" element={<CreateEstimate />} />
         <Route path="customers/payments/new" element={<ReceivePayment />} />
         <Route path="customers/sales-receipt/new" element={<CreateSalesReceipt />} />
         
@@ -129,6 +130,7 @@ const AppRouter = () => {
         
         {/* Items & Inventory */}
         <Route path="items" element={<ItemsList />} />
+        <Route path="inventory" element={<InventoryCenter />} />
         
         {/* Banking Routes */}
         <Route path="banking" element={<Navigate to="/accounts" replace />} />
