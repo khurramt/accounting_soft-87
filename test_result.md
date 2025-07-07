@@ -474,9 +474,8 @@
 
 ## test_plan:
   current_focus:
-    - "Authentication Module Implementation"
-  stuck_tasks: 
-    - "Authentication Module Implementation"
+    - "QuickBooks-specific backend APIs"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
