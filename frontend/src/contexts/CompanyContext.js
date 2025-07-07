@@ -28,12 +28,8 @@ export const CompanyProvider = ({ children }) => {
     const storedCurrentCompany = localStorage.getItem("qb_current_company");
     if (storedCurrentCompany) {
       setCurrentCompany(JSON.parse(storedCurrentCompany));
-    } else {
-      // For demo purposes, auto-select first company
-      const defaultCompany = mockCompanies[0];
-      setCurrentCompany(defaultCompany);
-      localStorage.setItem("qb_current_company", JSON.stringify(defaultCompany));
     }
+    // Remove automatic company selection - user must choose company explicitly
   }, []);
 
   const selectCompany = (company) => {
