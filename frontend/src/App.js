@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CompanyProvider, useCompany } from "./contexts/CompanyContext";
 import Login from "./components/auth/Login";
+import Register from "./components/auth/Register";
 import CompanySelection from "./components/auth/CompanySelection";
 import CompanySetup from "./components/auth/CompanySetup";
 import MainLayout from "./components/layout/MainLayout";
@@ -101,6 +102,7 @@ const AppRouter = () => {
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/select-company" replace /> : <Login />} />
+      <Route path="/register" element={user ? <Navigate to="/select-company" replace /> : <Register />} />
       <Route path="/select-company" element={
         user ? <CompanySelection /> : <Navigate to="/login" replace />
       } />
@@ -211,5 +213,7 @@ function App() {
     </AuthProvider>
   );
 }
+
+export default App;
 
 export default App;
