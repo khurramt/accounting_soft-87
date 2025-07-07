@@ -34,6 +34,11 @@ import TransactionMatching from "./components/banking/TransactionMatching";
 import ProfitLossReport from "./components/reports/ProfitLossReport";
 import BalanceSheetReport from "./components/reports/BalanceSheetReport";
 import CreditCardCharges from "./components/banking/CreditCardCharges";
+import AdvancedBankFeeds from "./components/banking/AdvancedBankFeeds";
+import CashFlowReport from "./components/reports/CashFlowReport";
+import ReportCategories from "./components/reports/ReportCategories";
+import PayLiabilities from "./components/payroll/PayLiabilities";
+import PayrollForms from "./components/payroll/PayrollForms";
 import "./App.css";
 
 // Protected Route Component
