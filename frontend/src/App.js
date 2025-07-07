@@ -43,6 +43,26 @@ import CashFlowReport from "./components/reports/CashFlowReport";
 import ReportCategories from "./components/reports/ReportCategories";
 import PayLiabilities from "./components/payroll/PayLiabilities";
 import PayrollForms from "./components/payroll/PayrollForms";
+
+// Company Management Components
+import CompanyPreferences from "./components/company/CompanyPreferences";
+import UsersPasswords from "./components/company/UsersPasswords";
+import BackupRestore from "./components/company/BackupRestore";
+import AdvancedOptions from "./components/company/AdvancedOptions";
+
+// Security & Users Components
+import UserManagement from "./components/security/UserManagement";
+import AccessControl from "./components/security/AccessControl";
+import ActivityTracking from "./components/security/ActivityTracking";
+
+// Help & Support Components
+import HelpCenter from "./components/help/HelpCenter";
+import LearningCenter from "./components/help/LearningCenter";
+import ProductInfo from "./components/help/ProductInfo";
+
+// Template Customization Components
+import TemplateDesigner from "./components/templates/TemplateDesigner";
+
 import "./App.css";
 
 // Protected Route Component
