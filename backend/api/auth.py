@@ -37,6 +37,14 @@ async def register(
 ):
     """Register a new user"""
     try:
+        # Validate password strength manually
+        is_valid, error_message = await auth_service.validate_password_strength(user_data.password)
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_message
+            )
+        
         user = await auth_service.register_user(
             db=db,
             email=user_data.email,
