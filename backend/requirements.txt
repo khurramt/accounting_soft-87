@@ -22,14 +22,10 @@ python-multipart>=0.0.9
 jq>=1.6.0
 typer>=0.9.0
 
-# PostgreSQL dependencies
-asyncpg>=0.28.0
+# SQLite dependencies (for development)
+aiosqlite>=0.17.0
 sqlalchemy>=2.0.0
 alembic>=1.11.0
-
-# Redis dependencies  
-redis>=4.5.0
-aioredis>=2.0.0
 
 # Authentication & Security
 bcrypt>=4.0.0
