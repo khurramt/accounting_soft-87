@@ -19,7 +19,7 @@ import {
 import { 
   Calendar,
   Download,
-  Print,
+  Printer,
   Share,
   TrendingUp,
   TrendingDown,
