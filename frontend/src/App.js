@@ -97,8 +97,9 @@ const AppRouter = () => {
         {/* Reports */}
         <Route path="reports" element={<ReportCenter />} />
         <Route path="reports/customize" element={<ReportCustomization />} />
-        <Route path="reports/memorized" element={<ReportCenter />} />
-        <Route path="reports/scheduled" element={<ReportCenter />} />
+        <Route path="reports/memorized" element={<MemorizedReports />} />
+        <Route path="reports/scheduled" element={<MemorizedReports />} />
+        <Route path="reports/view" element={<ReportViewer />} />
         
         {/* Payroll */}
         <Route path="payroll" element={<PayrollCenter />} />
