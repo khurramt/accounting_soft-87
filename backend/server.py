@@ -1,3 +1,10 @@
+import sys
+from pathlib import Path
+
+# Add backend directory to Python path
+backend_dir = Path(__file__).parent
+sys.path.insert(0, str(backend_dir))
+
 from fastapi import FastAPI, APIRouter, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -9,7 +16,6 @@ from slowapi.middleware import SlowAPIMiddleware
 from dotenv import load_dotenv
 import os
 import structlog
-from pathlib import Path
 from contextlib import asynccontextmanager
 from database.connection import close_db_connections
 from api.auth import router as auth_router
