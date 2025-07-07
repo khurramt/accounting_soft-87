@@ -137,14 +137,15 @@ async def login(
         except Exception as log_error:
             logger.error("Failed to log security event", error=str(log_error))
         
-        # Return error response manually
-        response.status_code = e.status_code
-        return {"detail": e.detail}
+        # Re-raise the HTTPException so FastAPI handles it properly
+        raise e
         
     except Exception as e:
         logger.error("Login failed", error=str(e))
-        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-        return {"detail": "Login failed"}
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Login failed"
+        )
 
 @router.post("/refresh-token", response_model=RefreshTokenResponse)
 async def refresh_token(
