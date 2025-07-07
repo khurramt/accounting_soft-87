@@ -9,7 +9,7 @@ sys.path.insert(0, str(backend_dir))
 
 from sqlalchemy.ext.asyncio import create_async_engine
 from database.connection import Base, DATABASE_URL, ASYNC_DATABASE_URL
-from models.user import User, UserSession, CompanyMembership, Company
+from models.user import User, UserSession, CompanyMembership, Company, UserRole
 import structlog
 
 logger = structlog.get_logger()
