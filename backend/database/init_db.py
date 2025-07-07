@@ -71,7 +71,7 @@ async def create_demo_data():
             membership = CompanyMembership(
                 user_id=demo_user.user_id,
                 company_id=demo_company.company_id,
-                role="admin",
+                role=UserRole.ADMIN,  # Use the enum value
                 permissions={
                     "full_access": True,
                     "manage_users": True,
