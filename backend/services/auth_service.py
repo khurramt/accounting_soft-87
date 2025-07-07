@@ -119,13 +119,7 @@ class AuthService:
                 detail="Email already registered"
             )
         
-        # Check password strength
-        is_valid, error_message = await self.validate_password_strength(password)
-        if not is_valid:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=error_message
-            )
+        # Password strength validation is handled in endpoints
         
         # Hash password
         password_hash = self.hash_password(password)
