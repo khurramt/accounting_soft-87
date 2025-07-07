@@ -132,11 +132,14 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         path=request.url.path,
         method=request.method
     )
-    return {
-        "error": exc.detail,
-        "status_code": exc.status_code,
-        "path": request.url.path
-    }
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.detail,
+            "status_code": exc.status_code,
+            "path": request.url.path
+        }
+    )
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
@@ -148,11 +151,14 @@ async def general_exception_handler(request: Request, exc: Exception):
         method=request.method,
         exc_info=True
     )
-    return {
-        "error": "Internal server error",
-        "status_code": 500,
-        "path": request.url.path
-    }
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "error": "Internal server error",
+            "status_code": 500,
+            "path": request.url.path
+        }
+    )
 
 # Security headers middleware
 @app.middleware("http")
