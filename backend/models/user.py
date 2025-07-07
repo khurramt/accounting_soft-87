@@ -155,7 +155,7 @@ class Company(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    memberships = relationship("CompanyMembership", back_populates="company")
+    memberships = relationship("CompanyMembership", back_populates="company", foreign_keys="CompanyMembership.company_id")
     
     def __repr__(self):
         return f"<Company {self.name}>"
