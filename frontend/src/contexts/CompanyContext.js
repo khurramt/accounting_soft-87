@@ -57,11 +57,16 @@ export const CompanyProvider = ({ children }) => {
     return newCompany;
   };
 
+  const addCompany = (companyData) => {
+    return createCompany(companyData);
+  };
+
   const value = {
     currentCompany,
     companies,
     selectCompany,
-    createCompany
+    createCompany,
+    addCompany
   };
 
   return (
