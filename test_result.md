@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-## user_problem_statement: "Complete the missing UI components, fix navigation, and ensure the hamburger menu works for the QuickBooks Clone application"
+## user_problem_statement: "Complete the missing UI components, fix navigation, and ensure the hamburger menu works for the QuickBooks Clone application. Implement advanced banking, reports, and payroll features."
 
 ## backend:
   - task: "Basic FastAPI server setup"
