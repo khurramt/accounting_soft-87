@@ -1,53 +1,55 @@
-import { useEffect } from "react";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import { CompanyProvider } from "./contexts/CompanyContext";
+import Login from "./components/auth/Login";
+import CompanySelection from "./components/auth/CompanySelection";
+import CompanySetup from "./components/auth/CompanySetup";
+import MainLayout from "./components/layout/MainLayout";
+import Dashboard from "./components/dashboard/Dashboard";
+import CustomerCenter from "./components/customers/CustomerCenter";
+import VendorCenter from "./components/vendors/VendorCenter";
+import ItemsList from "./components/items/ItemsList";
+import ChartOfAccounts from "./components/banking/ChartOfAccounts";
+import ReportCenter from "./components/reports/ReportCenter";
+import PayrollCenter from "./components/payroll/PayrollCenter";
+import TimeTracking from "./components/time/TimeTracking";
+import CreateInvoice from "./components/customers/CreateInvoice";
+import EnterBills from "./components/vendors/EnterBills";
+import BankFeeds from "./components/banking/BankFeeds";
+import CompanyInfo from "./components/company/CompanyInfo";
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <AuthProvider>
+      <CompanyProvider>
+        <BrowserRouter>
+          <div className="App">
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/select-company" element={<CompanySelection />} />
+              <Route path="/setup" element={<CompanySetup />} />
+              <Route path="/" element={<MainLayout />}>
+                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="customers" element={<CustomerCenter />} />
+                <Route path="customers/invoice/new" element={<CreateInvoice />} />
+                <Route path="vendors" element={<VendorCenter />} />
+                <Route path="vendors/bills/new" element={<EnterBills />} />
+                <Route path="items" element={<ItemsList />} />
+                <Route path="accounts" element={<ChartOfAccounts />} />
+                <Route path="banking/feeds" element={<BankFeeds />} />
+                <Route path="reports" element={<ReportCenter />} />
+                <Route path="payroll" element={<PayrollCenter />} />
+                <Route path="time-tracking" element={<TimeTracking />} />
+                <Route path="company/info" element={<CompanyInfo />} />
+              </Route>
+            </Routes>
+          </div>
+        </BrowserRouter>
+      </CompanyProvider>
+    </AuthProvider>
   );
 }
 
