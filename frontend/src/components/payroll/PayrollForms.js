@@ -19,7 +19,7 @@ import {
 import { 
   FileText,
   Download,
-  Print,
+  Printer,
   Send,
   Calendar,
   AlertTriangle,
