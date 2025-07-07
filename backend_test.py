@@ -341,8 +341,13 @@ def run_all_tests():
     }
     
     # Test user registration
-    register_result, email = test_register_user()
-    results["register_user"] = register_result
+    register_result = test_register_user()
+    if isinstance(register_result, tuple):
+        results["register_user"] = register_result[0]
+        email = register_result[1]
+    else:
+        results["register_user"] = register_result
+        email = None
     
     # Test login with demo user
     results["login_demo_user"] = test_login_demo_user()
