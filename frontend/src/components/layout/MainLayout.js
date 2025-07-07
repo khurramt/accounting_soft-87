@@ -140,7 +140,8 @@ const MainLayout = () => {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white shadow-lg transition-all duration-300 overflow-y-auto`}>
+      <div className={`${sidebarOpen ? 'w-64' : 'w-0'} bg-white shadow-lg transition-all duration-300 overflow-hidden`}>
+        <div className={`w-64 ${sidebarOpen ? 'block' : 'hidden'} overflow-y-auto h-full`}>
         <div className="p-4">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
