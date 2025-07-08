@@ -43,15 +43,13 @@ async def get_audit_logs(
     search: Optional[str] = Query(None, description="Search in change reason or fields"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get audit logs for a company with filtering and pagination
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
