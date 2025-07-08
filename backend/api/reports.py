@@ -402,7 +402,7 @@ async def export_report_to_pdf(
         expires_at=datetime.now().replace(hour=23, minute=59, second=59)  # End of day
     )
 
-@router.post("/reports/{report_id}/export/excel", response_model=ReportExportResponse)
+@router.post("/reports/definition/{report_id}/export/excel", response_model=ReportExportResponse)
 async def export_report_to_excel(
     company_id: str,
     report_id: str,
