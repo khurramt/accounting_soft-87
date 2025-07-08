@@ -252,11 +252,16 @@ const VendorCenter = () => {
             <div className="flex items-center justify-between">
               <CardTitle>Vendor Details</CardTitle>
               <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" disabled={!selectedVendor}>
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  disabled={!selectedVendor}
+                  onClick={() => selectedVendor && handleDeleteVendor(selectedVendor.vendor_id)}
+                >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete
                 </Button>
@@ -276,22 +281,22 @@ const VendorCenter = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div>
-                        <h3 className="font-semibold text-lg">{selectedVendor.name}</h3>
-                        <p className="text-gray-600">{selectedVendor.type}</p>
+                        <h3 className="font-semibold text-lg">{selectedVendor.vendor_name}</h3>
+                        <p className="text-gray-600">{selectedVendor.vendor_type || 'Vendor'}</p>
                       </div>
                       
                       <div className="space-y-2">
                         <div className="flex items-center text-sm">
                           <Mail className="w-4 h-4 mr-2 text-gray-400" />
-                          <span>{selectedVendor.email}</span>
+                          <span>{selectedVendor.email || 'No email'}</span>
                         </div>
                         <div className="flex items-center text-sm">
                           <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                          <span>{selectedVendor.phone}</span>
+                          <span>{selectedVendor.phone || 'No phone'}</span>
                         </div>
                         <div className="flex items-center text-sm">
                           <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                          <span>{selectedVendor.address}</span>
+                          <span>{selectedVendor.address || 'No address'}</span>
                         </div>
                       </div>
                     </div>
@@ -302,17 +307,21 @@ const VendorCenter = () => {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <span>Current Balance:</span>
-                            <span className="font-semibold">${selectedVendor.balance.toFixed(2)}</span>
+                            <span className="font-semibold">${(selectedVendor.balance || 0).toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Payment Terms:</span>
-                            <span>{selectedVendor.terms}</span>
+                            <span>{selectedVendor.payment_terms || 'Net 30'}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Status:</span>
-                            <Badge variant={selectedVendor.status === 'Active' ? 'default' : 'secondary'}>
-                              {selectedVendor.status}
+                            <Badge variant={selectedVendor.is_active ? 'default' : 'secondary'}>
+                              {selectedVendor.is_active ? 'Active' : 'Inactive'}
                             </Badge>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>1099 Eligible:</span>
+                            <span>{selectedVendor.eligible_1099 ? 'Yes' : 'No'}</span>
                           </div>
                         </div>
                       </div>
@@ -329,7 +338,12 @@ const VendorCenter = () => {
                     </Button>
                   </div>
                   
-                  {vendorBills.length > 0 ? (
+                  {loadingTransactions ? (
+                    <div className="flex items-center justify-center p-8">
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <span className="ml-2">Loading transactions...</span>
+                    </div>
+                  ) : vendorTransactions.length > 0 ? (
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -341,15 +355,15 @@ const VendorCenter = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {vendorBills.map((bill) => (
-                          <TableRow key={bill.id}>
-                            <TableCell>{bill.date}</TableCell>
-                            <TableCell>Bill</TableCell>
-                            <TableCell>{bill.refNo}</TableCell>
-                            <TableCell>${bill.amount.toFixed(2)}</TableCell>
+                        {vendorTransactions.map((transaction) => (
+                          <TableRow key={transaction.id}>
+                            <TableCell>{transaction.date}</TableCell>
+                            <TableCell>{transaction.type}</TableCell>
+                            <TableCell>{transaction.reference}</TableCell>
+                            <TableCell>${(transaction.amount || 0).toFixed(2)}</TableCell>
                             <TableCell>
-                              <Badge variant={bill.status === 'Paid' ? 'default' : 'secondary'}>
-                                {bill.status}
+                              <Badge variant={transaction.status === 'Paid' ? 'default' : 'secondary'}>
+                                {transaction.status}
                               </Badge>
                             </TableCell>
                           </TableRow>
