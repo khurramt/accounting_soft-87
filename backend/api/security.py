@@ -5,6 +5,8 @@ from datetime import datetime
 from database.connection import get_db
 from services.auth_service import AuthService
 from services.security_service import SecurityService
+from services.security import get_current_user
+from models.user import User
 from schemas.audit_schemas import (
     SecurityLogResponse, SecurityLogFilter, SecurityLogList,
     RoleCreate, RoleResponse, RoleUpdate, RoleList,
@@ -44,15 +46,13 @@ async def get_security_logs(
     min_risk_score: Optional[int] = Query(None, ge=0, le=100, description="Minimum risk score"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get security logs for a company with filtering and pagination
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -126,15 +126,13 @@ async def get_security_summary(
     request: Request,
     company_id: str,
     days: int = Query(30, ge=1, le=365, description="Number of days for summary"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get security summary statistics
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -172,15 +170,13 @@ async def get_roles(
     company_id: str,
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get roles for a company
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -216,15 +212,13 @@ async def create_role(
     request: Request,
     company_id: str,
     role_data: RoleCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Create a new role
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -289,15 +283,13 @@ async def get_role(
     request: Request,
     company_id: str,
     role_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get a specific role by ID
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -336,15 +328,13 @@ async def update_role(
     company_id: str,
     role_id: str,
     role_data: RoleUpdate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Update a role
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -385,15 +375,13 @@ async def get_user_permissions(
     user_id: str,
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get permissions for a specific user
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -432,15 +420,13 @@ async def update_user_permissions(
     company_id: str,
     user_id: str,
     permissions: List[UserPermissionCreate],
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Update permissions for a specific user
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -491,15 +477,13 @@ async def update_user_permissions(
 async def get_security_settings(
     request: Request,
     company_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get security settings for a company
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -537,15 +521,13 @@ async def update_security_settings(
     request: Request,
     company_id: str,
     settings: SecuritySettingsBase,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Update security settings for a company
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
