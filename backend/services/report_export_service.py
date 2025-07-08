@@ -33,6 +33,17 @@ class ReportExportService:
         self.export_dir = Path("/app/backend/exports")
         self.export_dir.mkdir(exist_ok=True)
     
+    def _sanitize_filename(self, filename: str) -> str:
+        """Sanitize filename by removing or replacing invalid characters"""
+        import re
+        # Replace invalid characters with underscores
+        filename = re.sub(r'[<>:"/\\|?*]', '_', filename)
+        # Replace multiple consecutive underscores with single underscore
+        filename = re.sub(r'_+', '_', filename)
+        # Remove leading/trailing underscores and spaces
+        filename = filename.strip('_ ')
+        return filename
+    
     async def export_report(
         self,
         report_data: Dict[str, Any],
@@ -43,7 +54,8 @@ class ReportExportService:
         """Export report to specified format"""
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        base_filename = f"{report_name.replace(' ', '_')}_{timestamp}"
+        sanitized_name = self._sanitize_filename(report_name)
+        base_filename = f"{sanitized_name}_{timestamp}"
         
         if export_request.format == ReportFormat.PDF:
             return await self._export_to_pdf(
