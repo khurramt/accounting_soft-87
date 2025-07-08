@@ -40,10 +40,10 @@ const VendorCenter = () => {
 
   // Fetch vendors from backend
   useEffect(() => {
-    if (selectedCompany) {
+    if (currentCompany) {
       fetchVendors();
     }
-  }, [selectedCompany, searchTerm, filterStatus]);
+  }, [currentCompany, searchTerm, filterStatus]);
 
   const fetchVendors = async () => {
     if (!selectedCompany) return;
