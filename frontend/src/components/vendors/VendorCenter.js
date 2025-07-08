@@ -163,13 +163,25 @@ const VendorCenter = () => {
         </div>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">Error</h3>
+              <div className="mt-2 text-sm text-red-700">{error}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Vendor List */}
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Vendors</span>
-              <Badge variant="secondary">{filteredVendors.length}</Badge>
+              <Badge variant="secondary">{vendors.length}</Badge>
             </CardTitle>
             <div className="space-y-2">
               <div className="relative">
@@ -195,28 +207,41 @@ const VendorCenter = () => {
           </CardHeader>
           <CardContent className="p-0">
             <div className="max-h-96 overflow-y-auto">
-              {filteredVendors.map((vendor) => (
-                <div
-                  key={vendor.id}
-                  className={`p-4 border-b cursor-pointer hover:bg-gray-50 transition-colors ${
-                    selectedVendor?.id === vendor.id ? 'bg-blue-50 border-blue-200' : ''
-                  }`}
-                  onClick={() => setSelectedVendor(vendor)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">{vendor.name}</h4>
-                      <p className="text-sm text-gray-600">{vendor.email}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">${vendor.balance.toFixed(2)}</p>
-                      <Badge variant={vendor.status === 'Active' ? 'default' : 'secondary'}>
-                        {vendor.status}
-                      </Badge>
+              {loading ? (
+                <div className="flex items-center justify-center p-8">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span className="ml-2">Loading vendors...</span>
+                </div>
+              ) : vendors.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Building className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p>No vendors found</p>
+                  <p className="text-sm">Add a vendor to get started</p>
+                </div>
+              ) : (
+                vendors.map((vendor) => (
+                  <div
+                    key={vendor.vendor_id}
+                    className={`p-4 border-b cursor-pointer hover:bg-gray-50 transition-colors ${
+                      selectedVendor?.vendor_id === vendor.vendor_id ? 'bg-blue-50 border-blue-200' : ''
+                    }`}
+                    onClick={() => handleVendorSelect(vendor)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">{vendor.vendor_name}</h4>
+                        <p className="text-sm text-gray-600">{vendor.email}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">${(vendor.balance || 0).toFixed(2)}</p>
+                        <Badge variant={vendor.is_active ? 'default' : 'secondary'}>
+                          {vendor.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
