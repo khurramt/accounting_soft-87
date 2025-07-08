@@ -57,7 +57,7 @@ class SecurityLogBase(BaseModel):
     success: bool = Field(..., description="Whether the event was successful")
     details: Optional[Dict[str, Any]] = Field(None, description="Additional event details")
     risk_score: int = Field(0, ge=0, le=100, description="Risk score (0-100)")
-    threat_level: str = Field("low", regex="^(low|medium|high|critical)$", description="Threat level")
+    threat_level: str = Field("low", pattern="^(low|medium|high|critical)$", description="Threat level")
 
 class SecurityLogCreate(SecurityLogBase):
     user_id: Optional[str] = Field(None, description="User ID (if applicable)")
