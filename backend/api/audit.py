@@ -6,6 +6,8 @@ from database.connection import get_db
 from services.auth_service import AuthService
 from services.audit_service import AuditService
 from services.security_service import SecurityService
+from services.security import get_current_user
+from models.user import User
 from schemas.audit_schemas import (
     AuditLogResponse, AuditLogFilter, AuditLogList,
     AuditReportRequest, AuditReportResponse
