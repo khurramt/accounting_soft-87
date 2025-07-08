@@ -151,6 +151,11 @@ api_router.include_router(payments_router)
 # Include reporting routes
 api_router.include_router(reports_router)
 
+# Include banking routes
+api_router.include_router(banking_router)
+api_router.include_router(bank_rules_router)
+api_router.include_router(bank_reconciliation_router)
+
 # Include the API router in the main app
 app.include_router(api_router)
 
