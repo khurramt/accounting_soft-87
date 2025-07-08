@@ -7,7 +7,7 @@ from datetime import datetime, date, timedelta
 import uuid
 
 from database.connection import get_db
-from services.auth_service import get_current_user
+from services.security import get_current_user
 from services.payroll_service import PayrollService
 from models.user import User
 from models.payroll import (
