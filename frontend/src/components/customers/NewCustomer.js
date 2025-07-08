@@ -195,13 +195,22 @@ const NewCustomer = () => {
           <p className="text-gray-600 mt-1">Create a new customer record</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleCancel}>
+          <Button variant="outline" onClick={handleCancel} disabled={loading}>
             <X className="w-4 h-4 mr-2" />
             Cancel
           </Button>
-          <Button onClick={handleSave}>
-            <Save className="w-4 h-4 mr-2" />
-            Save
+          <Button onClick={handleSave} disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Save
+              </>
+            )}
           </Button>
         </div>
       </div>
