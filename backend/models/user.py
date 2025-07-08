@@ -130,23 +130,42 @@ class Company(Base):
     __tablename__ = "companies"
     
     company_id = Column(SQLString(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = Column(String(255), nullable=False)
+    company_name = Column(String(255), nullable=False)
     legal_name = Column(String(255))
+    tax_id = Column(String(50))
     
-    # Company details (JSON for SQLite compatibility)
-    address = Column(JSON)
+    # Address fields
+    address_line1 = Column(String(255))
+    address_line2 = Column(String(255))
+    city = Column(String(100))
+    state = Column(String(50))
+    zip_code = Column(String(20))
+    country = Column(String(100))
+    
+    # Contact information
     phone = Column(String(20))
     email = Column(String(255))
     website = Column(String(255))
-    tax_id = Column(String(50))
     
     # Business information
     industry = Column(String(100))
-    business_type = Column(String(100))
+    business_type = Column(String(50))
     fiscal_year_start = Column(DateTime(timezone=True))
     
-    # Company settings (JSON for SQLite compatibility)
-    settings = Column(JSON, default=lambda: {})
+    # Formatting and currency
+    date_format = Column(String(20), default='MM/DD/YYYY')
+    currency = Column(String(3), default='USD')
+    
+    # Company branding
+    company_logo_url = Column(String(500))
+    
+    # Subscription information
+    subscription_plan = Column(String(50))
+    subscription_status = Column(String(20))
+    trial_ends_at = Column(DateTime(timezone=True))
+    
+    # Creation tracking
+    created_by = Column(SQLString(36), ForeignKey("users.user_id"))
     
     # Status
     is_active = Column(Boolean, default=True)
@@ -157,6 +176,55 @@ class Company(Base):
     
     # Relationships
     memberships = relationship("CompanyMembership", back_populates="company", foreign_keys="CompanyMembership.company_id")
+    settings = relationship("CompanySetting", back_populates="company", cascade="all, delete-orphan")
+    file_attachments = relationship("FileAttachment", back_populates="company", cascade="all, delete-orphan")
+    creator = relationship("User", foreign_keys=[created_by])
     
     def __repr__(self):
-        return f"<Company {self.name}>"
+        return f"<Company {self.company_name}>"
+
+class CompanySetting(Base):
+    __tablename__ = "company_settings"
+    
+    setting_id = Column(SQLString(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    company_id = Column(SQLString(36), ForeignKey("companies.company_id"), nullable=False)
+    category = Column(String(50), nullable=False)
+    setting_key = Column(String(100), nullable=False)
+    setting_value = Column(JSON, nullable=False)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    company = relationship("Company", back_populates="settings")
+    
+    # Unique constraint
+    __table_args__ = (
+        sa.UniqueConstraint('company_id', 'category', 'setting_key'),
+    )
+    
+    def __repr__(self):
+        return f"<CompanySetting {self.category}.{self.setting_key}>"
+
+class FileAttachment(Base):
+    __tablename__ = "file_attachments"
+    
+    attachment_id = Column(SQLString(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    company_id = Column(SQLString(36), ForeignKey("companies.company_id"), nullable=False)
+    file_name = Column(String(255), nullable=False)
+    file_size = Column(Integer)
+    file_type = Column(String(100))
+    file_url = Column(String(500))
+    storage_provider = Column(String(50))
+    uploaded_by = Column(SQLString(36), ForeignKey("users.user_id"), nullable=False)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    company = relationship("Company", back_populates="file_attachments")
+    uploader = relationship("User", foreign_keys=[uploaded_by])
+    
+    def __repr__(self):
+        return f"<FileAttachment {self.file_name}>"
