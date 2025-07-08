@@ -445,7 +445,8 @@ class SecurityService:
                 "transactions": ["read", "write", "delete"],
                 "reports": ["read", "write", "export"],
                 "settings": ["read", "write"],
-                "audit": ["read", "export"]
+                "audit": ["read", "export"],
+                "security": ["read", "write", "delete"]
             },
             UserRole.MANAGER: {
                 "users": ["read", "write"],
