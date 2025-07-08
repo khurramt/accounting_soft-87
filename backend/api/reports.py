@@ -171,7 +171,7 @@ async def get_report_data(
     return report_data
 
 # Report Customization Endpoints
-@router.post("/reports/{report_id}/customize", response_model=ReportDefinitionResponse)
+@router.post("/reports/definition/{report_id}/customize", response_model=ReportDefinitionResponse)
 async def customize_report(
     company_id: str,
     report_id: str,
