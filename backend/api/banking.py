@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime
 
 from database.connection import get_db
-from services.auth_service import get_current_user
+from services.security import get_current_user
 from services.banking_service import BankingService
 from services.transaction_matching_service import TransactionMatchingService
 from services.file_parsing_service import FileParsingService
