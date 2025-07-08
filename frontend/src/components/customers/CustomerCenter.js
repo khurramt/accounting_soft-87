@@ -397,7 +397,12 @@ const CustomerCenter = () => {
                     </Button>
                   </div>
                   
-                  {customerTransactions.length > 0 ? (
+                  {loadingTransactions ? (
+                    <div className="text-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+                      <p className="text-gray-600">Loading transactions...</p>
+                    </div>
+                  ) : customerTransactions.length > 0 ? (
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -428,6 +433,7 @@ const CustomerCenter = () => {
                     <div className="text-center py-8 text-gray-500">
                       <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                       <p>No transactions found for this customer</p>
+                      <p className="text-sm">Create an invoice or record a payment to get started</p>
                     </div>
                   )}
                 </TabsContent>
