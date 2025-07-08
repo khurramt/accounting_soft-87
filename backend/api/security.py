@@ -397,12 +397,9 @@ async def get_user_permissions(
                 detail="Insufficient permissions to view user permissions"
             )
         
-        # Get user permissions (implementation would need to be added to SecurityService)
-        # For now, return a placeholder response
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Get user permissions not implemented yet"
-        )
+        # Get user permissions
+        permissions = await security_service.get_user_permissions(company_id, user_id, page, page_size)
+        return permissions
         
     except HTTPException:
         raise
