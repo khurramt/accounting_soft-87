@@ -94,11 +94,17 @@ async def update_location(
                 detail="Access denied to this company"
             )
         
-        # Implementation needed in service
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Location not found"
+        updated_location = await InventoryLocationService.update_location(
+            db, company_id, location_id, location_data
         )
+        
+        if not updated_location:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Location not found"
+            )
+        
+        return InventoryLocationResponse.from_orm(updated_location)
         
     except HTTPException:
         raise
