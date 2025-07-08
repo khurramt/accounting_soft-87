@@ -156,11 +156,17 @@ async def update_purchase_order(
                 detail="Access denied to this company"
             )
         
-        # Implementation needed in service
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Purchase order not found"
+        updated_po = await PurchaseOrderService.update_purchase_order(
+            db, company_id, po_id, po_data
         )
+        
+        if not updated_po:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Purchase order not found"
+            )
+        
+        return PurchaseOrderResponse.from_orm(updated_po)
         
     except HTTPException:
         raise
