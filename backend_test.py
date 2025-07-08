@@ -3838,3 +3838,71 @@ def test_delete_bank_connection(connection_id):
         return False
 
 
+def run_banking_integration_tests():
+    """Run all Banking Integration Module API tests"""
+    print("\n🔍 Starting QuickBooks Clone Banking Integration Module API tests...")
+    print(f"🕒 Test time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # Test results
+    results = {}
+    
+    # Login and get company access
+    results["login_demo_user"] = test_login_demo_user()
+    if results["login_demo_user"]:
+        results["get_user_companies"] = test_get_user_companies()
+        if COMPANY_ID:
+            results["company_access"] = test_company_access()
+        else:
+            print("❌ No company ID available, skipping banking tests")
+            return False
+    else:
+        print("❌ Login failed, skipping all banking tests")
+        return False
+    
+    # Test Banking Integration APIs
+    print("\n📋 Testing Banking Integration APIs...")
+    
+    # Test Bank Connection Management
+    print("\n🏦 Testing Bank Connection Management...")
+    connection_result, connection_id = test_create_bank_connection()
+    results["create_bank_connection"] = connection_result
+    
+    results["get_bank_connections"] = test_get_bank_connections()
+    
+    if connection_id:
+        results["get_bank_connection_by_id"] = test_get_bank_connection_by_id(connection_id)
+        results["update_bank_connection"] = test_update_bank_connection(connection_id)
+        results["sync_bank_connection"] = test_sync_bank_connection(connection_id)
+        results["get_bank_transactions_by_connection"] = test_get_bank_transactions_by_connection(connection_id)
+    
+    # Test Bank Transaction Management
+    print("\n💳 Testing Bank Transaction Management...")
+    results["get_bank_transactions"] = test_get_bank_transactions()
+    
+    # Test Institution Search
+    print("\n🏛️ Testing Institution Search...")
+    results["search_institutions"] = test_search_institutions()
+    results["get_institution_by_id"] = test_get_institution_by_id()
+    
+    # Test File Upload
+    print("\n📄 Testing File Upload...")
+    results["upload_bank_statement"] = test_upload_bank_statement()
+    
+    # Clean up - delete the test connection
+    if connection_id:
+        results["delete_bank_connection"] = test_delete_bank_connection(connection_id)
+    
+    # Print summary
+    print("\n📊 Banking Integration Module Test Summary:")
+    for test_name, result in results.items():
+        status = "✅ Passed" if result else "❌ Failed"
+        print(f"{test_name}: {status}")
+    
+    # Overall result
+    all_passed = all(results.values())
+    if all_passed:
+        print("\n🎉 All Banking Integration Module tests passed!")
+    else:
+        print("\n❌ Some Banking Integration Module tests failed.")
+    
+    return all_passed
