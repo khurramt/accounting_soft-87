@@ -349,7 +349,7 @@ async def get_current_user_profile(
                 membership_id=str(membership.membership_id),
                 company={
                     "company_id": str(company.company_id),
-                    "name": company.name,
+                    "name": company.company_name,
                     "legal_name": company.legal_name,
                     "industry": company.industry,
                     "business_type": company.business_type,
@@ -537,7 +537,7 @@ async def get_user_companies(
                 membership_id=str(membership.membership_id),
                 company={
                     "company_id": str(company.company_id),
-                    "name": company.name,
+                    "name": company.company_name,
                     "legal_name": company.legal_name,
                     "industry": company.industry,
                     "business_type": company.business_type,
