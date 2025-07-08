@@ -34,6 +34,7 @@ from api.reports import router as reports_router
 from api.banking import router as banking_router
 from api.bank_rules import router as bank_rules_router
 from api.bank_reconciliation import router as bank_reconciliation_router
+from api.payroll import router as payroll_router
 import uuid
 from datetime import datetime
 
