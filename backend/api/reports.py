@@ -46,7 +46,7 @@ router = APIRouter(prefix="/companies/{company_id}", tags=["reports"])
 async def get_current_user_with_company_access(
     company_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(auth_service.get_current_user)
+    current_user: User = Depends(get_current_user)
 ) -> User:
     """Verify user has access to the company"""
     has_access = await ReportService.verify_company_access(db, current_user.user_id, company_id)
