@@ -62,9 +62,11 @@ async def get_assemblies(
                 detail="Access denied to this company"
             )
         
-        # Implementation needed in service
-        # For now, return empty list
-        return []
+        assemblies = await InventoryAssemblyService.get_assemblies(
+            db, company_id, assembly_item_id, is_active
+        )
+        
+        return [InventoryAssemblyResponse.from_orm(assembly) for assembly in assemblies]
         
     except HTTPException:
         raise
