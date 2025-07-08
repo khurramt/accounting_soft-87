@@ -60,4 +60,6 @@ prometheus-client>=0.16.0
 # Report generation
 reportlab>=4.0.0
 openpyxl>=3.1.0
+et-xmlfile>=2.0.0
+markupsafe>=3.0.0
 Pillow>=10.0.0
