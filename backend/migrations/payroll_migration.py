@@ -9,19 +9,25 @@ import sys
 import sqlite3
 from datetime import datetime, date, timedelta
 from decimal import Decimal
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 # Add the backend directory to Python path
 backend_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(backend_dir))
 
-from database.connection import SessionLocal, engine
+# Create synchronous database connection for migration
+DATABASE_URL = "sqlite:///./quickbooks_clone.db"
+sync_engine = create_engine(DATABASE_URL, echo=False)
+SessionLocal = sessionmaker(bind=sync_engine)
+
 from models.payroll import (
     PayrollItem, EmployeePayrollInfo, PayrollRun, Paycheck, PaycheckLine,
     TimeEntry, PayrollLiability, FederalTaxTable, StateTaxTable, PayrollForm,
     PayrollItemType, PayFrequency, PayType, FilingStatus, PayrollRunStatus
 )
 from models.list_management import Employee
-from models.user import Base
+from database.connection import Base
 
 def create_payroll_tables():
     """Create all payroll tables"""
@@ -31,7 +37,7 @@ def create_payroll_tables():
     from models import payroll
     
     # Create all tables
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=sync_engine)
     print("✅ Payroll tables created successfully!")
 
 def insert_sample_payroll_items(db, company_id):
