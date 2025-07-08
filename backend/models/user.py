@@ -178,6 +178,9 @@ class Company(Base):
     memberships = relationship("CompanyMembership", back_populates="company", foreign_keys="CompanyMembership.company_id")
     settings = relationship("CompanySetting", back_populates="company", cascade="all, delete-orphan")
     file_attachments = relationship("FileAttachment", back_populates="company", cascade="all, delete-orphan")
+    bank_connections = relationship("BankConnection", back_populates="company")
+    bank_rules = relationship("BankRule", back_populates="company")
+    bank_reconciliations = relationship("BankReconciliation", back_populates="company")
     creator = relationship("User", foreign_keys=[created_by])
     
     def __repr__(self):
