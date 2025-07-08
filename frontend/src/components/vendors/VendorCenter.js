@@ -27,21 +27,97 @@ import {
 } from "lucide-react";
 
 const VendorCenter = () => {
-  const [selectedVendor, setSelectedVendor] = useState(mockVendors[0]);
+  const [vendors, setVendors] = useState([]);
+  const [selectedVendor, setSelectedVendor] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [vendorTransactions, setVendorTransactions] = useState([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
   const navigate = useNavigate();
+  const { selectedCompany } = useContext(CompanyContext);
 
-  const filteredVendors = mockVendors.filter(vendor => {
-    const matchesSearch = vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         vendor.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "all" || vendor.status.toLowerCase() === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+  // Fetch vendors from backend
+  useEffect(() => {
+    if (selectedCompany) {
+      fetchVendors();
+    }
+  }, [selectedCompany, searchTerm, filterStatus]);
 
-  const vendorBills = mockBills.filter(
-    bill => bill.vendor === selectedVendor?.name
-  );
+  const fetchVendors = async () => {
+    if (!selectedCompany) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const filters = {
+        search: searchTerm || undefined,
+        is_active: filterStatus === "all" ? undefined : filterStatus === "active",
+        page_size: 50,
+        page: 1
+      };
+      
+      const data = await vendorService.getVendors(selectedCompany.company_id, filters);
+      setVendors(data.items || []);
+      
+      // If we have vendors and no selected vendor, select the first one
+      if (data.items && data.items.length > 0 && !selectedVendor) {
+        setSelectedVendor(data.items[0]);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to fetch vendors');
+      console.error('Error fetching vendors:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch vendor transactions when vendor is selected
+  useEffect(() => {
+    if (selectedVendor && selectedCompany) {
+      fetchVendorTransactions();
+    }
+  }, [selectedVendor, selectedCompany]);
+
+  const fetchVendorTransactions = async () => {
+    if (!selectedVendor || !selectedCompany) return;
+    
+    setLoadingTransactions(true);
+    
+    try {
+      const data = await vendorService.getVendorTransactions(selectedCompany.company_id, selectedVendor.vendor_id);
+      setVendorTransactions(data.transactions || []);
+    } catch (err) {
+      console.error('Error fetching vendor transactions:', err);
+      setVendorTransactions([]);
+    } finally {
+      setLoadingTransactions(false);
+    }
+  };
+
+  const handleVendorSelect = (vendor) => {
+    setSelectedVendor(vendor);
+  };
+
+  const handleDeleteVendor = async (vendorId) => {
+    if (!selectedCompany) return;
+    
+    if (window.confirm('Are you sure you want to delete this vendor?')) {
+      try {
+        await vendorService.deleteVendor(selectedCompany.company_id, vendorId);
+        fetchVendors();
+        
+        // If deleted vendor was selected, clear selection
+        if (selectedVendor && selectedVendor.vendor_id === vendorId) {
+          setSelectedVendor(null);
+        }
+      } catch (err) {
+        alert('Error deleting vendor: ' + err.message);
+      }
+    }
+  };
 
   const handleNewVendor = () => {
     navigate("/vendors/new");
