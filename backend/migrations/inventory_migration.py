@@ -3,11 +3,19 @@ Inventory Management Module Migration Script
 Creates all tables and sample data for the inventory management system
 """
 
+import sys
+import os
 import asyncio
 import uuid
 from datetime import datetime, date, timedelta
 from decimal import Decimal
+
+# Add backend directory to Python path
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(backend_dir))
+
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, text
 from database.connection import get_async_engine, get_async_session_factory
 from models.inventory import (
     InventoryAdjustment, PurchaseOrder, PurchaseOrderLine, InventoryReceipt,
