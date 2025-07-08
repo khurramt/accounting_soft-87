@@ -371,8 +371,5 @@ async def run_inventory_migration():
         raise
 
 if __name__ == "__main__":
-    # Add missing imports
-    from sqlalchemy import select, text
-    
     # Run the migration
     asyncio.run(run_inventory_migration())
