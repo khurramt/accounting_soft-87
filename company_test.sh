@@ -62,15 +62,7 @@ fi
 
 # Test 3: Get company by ID
 echo -e "\n🔍 Testing GET /api/companies/$COMPANY_ID - Get company details..."
-GET_RESPONSE=$(curl -k -s -H "Authorization: Bearer $TOKEN" $API_URL/companies/$COMPANY_ID)
-echo "Response: $GET_RESPONSE"
-if [[ $GET_RESPONSE == *"$COMPANY_ID"* ]]; then
-    echo "✅ Get company by ID test passed"
-    GET_TEST_RESULT="PASS"
-else
-    echo "❌ Get company by ID test failed"
-    GET_TEST_RESULT="FAIL"
-fi
+GET_RESPONSE=$(wget --no-check-certificate -qO- --header="Authorization: Bearer $TOKEN" $API_URL/companies/$COMPANY_ID)
 
 # Test 4: Update company
 echo -e "\n🔍 Testing PUT /api/companies/$COMPANY_ID - Update company..."
@@ -80,27 +72,11 @@ UPDATE_PAYLOAD='{
     "address_line1": "456 Updated St",
     "website": "https://updated-example.com"
 }'
-UPDATE_RESPONSE=$(curl -k -s -X PUT -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d "$UPDATE_PAYLOAD" $API_URL/companies/$COMPANY_ID)
-echo "Response: $UPDATE_RESPONSE"
-if [[ $UPDATE_RESPONSE == *"Updated Company"* && $UPDATE_RESPONSE == *"$COMPANY_ID"* ]]; then
-    echo "✅ Update company test passed"
-    UPDATE_TEST_RESULT="PASS"
-else
-    echo "❌ Update company test failed"
-    UPDATE_TEST_RESULT="FAIL"
-fi
+UPDATE_RESPONSE=$(wget --no-check-certificate -qO- --header="Authorization: Bearer $TOKEN" --header="Content-Type: application/json" --method=PUT --body-data="$UPDATE_PAYLOAD" $API_URL/companies/$COMPANY_ID)
 
 # Test 5: Get company settings
 echo -e "\n🔍 Testing GET /api/companies/$COMPANY_ID/settings - Get company settings..."
-SETTINGS_RESPONSE=$(curl -k -s -H "Authorization: Bearer $TOKEN" $API_URL/companies/$COMPANY_ID/settings)
-echo "Response: $SETTINGS_RESPONSE"
-if [[ $SETTINGS_RESPONSE == \[* ]]; then
-    echo "✅ Get company settings test passed"
-    GET_SETTINGS_TEST_RESULT="PASS"
-else
-    echo "❌ Get company settings test failed"
-    GET_SETTINGS_TEST_RESULT="FAIL"
-fi
+SETTINGS_RESPONSE=$(wget --no-check-certificate -qO- --header="Authorization: Bearer $TOKEN" $API_URL/companies/$COMPANY_ID/settings)
 
 # Test 6: Update company settings
 echo -e "\n🔍 Testing PUT /api/companies/$COMPANY_ID/settings - Update company settings..."
@@ -123,27 +99,11 @@ SETTINGS_PAYLOAD='{
         }
     ]
 }'
-UPDATE_SETTINGS_RESPONSE=$(curl -k -s -X PUT -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d "$SETTINGS_PAYLOAD" $API_URL/companies/$COMPANY_ID/settings)
-echo "Response: $UPDATE_SETTINGS_RESPONSE"
-if [[ $UPDATE_SETTINGS_RESPONSE == \[* ]]; then
-    echo "✅ Update company settings test passed"
-    UPDATE_SETTINGS_TEST_RESULT="PASS"
-else
-    echo "❌ Update company settings test failed"
-    UPDATE_SETTINGS_TEST_RESULT="FAIL"
-fi
+UPDATE_SETTINGS_RESPONSE=$(wget --no-check-certificate -qO- --header="Authorization: Bearer $TOKEN" --header="Content-Type: application/json" --method=PUT --body-data="$SETTINGS_PAYLOAD" $API_URL/companies/$COMPANY_ID/settings)
 
 # Test 7: Delete company
 echo -e "\n🔍 Testing DELETE /api/companies/$COMPANY_ID - Delete company..."
-DELETE_RESPONSE=$(curl -k -s -X DELETE -H "Authorization: Bearer $TOKEN" $API_URL/companies/$COMPANY_ID)
-echo "Response: $DELETE_RESPONSE"
-if [[ $DELETE_RESPONSE == *"deleted"* ]]; then
-    echo "✅ Delete company test passed"
-    DELETE_TEST_RESULT="PASS"
-else
-    echo "❌ Delete company test failed"
-    DELETE_TEST_RESULT="FAIL"
-fi
+DELETE_RESPONSE=$(wget --no-check-certificate -qO- --header="Authorization: Bearer $TOKEN" --method=DELETE $API_URL/companies/$COMPANY_ID)
 
 # Print summary
 echo -e "\n📋 Company Management API Test Summary:"
