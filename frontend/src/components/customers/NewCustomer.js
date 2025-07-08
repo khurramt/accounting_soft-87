@@ -124,14 +124,66 @@ const NewCustomer = () => {
     ));
   };
 
-  const handleSave = () => {
-    console.log("Saving customer:", customerData);
-    // Add save logic here
+  const handleSave = async () => {
+    if (!currentCompany) {
+      setError("No company selected");
+      return;
+    }
+
+    // Validate required fields
+    if (!customerData.customerName.trim()) {
+      setError("Customer name is required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Map form data to API format
+      const apiData = {
+        customer_name: customerData.customerName,
+        company_name: customerData.companyName,
+        first_name: customerData.firstName,
+        middle_name: customerData.middleName,
+        last_name: customerData.lastName,
+        email: customerData.email,
+        phone: customerData.phoneNumber,
+        fax: customerData.faxNumber,
+        website: customerData.website,
+        address_line1: customerData.addressLine1,
+        address_line2: customerData.addressLine2,
+        city: customerData.city,
+        state: customerData.state,
+        zip_code: customerData.zipCode,
+        country: customerData.country,
+        customer_type: customerData.customerType,
+        payment_terms: customerData.terms,
+        preferred_contact_method: customerData.preferredContactMethod,
+        resale_number: customerData.resaleNumber,
+        account_number: customerData.accountNumber,
+        credit_limit: customerData.creditLimit ? parseFloat(customerData.creditLimit) : null,
+        preferred_delivery_method: customerData.preferredDeliveryMethod,
+        preferred_payment_method: customerData.preferredPaymentMethod,
+        is_active: true,
+        // Add any additional fields as needed
+        notes: customerData.jobDescription || null
+      };
+
+      const response = await customerService.createCustomer(currentCompany.company_id, apiData);
+      
+      // Success - navigate back to customer center
+      navigate("/customers");
+    } catch (err) {
+      console.error("Error creating customer:", err);
+      setError(err.response?.data?.detail || err.message || "Failed to create customer");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
-    console.log("Cancelling customer creation");
-    // Add cancel logic here
+    navigate("/customers");
   };
 
   return (
