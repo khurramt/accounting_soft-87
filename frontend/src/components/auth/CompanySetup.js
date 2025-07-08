@@ -20,6 +20,8 @@ import {
 
 const CompanySetup = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [companyData, setCompanyData] = useState({
     // Step 1: Company Information
     companyName: "",
@@ -50,7 +52,7 @@ const CompanySetup = () => {
   });
 
   const navigate = useNavigate();
-  const { addCompany } = useCompany();
+  const { createCompany } = useCompany();
 
   const totalSteps = 4;
   const progress = (currentStep / totalSteps) * 100;
@@ -74,20 +76,45 @@ const CompanySetup = () => {
     }
   };
 
-  const handleFinish = () => {
-    const newCompany = {
-      id: Date.now().toString(),
-      name: companyData.companyName,
-      legalName: companyData.legalName,
-      industry: companyData.industry,
-      lastAccessed: new Date().toISOString(),
-      fileSize: "0.1 MB",
-      ...companyData
-    };
-    
-    addCompany(newCompany);
-    console.log("Company setup completed:", newCompany);
-    navigate("/dashboard");
+  const handleFinish = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Prepare company data for API
+      const newCompanyData = {
+        name: companyData.companyName,
+        legal_name: companyData.legalName,
+        industry: companyData.industry,
+        business_type: companyData.businessType,
+        company_size: companyData.companySize,
+        address: companyData.address,
+        city: companyData.city,
+        state: companyData.state,
+        zip_code: companyData.zipCode,
+        phone: companyData.phone,
+        email: companyData.email,
+        website: companyData.website,
+        tax_id: companyData.taxId,
+        fiscal_year_start: companyData.fiscalYearStart,
+        account_template: companyData.accountTemplate,
+        settings: {
+          import_customers: companyData.importCustomers,
+          import_vendors: companyData.importVendors,
+          import_items: companyData.importItems,
+          import_employees: companyData.importEmployees
+        }
+      };
+      
+      const newCompany = await createCompany(newCompanyData);
+      console.log("Company setup completed:", newCompany);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Error creating company:", err);
+      setError(err.message || "Failed to create company. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isStepValid = () => {
