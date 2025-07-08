@@ -1,0 +1,11 @@
+  - task: "Transaction Engine Module Implementation"
+    implemented: true
+    working: false
+    file: "/app/backend/api/transactions.py, /app/backend/api/invoices.py, /app/backend/api/bills.py, /app/backend/api/payments.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "Tested the Transaction Engine Module and found critical issues. The invoice and bill creation endpoints are returning 500 Internal Server Error. The error in the logs shows 'TransactionLineCreate' object has no attribute 'get', which suggests there's a bug in the transaction service where it's trying to use the .get() method on a Pydantic model, but Pydantic models don't have this method. This affects all transaction creation functionality including invoices, bills, and payments. The GET endpoints for transactions, invoices, and bills are working correctly, but without the ability to create transactions, the core functionality is broken."
