@@ -40,6 +40,7 @@ class AuditSecurityTester:
         self.company_id = None
         self.user_id = None
         self.session = requests.Session()
+        self.session.verify = False  # Disable SSL verification for testing
         self.test_results = []
         self.total_tests = 0
         self.passed_tests = 0
