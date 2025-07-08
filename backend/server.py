@@ -119,6 +119,9 @@ async def root(request: Request):
 # Include authentication routes
 api_router.include_router(auth_router)
 
+# Include company management routes
+api_router.include_router(companies_router)
+
 # Include the API router in the main app
 app.include_router(api_router)
 
