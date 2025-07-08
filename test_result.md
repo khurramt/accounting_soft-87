@@ -558,15 +558,18 @@
 
   - task: "Audit & Security Module Implementation"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/api/audit.py, /app/backend/api/security.py, /app/backend/services/audit_service.py, /app/backend/services/security_service.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: true
     status_history:
         - working: true
           agent: "main"
           comment: "🎉 AUDIT & SECURITY MODULE BACKEND COMPLETE! Successfully implemented comprehensive audit and security system with all requested features: ✅ Database Models (audit_logs, security_logs, roles, user_permissions, security_settings with proper relationships and indexing) ✅ Pydantic Schemas (complete validation schemas for all audit and security operations) ✅ Core Services (AuditService for change tracking, SecurityService for access control and threat detection) ✅ API Endpoints (35+ endpoints for audit logs, security logs, roles, permissions, settings) ✅ Audit Logging (before/after value tracking, field-level changes, compliance reporting) ✅ Security Monitoring (event logging, risk assessment, suspicious activity detection) ✅ Role-based Access Control (system roles, custom roles, granular permissions) ✅ Threat Detection (repeated login attempts, unusual access patterns, IP tracking) ✅ Migration Scripts (complete database setup with demo data) ✅ Default System Roles (System Administrator, Security Administrator, Compliance Officer) All components integrated with existing authentication, company management, and user systems. Database tables created with proper indexes for performance. Ready for comprehensive backend testing."
+        - working: false
+          agent: "testing"
+          comment: "Comprehensive testing of the Audit & Security Module revealed several issues: 1) Audit Logs API - The GET /api/companies/{company_id}/audit/logs endpoint works but returns empty results. Other audit log endpoints return 500 Internal Server Error due to a case mismatch in the AuditAction enum ('create' vs 'CREATE'). 2) Security Logs API - Returns 403 Forbidden due to insufficient permissions. 3) Role Management - Returns 403 Forbidden due to insufficient permissions. 4) User Permissions - Returns 403 Forbidden for GET and 422 Unprocessable Entity for PUT due to missing required fields. 5) Security Settings - Returns 501 Not Implemented, indicating these endpoints haven't been fully implemented yet. The authentication and basic company access are working correctly, but most of the audit and security functionality is either not working or not accessible due to permission issues."
 
   - task: "Banking Integration Module Implementation"
     implemented: true
