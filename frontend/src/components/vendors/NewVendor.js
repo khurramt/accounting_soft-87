@@ -7,7 +7,7 @@ import { Label } from "../ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Textarea } from "../ui/textarea";
-import { CompanyContext } from "../../contexts/CompanyContext";
+import { useCompany } from "../../contexts/CompanyContext";
 import vendorService from "../../services/vendorService";
 import { 
   Building,
