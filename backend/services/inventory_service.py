@@ -394,11 +394,13 @@ class InventoryAdjustmentService(BaseInventoryService):
         company_id: str,
         filters: AdjustmentSearchFilters
     ) -> Tuple[List[InventoryAdjustment], int]:
-        """Get inventory adjustments with filtering"""
+        """Get inventory adjustments with filtering and pagination"""
         
-        query = select(InventoryAdjustment).where(
-            InventoryAdjustment.company_id == company_id
-        )
+        query = select(InventoryAdjustment).options(
+            joinedload(InventoryAdjustment.item),
+            joinedload(InventoryAdjustment.location),
+            joinedload(InventoryAdjustment.created_by_user)
+        ).where(InventoryAdjustment.company_id == company_id)
         
         # Apply filters
         if filters.item_id:
@@ -415,11 +417,12 @@ class InventoryAdjustmentService(BaseInventoryService):
         
         if filters.search:
             search_term = f"%{filters.search}%"
-            query = query.where(
+            query = query.join(Item).where(
                 or_(
+                    Item.item_name.ilike(search_term),
+                    Item.item_number.ilike(search_term),
                     InventoryAdjustment.reference_number.ilike(search_term),
-                    InventoryAdjustment.memo.ilike(search_term),
-                    InventoryAdjustment.reason_code.ilike(search_term)
+                    InventoryAdjustment.memo.ilike(search_term)
                 )
             )
         
@@ -446,6 +449,61 @@ class InventoryAdjustmentService(BaseInventoryService):
         adjustments = result.scalars().all()
         
         return adjustments, total
+    
+    @staticmethod
+    async def get_adjustment_by_id(
+        db: AsyncSession,
+        company_id: str,
+        adjustment_id: str
+    ) -> Optional[InventoryAdjustment]:
+        """Get adjustment by ID"""
+        
+        result = await db.execute(
+            select(InventoryAdjustment).options(
+                joinedload(InventoryAdjustment.item),
+                joinedload(InventoryAdjustment.location),
+                joinedload(InventoryAdjustment.created_by_user),
+                joinedload(InventoryAdjustment.approved_by_user)
+            ).where(
+                and_(
+                    InventoryAdjustment.adjustment_id == adjustment_id,
+                    InventoryAdjustment.company_id == company_id
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+    
+    @staticmethod
+    async def update_adjustment(
+        db: AsyncSession,
+        company_id: str,
+        adjustment_id: str,
+        adjustment_data: InventoryAdjustmentUpdate
+    ) -> Optional[InventoryAdjustment]:
+        """Update an inventory adjustment"""
+        
+        result = await db.execute(
+            select(InventoryAdjustment).where(
+                and_(
+                    InventoryAdjustment.adjustment_id == adjustment_id,
+                    InventoryAdjustment.company_id == company_id
+                )
+            )
+        )
+        adjustment = result.scalar_one_or_none()
+        
+        if not adjustment:
+            return None
+        
+        # Update fields
+        for field, value in adjustment_data.dict(exclude_unset=True).items():
+            setattr(adjustment, field, value)
+        
+        await db.commit()
+        await db.refresh(adjustment)
+        
+        logger.info("Inventory adjustment updated", 
+                   adjustment_id=adjustment_id)
 
 class PurchaseOrderService(BaseInventoryService):
     """Service for purchase order operations"""
