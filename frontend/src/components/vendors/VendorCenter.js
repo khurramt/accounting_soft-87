@@ -7,7 +7,7 @@ import { Badge } from "../ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { CompanyContext } from "../../contexts/CompanyContext";
+import { useCompany } from "../../contexts/CompanyContext";
 import vendorService from "../../services/vendorService";
 import { 
   Search, 
