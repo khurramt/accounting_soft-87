@@ -11,7 +11,8 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 
 # Add the backend directory to Python path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(backend_dir))
 
 from database.connection import SessionLocal, engine
 from models.payroll import (
