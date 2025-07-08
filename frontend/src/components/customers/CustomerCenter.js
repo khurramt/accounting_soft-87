@@ -238,7 +238,7 @@ const CustomerCenter = () => {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Customers</span>
-              <Badge variant="secondary">{filteredCustomers.length}</Badge>
+              <Badge variant="secondary">{customers.length}</Badge>
             </CardTitle>
             <div className="space-y-2">
               <div className="relative">
