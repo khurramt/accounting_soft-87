@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCompany } from "../../contexts/CompanyContext";
+import customerService from "../../services/customerService";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
@@ -17,7 +20,9 @@ import {
   Save,
   X,
   Plus,
-  Trash2
+  Trash2,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 
 const NewCustomer = () => {
