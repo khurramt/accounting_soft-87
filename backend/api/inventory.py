@@ -144,9 +144,10 @@ async def get_low_stock_items(
                 detail="Access denied to this company"
             )
         
-        # This would be implemented in the service
-        # For now, return empty list
-        return []
+        low_stock_items = await InventoryService.get_low_stock_items(
+            db, company_id, location_id
+        )
+        return low_stock_items
         
     except HTTPException:
         raise
