@@ -79,7 +79,7 @@ class CompanySettingResponse(BaseModel):
     updated_at: Optional[datetime] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class CompanySettingsUpdate(BaseModel):
     settings: List[CompanySettingRequest] = Field(...)
