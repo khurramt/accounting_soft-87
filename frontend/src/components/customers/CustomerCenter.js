@@ -26,21 +26,122 @@ import {
 } from "lucide-react";
 
 const CustomerCenter = () => {
-  const [selectedCustomer, setSelectedCustomer] = useState(mockCustomers[0]);
+  const { currentCompany } = useCompany();
+  const [customers, setCustomers] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerTransactions, setCustomerTransactions] = useState([]);
+  const [customerBalance, setCustomerBalance] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    page_size: 20,
+    total: 0,
+    total_pages: 0
+  });
   const navigate = useNavigate();
 
-  const filteredCustomers = mockCustomers.filter(customer => {
-    const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         customer.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "all" || customer.status.toLowerCase() === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+  // Load customers from API
+  const loadCustomers = async (filters = {}) => {
+    if (!currentCompany) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const filterParams = {
+        search: searchTerm,
+        is_active: filterStatus === "all" ? undefined : filterStatus === "active",
+        page: pagination.page,
+        page_size: pagination.page_size,
+        sort_by: "customer_name",
+        sort_order: "asc",
+        ...filters
+      };
 
-  const customerTransactions = mockTransactions.filter(
-    transaction => transaction.customer === selectedCustomer?.name
-  );
+      const response = await customerService.getCustomers(currentCompany.company_id, filterParams);
+      
+      setCustomers(response.items || []);
+      setPagination({
+        page: response.page || 1,
+        page_size: response.page_size || 20,
+        total: response.total || 0,
+        total_pages: response.total_pages || 0
+      });
+
+      // Set first customer as selected if none selected
+      if (!selectedCustomer && response.items && response.items.length > 0) {
+        setSelectedCustomer(response.items[0]);
+      }
+    } catch (err) {
+      console.error("Error loading customers:", err);
+      setError(err.message || "Failed to load customers");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load customer transactions
+  const loadCustomerTransactions = async (customerId) => {
+    if (!currentCompany || !customerId) return;
+    
+    try {
+      setLoadingTransactions(true);
+      const response = await customerService.getCustomerTransactions(currentCompany.company_id, customerId);
+      setCustomerTransactions(response.transactions || []);
+    } catch (err) {
+      console.error("Error loading customer transactions:", err);
+      setCustomerTransactions([]);
+    } finally {
+      setLoadingTransactions(false);
+    }
+  };
+
+  // Load customer balance
+  const loadCustomerBalance = async (customerId) => {
+    if (!currentCompany || !customerId) return;
+    
+    try {
+      const response = await customerService.getCustomerBalance(currentCompany.company_id, customerId);
+      setCustomerBalance(response.balance || 0);
+    } catch (err) {
+      console.error("Error loading customer balance:", err);
+      setCustomerBalance(0);
+    }
+  };
+
+  // Load data on component mount and when company changes
+  useEffect(() => {
+    if (currentCompany) {
+      loadCustomers();
+    }
+  }, [currentCompany]);
+
+  // Load data when search or filter changes
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      if (currentCompany) {
+        loadCustomers();
+      }
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm, filterStatus]);
+
+  // Load customer transactions when selected customer changes
+  useEffect(() => {
+    if (selectedCustomer) {
+      loadCustomerTransactions(selectedCustomer.customer_id);
+      loadCustomerBalance(selectedCustomer.customer_id);
+    }
+  }, [selectedCustomer]);
+
+  const handleCustomerSelect = (customer) => {
+    setSelectedCustomer(customer);
+  };
 
   const handleNewCustomer = () => {
     navigate("/customers/new");
@@ -55,6 +156,51 @@ const CustomerCenter = () => {
     };
     navigate(paths[type]);
   };
+
+  const handleEditCustomer = () => {
+    if (selectedCustomer) {
+      navigate(`/customers/${selectedCustomer.customer_id}/edit`);
+    }
+  };
+
+  const handleDeleteCustomer = async () => {
+    if (!selectedCustomer || !currentCompany) return;
+    
+    if (window.confirm(`Are you sure you want to delete ${selectedCustomer.customer_name}?`)) {
+      try {
+        await customerService.deleteCustomer(currentCompany.company_id, selectedCustomer.customer_id);
+        await loadCustomers(); // Reload customers list
+        setSelectedCustomer(customers.length > 1 ? customers[0] : null);
+      } catch (err) {
+        console.error("Error deleting customer:", err);
+        alert("Failed to delete customer");
+      }
+    }
+  };
+
+  // Display loading state
+  if (loading && customers.length === 0) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <span className="ml-2 text-gray-600">Loading customers...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Display error state
+  if (error && customers.length === 0) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <AlertCircle className="w-8 h-8 text-red-600" />
+          <span className="ml-2 text-red-600">Error: {error}</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
