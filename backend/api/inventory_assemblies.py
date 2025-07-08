@@ -94,11 +94,17 @@ async def update_assembly(
                 detail="Access denied to this company"
             )
         
-        # Implementation needed in service
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Assembly not found"
+        updated_assembly = await InventoryAssemblyService.update_assembly(
+            db, company_id, assembly_id, assembly_data
         )
+        
+        if not updated_assembly:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Assembly not found"
+            )
+        
+        return InventoryAssemblyResponse.from_orm(updated_assembly)
         
     except HTTPException:
         raise
