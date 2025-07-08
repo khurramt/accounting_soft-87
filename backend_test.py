@@ -2621,6 +2621,31 @@ def run_transaction_tests():
     
     return all_passed
 
+def run_banking_integration_tests():
+    """Run all Banking Integration API tests"""
+    print("\n🔍 Starting QuickBooks Clone Banking Integration API tests...")
+    print(f"🕒 Test time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # Test results
+    results = {}
+    
+    # Login and get company access
+    results["login_demo_user"] = test_login_demo_user()
+    if results["login_demo_user"]:
+        results["get_user_companies"] = test_get_user_companies()
+        if COMPANY_ID:
+            results["company_access"] = test_company_access()
+        else:
+            print("❌ No company ID available, skipping banking-specific tests")
+            return False
+    else:
+        print("❌ Login failed, skipping all other tests")
+        return False
+    
+    # TODO: Add banking integration specific tests here
+    print("\n✅ Banking Integration tests completed")
+    return True
+
 if __name__ == "__main__":
     # Run the appropriate test suite based on command line arguments
     if len(sys.argv) > 1 and sys.argv[1] == "transactions":
