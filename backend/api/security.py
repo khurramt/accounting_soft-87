@@ -452,12 +452,9 @@ async def update_user_permissions(
                 detail="Insufficient permissions to update user permissions"
             )
         
-        # Update user permissions (implementation would need to be added to SecurityService)
-        # For now, return a placeholder response
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Update user permissions not implemented yet"
-        )
+        # Update user permissions
+        updated_permissions = await security_service.update_user_permissions(company_id, user_id, permissions, current_user.user_id)
+        return updated_permissions
         
     except HTTPException:
         raise
