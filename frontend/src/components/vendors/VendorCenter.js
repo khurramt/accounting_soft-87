@@ -102,11 +102,11 @@ const VendorCenter = () => {
   };
 
   const handleDeleteVendor = async (vendorId) => {
-    if (!selectedCompany) return;
+    if (!currentCompany) return;
     
     if (window.confirm('Are you sure you want to delete this vendor?')) {
       try {
-        await vendorService.deleteVendor(selectedCompany.company_id, vendorId);
+        await vendorService.deleteVendor(currentCompany.company_id, vendorId);
         fetchVendors();
         
         // If deleted vendor was selected, clear selection
