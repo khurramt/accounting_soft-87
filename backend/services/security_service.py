@@ -454,7 +454,8 @@ class SecurityService:
                 "transactions": ["read", "write"],
                 "reports": ["read", "write", "export"],
                 "settings": ["read"],
-                "audit": ["read"]
+                "audit": ["read"],
+                "security": ["read"]
             },
             UserRole.ACCOUNTANT: {
                 "transactions": ["read", "write"],
