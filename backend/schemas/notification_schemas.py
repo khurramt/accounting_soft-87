@@ -222,7 +222,7 @@ class WebhookSubscriptionUpdate(BaseModel):
     is_active: Optional[bool] = None
     timeout_seconds: Optional[int] = Field(None, ge=1, le=300)
     headers: Optional[Dict[str, str]] = None
-    auth_type: Optional[str] = Field(None, regex="^(none|basic|bearer|api_key)$")
+    auth_type: Optional[str] = Field(None, pattern="^(none|basic|bearer|api_key)$")
     auth_config: Optional[Dict[str, Any]] = None
 
     @field_validator('webhook_url')
