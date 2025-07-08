@@ -401,6 +401,24 @@ class AuthService:
         await self.logout_all_sessions(db, str(user.user_id))
         
         logger.info("Password reset completed", user_id=str(user.user_id))
+    
+    async def check_company_access(self, user_id: str, company_id: str, db: AsyncSession) -> bool:
+        """Check if user has access to a specific company"""
+        try:
+            result = await db.execute(
+                select(CompanyMembership).where(
+                    and_(
+                        CompanyMembership.user_id == user_id,
+                        CompanyMembership.company_id == company_id,
+                        CompanyMembership.is_active == True
+                    )
+                )
+            )
+            membership = result.scalar_one_or_none()
+            return membership is not None
+        except Exception as e:
+            logger.error("Failed to check company access", error=str(e))
+            return False
 
 # Global auth service instance
 auth_service = AuthService()
