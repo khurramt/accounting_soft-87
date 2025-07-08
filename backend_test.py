@@ -3146,10 +3146,12 @@ if __name__ == "__main__":
             success = run_transaction_tests()
         elif sys.argv[1] == "banking":
             success = run_banking_integration_tests()
+        elif sys.argv[1] == "companies":
+            success = run_company_management_tests()
         else:
             print(f"Unknown test suite: {sys.argv[1]}")
-            print("Available test suites: transactions, banking")
-            print("Usage: python backend_test.py [transactions|banking]")
+            print("Available test suites: transactions, banking, companies")
+            print("Usage: python backend_test.py [transactions|banking|companies]")
             print("If no argument is provided, list_management_tests will run by default")
             success = False
     else:
