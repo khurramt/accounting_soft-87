@@ -30,7 +30,7 @@ print(f"Using API URL: {API_URL}")
 TIMEOUT = 10  # seconds
 
 # Use the access token from the curl command
-ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZjZjYzM1NjctMzk1My00NDQzLWE2Y2MtYzk3MGFlYjFlNTljIiwic2Vzc2lvbl9pZCI6IjgxNjFlZTNhLTAxMjMtNDY1MC04NTcxLTI3MzliNGEzNmU1YyIsImV4cCI6MTc1MjAwNTIxNCwiaWF0IjoxNzUyMDA0MzE0LCJ0eXBlIjoiYWNjZXNzIn0.TgoZhI4qxyNaQ4eZl74c0E5noburYCKTT5Fcey9SF2M"
+ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZjZjYzM1NjctMzk1My00NDQzLWE2Y2MtYzk3MGFlYjFlNTljIiwic2Vzc2lvbl9pZCI6IjA1NTk0ZGJjLTQ3NDQtNDU5Ny1iZDMyLTJlM2FhMTdlMGRhZSIsImV4cCI6MTc1MjAwNTM0OSwiaWF0IjoxNzUyMDA0NDQ5LCJ0eXBlIjoiYWNjZXNzIn0.lYlvezHO96epeifrGcZOfVvlcKlA2sBQk_0bLJg-FvM"
 
 # Custom JSON encoder to handle decimal values
 class DecimalEncoder(json.JSONEncoder):
