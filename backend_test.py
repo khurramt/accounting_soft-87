@@ -106,7 +106,13 @@ def test_login_demo_user():
             "remember_me": False
         }
         
-        response = requests.post(f"{API_URL}/auth/login", json=payload, timeout=TIMEOUT)
+        # Use requests with verify=False to bypass SSL verification
+        response = requests.post(
+            f"{API_URL}/auth/login", 
+            json=payload, 
+            timeout=TIMEOUT,
+            verify=False  # Disable SSL verification
+        )
         print(f"Status Code: {response.status_code}")
         
         try:
