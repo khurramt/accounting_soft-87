@@ -2625,10 +2625,10 @@ if __name__ == "__main__":
     # Run the appropriate test suite based on command line arguments
     if len(sys.argv) > 1 and sys.argv[1] == "transactions":
         success = run_transaction_tests()
-    elif len(sys.argv) > 1 and sys.argv[1] == "transaction_engine":
-        success = run_transaction_engine_tests()
     else:
         success = run_list_management_tests()
+    
+    sys.exit(0 if success else 1)
     
     sys.exit(0 if success else 1)
 # ===== TRANSACTION ENGINE TESTS =====
