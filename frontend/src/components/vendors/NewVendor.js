@@ -28,31 +28,95 @@ import {
 
 const NewVendor = () => {
   const [vendorData, setVendorData] = useState({
-    // Address Info
-    vendorName: "",
-    companyName: "",
-    salutation: "",
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    contact: "",
-    phoneNumber: "",
-    faxNumber: "",
+    // Basic Info
+    vendor_name: "",
+    company_name: "",
+    first_name: "",
+    middle_name: "",
+    last_name: "",
+    phone: "",
+    fax: "",
     email: "",
     website: "",
-    addressLine1: "",
-    addressLine2: "",
+    
+    // Address Info
+    address: "",
+    address_line_2: "",
     city: "",
     state: "",
-    zipCode: "",
+    zip_code: "",
     country: "United States",
     
     // Additional Info
-    accountNumber: "",
-    vendorType: "",
-    terms: "Net 30",
-    creditLimit: "",
-    printOnCheckAs: "",
+    account_number: "",
+    vendor_type: "",
+    payment_terms: "Net 30",
+    credit_limit: "",
+    print_on_check_as: "",
+    
+    // Tax & 1099 Info
+    tax_id: "",
+    eligible_1099: false,
+    
+    // Status
+    is_active: true,
+    
+    // Notes
+    notes: ""
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { selectedCompany } = useContext(CompanyContext);
+
+  const handleInputChange = (field, value) => {
+    setVendorData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedCompany) {
+      setError('No company selected');
+      return;
+    }
+
+    if (!vendorData.vendor_name.trim()) {
+      setError('Vendor name is required');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Prepare data for backend
+      const vendorPayload = {
+        ...vendorData,
+        // Convert string values to appropriate types
+        credit_limit: vendorData.credit_limit ? parseFloat(vendorData.credit_limit) : null,
+        eligible_1099: Boolean(vendorData.eligible_1099),
+        is_active: Boolean(vendorData.is_active)
+      };
+
+      await vendorService.createVendor(selectedCompany.company_id, vendorPayload);
+      
+      // Navigate back to vendor center
+      navigate('/vendors');
+    } catch (err) {
+      setError(err.response?.data?.detail || err.message || 'Failed to create vendor');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate('/vendors');
+  };
     
     // Payment Settings
     accountNumber: "",
