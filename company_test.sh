@@ -15,7 +15,7 @@ echo "🕒 Test time: $(date +'%Y-%m-%d %H:%M:%S')"
 
 # Test 1: List companies
 echo -e "\n🔍 Testing GET /api/companies - List companies..."
-LIST_RESPONSE=$(curl -k -s -H "Authorization: Bearer $TOKEN" $API_URL/companies/)
+LIST_RESPONSE=$(wget --no-check-certificate -qO- --header="Authorization: Bearer $TOKEN" $API_URL/companies/)
 echo "Response: $LIST_RESPONSE"
 if [[ $LIST_RESPONSE == \[* ]]; then
     echo "✅ List companies test passed"
