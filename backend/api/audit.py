@@ -123,15 +123,13 @@ async def get_audit_log(
     request: Request,
     company_id: str,
     audit_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get a specific audit log by ID
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -174,15 +172,13 @@ async def get_transaction_audit_logs(
     request: Request,
     company_id: str,
     transaction_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get audit logs for a specific transaction
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -219,15 +215,13 @@ async def get_user_audit_logs(
     request: Request,
     company_id: str,
     user_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get audit logs for a specific user
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -264,15 +258,13 @@ async def generate_audit_report(
     request: Request,
     company_id: str,
     report_request: AuditReportRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Generate audit report in various formats
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
@@ -340,15 +332,13 @@ async def get_audit_summary(
     request: Request,
     company_id: str,
     days: int = Query(30, ge=1, le=365, description="Number of days for summary"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get audit summary statistics
     """
     try:
-        # Get current user from token
-        current_user = await auth_service.get_current_user_from_request(request, db)
-        
         # Check if user has access to this company
         if not await auth_service.check_company_access(current_user.user_id, company_id, db):
             raise HTTPException(
