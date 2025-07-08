@@ -36,7 +36,7 @@ const VendorCenter = () => {
   const [vendorTransactions, setVendorTransactions] = useState([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const navigate = useNavigate();
-  const { selectedCompany } = useContext(CompanyContext);
+  const { currentCompany } = useCompany();
 
   // Fetch vendors from backend
   useEffect(() => {
