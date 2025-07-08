@@ -52,7 +52,7 @@ apiClient.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('qb_refresh_token');
         if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}/api/auth/refresh-token`, {
+          const response = await axios.post(`${SECURE_API_BASE_URL}/api/auth/refresh-token`, {
             refresh_token: refreshToken,
           });
 
