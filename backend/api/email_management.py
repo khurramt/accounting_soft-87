@@ -262,7 +262,32 @@ async def send_email(
         email = await EmailService.send_email(
             db, company_id, email_data
         )
-        return EmailQueueResponse.from_orm(email)
+        
+        # Manually construct response to avoid MissingGreenlet error
+        return EmailQueueResponse(
+            email_id=email.email_id,
+            company_id=email.company_id,
+            template_id=email.template_id,
+            to_email=email.to_email,
+            cc_email=email.cc_email,
+            bcc_email=email.bcc_email,
+            subject=email.subject,
+            body=email.body,
+            attachments=email.attachments,
+            priority=email.priority,
+            status=email.status,
+            attempts=email.attempts,
+            max_attempts=email.max_attempts,
+            last_error=email.last_error,
+            scheduled_at=email.scheduled_at,
+            sent_at=email.sent_at,
+            opened_at=email.opened_at,
+            clicked_at=email.clicked_at,
+            bounced_at=email.bounced_at,
+            delivered_at=email.delivered_at,
+            created_at=email.created_at,
+            updated_at=getattr(email, 'updated_at', None)
+        )
         
     except ValueError as e:
         raise HTTPException(
