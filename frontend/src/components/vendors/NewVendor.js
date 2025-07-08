@@ -96,7 +96,7 @@ const NewVendor = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!selectedCompany) {
+    if (!currentCompany) {
       setError('No company selected');
       return;
     }
@@ -119,7 +119,7 @@ const NewVendor = () => {
         is_active: Boolean(vendorData.is_active)
       };
 
-      await vendorService.createVendor(selectedCompany.company_id, vendorPayload);
+      await vendorService.createVendor(currentCompany.company_id, vendorPayload);
       
       // Navigate back to vendor center
       navigate('/vendors');
