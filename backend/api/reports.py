@@ -188,7 +188,7 @@ async def customize_report(
     
     return ReportDefinitionResponse.from_orm(customized_report)
 
-@router.put("/reports/{report_id}/filters")
+@router.put("/reports/definition/{report_id}/filters")
 async def update_report_filters(
     company_id: str,
     report_id: str,
