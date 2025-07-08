@@ -2605,7 +2605,589 @@ if __name__ == "__main__":
     # Run the appropriate test suite based on command line arguments
     if len(sys.argv) > 1 and sys.argv[1] == "transactions":
         success = run_transaction_tests()
+    elif len(sys.argv) > 1 and sys.argv[1] == "transaction_engine":
+        success = run_transaction_engine_tests()
     else:
         success = run_list_management_tests()
     
     sys.exit(0 if success else 1)
+# ===== TRANSACTION ENGINE TESTS =====
+
+def test_create_invoice():
+    """Test creating an invoice"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create invoice test skipped: No access token or company ID available")
+        return False, None
+    
+    try:
+        print("\n🔍 Testing create invoice...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Generate a unique reference number
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        # First, create a customer if needed
+        customer_result, customer_id = test_create_customer()
+        if not customer_result or not customer_id:
+            print("❌ Create invoice test skipped: Failed to create test customer")
+            return False, None
+        
+        # Create an invoice with line items
+        payload = {
+            "transaction_date": datetime.now().date().isoformat(),
+            "due_date": (datetime.now().date() + timedelta(days=30)).isoformat(),
+            "customer_id": customer_id,
+            "reference_number": f"REF-INV-{timestamp}",
+            "memo": "Test invoice created via API",
+            "lines": [
+                {
+                    "line_number": 1,
+                    "line_type": "item",
+                    "description": "Test Product 1",
+                    "quantity": 2,
+                    "unit_price": 100.00,
+                    "discount_amount": 10.00,
+                    "tax_amount": 15.00
+                },
+                {
+                    "line_number": 2,
+                    "line_type": "item",
+                    "description": "Test Service 1",
+                    "quantity": 5,
+                    "unit_price": 50.00,
+                    "discount_amount": 5.00,
+                    "tax_amount": 20.00
+                }
+            ]
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/invoices/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "transaction_id" in data:
+                invoice_id = data["transaction_id"]
+                
+                # Verify the calculated totals
+                subtotal = data.get("subtotal")
+                tax_amount = data.get("tax_amount")
+                total_amount = data.get("total_amount")
+                
+                print(f"Invoice created with ID: {invoice_id}")
+                print(f"Subtotal: {subtotal}")
+                print(f"Tax Amount: {tax_amount}")
+                print(f"Total Amount: {total_amount}")
+                
+                # Expected calculations:
+                # Line 1: (2 * 100) - 10 + 15 = 205
+                # Line 2: (5 * 50) - 5 + 20 = 265
+                # Subtotal: (2 * 100) + (5 * 50) - 10 - 5 = 435
+                # Tax Amount: 15 + 20 = 35
+                # Total Amount: 435 + 35 = 470
+                
+                expected_subtotal = 435.0
+                expected_tax = 35.0
+                expected_total = 470.0
+                
+                if (abs(float(subtotal) - expected_subtotal) < 0.01 and 
+                    abs(float(tax_amount) - expected_tax) < 0.01 and 
+                    abs(float(total_amount) - expected_total) < 0.01):
+                    print("✅ Invoice calculations are correct")
+                else:
+                    print(f"❌ Invoice calculations are incorrect. Expected: Subtotal={expected_subtotal}, Tax={expected_tax}, Total={expected_total}")
+                
+                print(f"✅ Create invoice test passed (ID: {invoice_id})")
+                return True, invoice_id
+            else:
+                print(f"❌ Create invoice test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create invoice test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create invoice test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create invoice test failed: {str(e)}")
+        return False, None
+
+def test_create_bill():
+    """Test creating a bill"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create bill test skipped: No access token or company ID available")
+        return False, None
+    
+    try:
+        print("\n🔍 Testing create bill...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Generate a unique reference number
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        # First, create a vendor if needed
+        vendor_result, vendor_id = test_create_vendor()
+        if not vendor_result or not vendor_id:
+            print("❌ Create bill test skipped: Failed to create test vendor")
+            return False, None
+        
+        # Create a bill with line items
+        payload = {
+            "transaction_date": datetime.now().date().isoformat(),
+            "due_date": (datetime.now().date() + timedelta(days=30)).isoformat(),
+            "vendor_id": vendor_id,
+            "reference_number": f"REF-BILL-{timestamp}",
+            "memo": "Test bill created via API",
+            "lines": [
+                {
+                    "line_number": 1,
+                    "line_type": "item",
+                    "description": "Office Supplies",
+                    "quantity": 3,
+                    "unit_price": 75.00,
+                    "discount_amount": 15.00,
+                    "tax_amount": 12.00
+                },
+                {
+                    "line_number": 2,
+                    "line_type": "item",
+                    "description": "Consulting Services",
+                    "quantity": 10,
+                    "unit_price": 120.00,
+                    "discount_amount": 50.00,
+                    "tax_amount": 80.00
+                }
+            ]
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/bills/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "transaction_id" in data:
+                bill_id = data["transaction_id"]
+                
+                # Verify the calculated totals
+                subtotal = data.get("subtotal")
+                tax_amount = data.get("tax_amount")
+                total_amount = data.get("total_amount")
+                
+                print(f"Bill created with ID: {bill_id}")
+                print(f"Subtotal: {subtotal}")
+                print(f"Tax Amount: {tax_amount}")
+                print(f"Total Amount: {total_amount}")
+                
+                # Expected calculations:
+                # Line 1: (3 * 75) - 15 + 12 = 222
+                # Line 2: (10 * 120) - 50 + 80 = 1230
+                # Subtotal: (3 * 75) + (10 * 120) - 15 - 50 = 1160
+                # Tax Amount: 12 + 80 = 92
+                # Total Amount: 1160 + 92 = 1252
+                
+                expected_subtotal = 1160.0
+                expected_tax = 92.0
+                expected_total = 1252.0
+                
+                if (abs(float(subtotal) - expected_subtotal) < 0.01 and 
+                    abs(float(tax_amount) - expected_tax) < 0.01 and 
+                    abs(float(total_amount) - expected_total) < 0.01):
+                    print("✅ Bill calculations are correct")
+                else:
+                    print(f"❌ Bill calculations are incorrect. Expected: Subtotal={expected_subtotal}, Tax={expected_tax}, Total={expected_total}")
+                
+                print(f"✅ Create bill test passed (ID: {bill_id})")
+                return True, bill_id
+            else:
+                print(f"❌ Create bill test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create bill test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create bill test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create bill test failed: {str(e)}")
+        return False, None
+
+def test_create_payment():
+    """Test creating a payment"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create payment test skipped: No access token or company ID available")
+        return False, None
+    
+    try:
+        print("\n🔍 Testing create payment...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Generate a unique reference number
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        # First, create a customer and an invoice
+        invoice_result, invoice_id = test_create_invoice()
+        if not invoice_result or not invoice_id:
+            print("❌ Create payment test skipped: Failed to create test invoice")
+            return False, None
+        
+        # Create an account for deposit
+        account_result, account_id = test_create_account()
+        if not account_result or not account_id:
+            print("❌ Create payment test skipped: Failed to create test account")
+            return False, None
+        
+        # Create a payment
+        payload = {
+            "payment_date": datetime.now().date().isoformat(),
+            "payment_type": "check",
+            "payment_method": "Check #12345",
+            "reference_number": f"REF-PMT-{timestamp}",
+            "customer_id": invoice_id,  # Using invoice_id as customer_id for simplicity
+            "amount_received": 250.00,
+            "deposit_to_account_id": account_id,
+            "memo": "Test payment created via API",
+            "applications": [
+                {
+                    "transaction_id": invoice_id,
+                    "amount_applied": 250.00,
+                    "discount_taken": 0.00
+                }
+            ]
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/payments/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "payment_id" in data:
+                payment_id = data["payment_id"]
+                print(f"✅ Create payment test passed (ID: {payment_id})")
+                return True, payment_id
+            else:
+                print(f"❌ Create payment test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create payment test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create payment test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create payment test failed: {str(e)}")
+        return False, None
+
+def test_create_transaction():
+    """Test creating a general transaction"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create transaction test skipped: No access token or company ID available")
+        return False, None
+    
+    try:
+        print("\n🔍 Testing create general transaction...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Generate a unique reference number
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        # Create a general transaction
+        payload = {
+            "transaction_type": "journal_entry",
+            "transaction_date": datetime.now().date().isoformat(),
+            "reference_number": f"REF-JE-{timestamp}",
+            "memo": "Test journal entry created via API",
+            "lines": [
+                {
+                    "line_number": 1,
+                    "line_type": "account",
+                    "description": "Debit Entry",
+                    "quantity": 1,
+                    "unit_price": 500.00,
+                    "discount_amount": 0.00,
+                    "tax_amount": 0.00
+                },
+                {
+                    "line_number": 2,
+                    "line_type": "account",
+                    "description": "Credit Entry",
+                    "quantity": 1,
+                    "unit_price": 500.00,
+                    "discount_amount": 0.00,
+                    "tax_amount": 0.00
+                }
+            ]
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/transactions/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "transaction_id" in data:
+                transaction_id = data["transaction_id"]
+                
+                # Verify the calculated totals
+                subtotal = data.get("subtotal")
+                tax_amount = data.get("tax_amount")
+                total_amount = data.get("total_amount")
+                
+                print(f"Transaction created with ID: {transaction_id}")
+                print(f"Subtotal: {subtotal}")
+                print(f"Tax Amount: {tax_amount}")
+                print(f"Total Amount: {total_amount}")
+                
+                # Expected calculations:
+                # Line 1: (1 * 500) - 0 + 0 = 500
+                # Line 2: (1 * 500) - 0 + 0 = 500
+                # Subtotal: (1 * 500) + (1 * 500) - 0 - 0 = 1000
+                # Tax Amount: 0 + 0 = 0
+                # Total Amount: 1000 + 0 = 1000
+                
+                expected_subtotal = 1000.0
+                expected_tax = 0.0
+                expected_total = 1000.0
+                
+                if (abs(float(subtotal) - expected_subtotal) < 0.01 and 
+                    abs(float(tax_amount) - expected_tax) < 0.01 and 
+                    abs(float(total_amount) - expected_total) < 0.01):
+                    print("✅ Transaction calculations are correct")
+                else:
+                    print(f"❌ Transaction calculations are incorrect. Expected: Subtotal={expected_subtotal}, Tax={expected_tax}, Total={expected_total}")
+                
+                print(f"✅ Create transaction test passed (ID: {transaction_id})")
+                return True, transaction_id
+            else:
+                print(f"❌ Create transaction test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create transaction test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create transaction test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create transaction test failed: {str(e)}")
+        return False, None
+
+def test_create_sales_receipt():
+    """Test creating a sales receipt"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create sales receipt test skipped: No access token or company ID available")
+        return False, None
+    
+    try:
+        print("\n🔍 Testing create sales receipt...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Generate a unique reference number
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        # First, create a customer if needed
+        customer_result, customer_id = test_create_customer()
+        if not customer_result or not customer_id:
+            print("❌ Create sales receipt test skipped: Failed to create test customer")
+            return False, None
+        
+        # Create a sales receipt with line items
+        payload = {
+            "transaction_type": "sales_receipt",
+            "transaction_date": datetime.now().date().isoformat(),
+            "customer_id": customer_id,
+            "reference_number": f"REF-SR-{timestamp}",
+            "memo": "Test sales receipt created via API",
+            "lines": [
+                {
+                    "line_number": 1,
+                    "line_type": "item",
+                    "description": "Product Sale 1",
+                    "quantity": 2,
+                    "unit_price": 75.00,
+                    "discount_amount": 5.00,
+                    "tax_amount": 10.00
+                },
+                {
+                    "line_number": 2,
+                    "line_type": "item",
+                    "description": "Product Sale 2",
+                    "quantity": 1,
+                    "unit_price": 150.00,
+                    "discount_amount": 0.00,
+                    "tax_amount": 15.00
+                }
+            ]
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/transactions/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "transaction_id" in data:
+                receipt_id = data["transaction_id"]
+                
+                # Verify the calculated totals
+                subtotal = data.get("subtotal")
+                tax_amount = data.get("tax_amount")
+                total_amount = data.get("total_amount")
+                
+                print(f"Sales Receipt created with ID: {receipt_id}")
+                print(f"Subtotal: {subtotal}")
+                print(f"Tax Amount: {tax_amount}")
+                print(f"Total Amount: {total_amount}")
+                
+                # Expected calculations:
+                # Line 1: (2 * 75) - 5 + 10 = 155
+                # Line 2: (1 * 150) - 0 + 15 = 165
+                # Subtotal: (2 * 75) + (1 * 150) - 5 - 0 = 295
+                # Tax Amount: 10 + 15 = 25
+                # Total Amount: 295 + 25 = 320
+                
+                expected_subtotal = 295.0
+                expected_tax = 25.0
+                expected_total = 320.0
+                
+                if (abs(float(subtotal) - expected_subtotal) < 0.01 and 
+                    abs(float(tax_amount) - expected_tax) < 0.01 and 
+                    abs(float(total_amount) - expected_total) < 0.01):
+                    print("✅ Sales Receipt calculations are correct")
+                else:
+                    print(f"❌ Sales Receipt calculations are incorrect. Expected: Subtotal={expected_subtotal}, Tax={expected_tax}, Total={expected_total}")
+                
+                print(f"✅ Create sales receipt test passed (ID: {receipt_id})")
+                return True, receipt_id
+            else:
+                print(f"❌ Create sales receipt test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create sales receipt test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create sales receipt test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create sales receipt test failed: {str(e)}")
+        return False, None
+
+def run_transaction_engine_tests():
+    """Run all Transaction Engine Module API tests"""
+    print("\n🔍 Starting QuickBooks Clone Transaction Engine Module API tests...")
+    print(f"🕒 Test time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # Test results
+    results = {}
+    
+    # Login and get company access
+    results["login_demo_user"] = test_login_demo_user()
+    if results["login_demo_user"]:
+        results["get_user_companies"] = test_get_user_companies()
+        if COMPANY_ID:
+            results["company_access"] = test_company_access()
+        else:
+            print("❌ No company ID available, skipping transaction tests")
+            return False
+    else:
+        print("❌ Login failed, skipping all transaction tests")
+        return False
+    
+    # Test Transaction Engine APIs
+    print("\n📋 Testing Transaction Engine APIs...")
+    
+    # Test Invoice Creation
+    invoice_result, invoice_id = test_create_invoice()
+    results["create_invoice"] = invoice_result
+    
+    # Test Bill Creation
+    bill_result, bill_id = test_create_bill()
+    results["create_bill"] = bill_result
+    
+    # Test Payment Creation
+    payment_result, payment_id = test_create_payment()
+    results["create_payment"] = payment_result
+    
+    # Test General Transaction Creation
+    transaction_result, transaction_id = test_create_transaction()
+    results["create_transaction"] = transaction_result
+    
+    # Test Sales Receipt Creation
+    receipt_result, receipt_id = test_create_sales_receipt()
+    results["create_sales_receipt"] = receipt_result
+    
+    # Print summary
+    print("\n📊 Transaction Engine Module Test Summary:")
+    for test_name, result in results.items():
+        status = "✅ Passed" if result else "❌ Failed"
+        print(f"{test_name}: {status}")
+    
+    # Overall result
+    all_passed = all(results.values())
+    if all_passed:
+        print("\n🎉 All Transaction Engine Module tests passed!")
+    else:
+        print("\n❌ Some Transaction Engine Module tests failed.")
+    
+    return all_passed
