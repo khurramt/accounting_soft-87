@@ -193,7 +193,16 @@ async def delete_purchase_order(
                 detail="Access denied to this company"
             )
         
-        # Implementation needed in service
+        deleted = await PurchaseOrderService.delete_purchase_order(
+            db, company_id, po_id
+        )
+        
+        if not deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Purchase order not found"
+            )
+        
         return MessageResponse(message="Purchase order deleted successfully")
         
     except HTTPException:
