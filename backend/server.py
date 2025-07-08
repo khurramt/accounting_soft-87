@@ -181,6 +181,13 @@ api_router.include_router(inventory_locations_router)
 api_router.include_router(inventory_assemblies_router)
 api_router.include_router(inventory_reorder_router)
 
+# Include notification & communication routes
+api_router.include_router(notifications_router)
+api_router.include_router(email_management_router)
+api_router.include_router(webhooks_router)
+api_router.include_router(sms_management_router)
+api_router.include_router(notification_preferences_router)
+
 # Include the API router in the main app
 app.include_router(api_router)
 
