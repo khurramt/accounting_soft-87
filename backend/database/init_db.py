@@ -39,7 +39,6 @@ async def create_tables():
 
 async def create_demo_data():
     """Create demo data for testing"""
-    import uuid
     from database.connection import AsyncSessionLocal
     from services.auth_service import auth_service
     from models.reports import ReportDefinition, ReportCategory, ReportType
