@@ -6,7 +6,7 @@ import logging
 import uuid
 from datetime import datetime
 
-from database.connection import get_async_db
+from database.connection import get_db
 from services.auth_service import get_current_user
 from services.banking_service import BankingService
 from services.transaction_matching_service import TransactionMatchingService
@@ -36,7 +36,7 @@ async def get_bank_connections(
     limit: int = Query(100, ge=1, le=1000),
     is_active: Optional[bool] = Query(None),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get bank connections for a company"""
     try:
@@ -70,7 +70,7 @@ async def create_bank_connection(
     company_id: str,
     connection_data: BankConnectionCreate,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Create a new bank connection"""
     try:
@@ -98,7 +98,7 @@ async def get_bank_connection(
     company_id: str,
     connection_id: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get a specific bank connection"""
     try:
@@ -129,7 +129,7 @@ async def update_bank_connection(
     connection_id: str,
     connection_data: BankConnectionUpdate,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Update a bank connection"""
     try:
@@ -161,7 +161,7 @@ async def delete_bank_connection(
     company_id: str,
     connection_id: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Delete a bank connection"""
     try:
@@ -196,7 +196,7 @@ async def sync_bank_connection(
     company_id: str,
     connection_id: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Sync bank connection to download new transactions"""
     try:
@@ -241,7 +241,7 @@ async def get_bank_transactions(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get bank transactions with filtering"""
     try:
@@ -302,7 +302,7 @@ async def get_bank_transactions_by_connection(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get bank transactions for a specific connection"""
     try:
@@ -328,7 +328,7 @@ async def match_transaction(
     bank_transaction_id: str,
     match_request: TransactionMatchRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Match a bank transaction with a QuickBooks transaction"""
     try:
@@ -356,7 +356,7 @@ async def ignore_transaction(
     bank_transaction_id: str,
     ignore_request: TransactionIgnoreRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Mark a bank transaction as ignored"""
     try:
@@ -384,7 +384,7 @@ async def get_potential_matches(
     bank_transaction_id: str,
     limit: int = Query(10, ge=1, le=50),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get potential QuickBooks transactions that could match a bank transaction"""
     try:
@@ -411,7 +411,7 @@ async def batch_transaction_actions(
     company_id: str,
     batch_request: BatchActionRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Perform batch actions on multiple bank transactions"""
     try:
@@ -446,7 +446,7 @@ async def search_institutions(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Search bank institutions"""
     try:
@@ -487,7 +487,7 @@ async def search_institutions(
 async def get_institution(
     institution_id: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get a specific bank institution"""
     try:
@@ -519,7 +519,7 @@ async def upload_bank_statement(
     file: UploadFile = File(...),
     connection_id: Optional[str] = Form(None),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Upload and parse a bank statement file"""
     try:
