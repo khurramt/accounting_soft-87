@@ -594,36 +594,38 @@ class EmailService(BaseNotificationService):
     ) -> Tuple[List[EmailQueue], int]:
         """Get email queue with filtering and pagination"""
         
-        query = select(EmailQueue).where(
-            EmailQueue.company_id == company_id
-        )
+        # Base conditions
+        base_conditions = [EmailQueue.company_id == company_id]
         
         # Apply filters
         if filters.status:
-            query = query.where(EmailQueue.status == filters.status)
+            base_conditions.append(EmailQueue.status == filters.status)
         
         if filters.priority:
-            query = query.where(EmailQueue.priority == filters.priority)
+            base_conditions.append(EmailQueue.priority == filters.priority)
         
         if filters.date_from:
-            query = query.where(EmailQueue.created_at >= filters.date_from)
+            base_conditions.append(EmailQueue.created_at >= filters.date_from)
         
         if filters.date_to:
-            query = query.where(EmailQueue.created_at <= filters.date_to)
+            base_conditions.append(EmailQueue.created_at <= filters.date_to)
         
         if filters.search:
             search_term = f"%{filters.search}%"
-            query = query.where(
+            base_conditions.append(
                 or_(
                     EmailQueue.to_email.ilike(search_term),
                     EmailQueue.subject.ilike(search_term)
                 )
             )
         
-        # Get total count
-        count_query = select(func.count()).select_from(query.subquery())
+        # Get total count efficiently
+        count_query = select(func.count(EmailQueue.email_id)).where(and_(*base_conditions))
         total_result = await db.execute(count_query)
         total = total_result.scalar()
+        
+        # Build main query with same conditions
+        query = select(EmailQueue).where(and_(*base_conditions))
         
         # Apply sorting
         if filters.sort_by:
