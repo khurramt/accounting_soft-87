@@ -63,7 +63,7 @@ const NewVendor = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { selectedCompany } = useContext(CompanyContext);
+  const { currentCompany } = useCompany();
 
   const vendorTypes = [
     "Supplier",
