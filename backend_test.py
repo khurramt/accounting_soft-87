@@ -2752,6 +2752,1253 @@ def test_inventory_overview():
         print(f"❌ Inventory overview test failed: {str(e)}")
         return False
 
+def test_get_low_stock_items():
+    """Test getting low stock items"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get low stock items test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get low stock items...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory/low-stock", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            print(f"✅ Get low stock items test passed (Found {len(data)} items)")
+            return True
+        else:
+            print(f"❌ Get low stock items test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get low stock items test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get low stock items test failed: {str(e)}")
+        return False
+
+def test_create_inventory_location():
+    """Test creating an inventory location"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create inventory location test skipped: No access token or company ID available")
+        return False, None
+    
+    try:
+        print("\n🔍 Testing create inventory location...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Generate a unique location name to avoid conflicts
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        payload = {
+            "location_name": f"Test Location {timestamp}",
+            "location_type": "warehouse",
+            "address": {
+                "address_line1": "123 Test St",
+                "city": "Test City",
+                "state": "TS",
+                "zip_code": "12345",
+                "country": "US"
+            },
+            "is_default": False,
+            "allow_negative_stock": True
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-locations/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "location_id" in data and data.get("location_name") == payload["location_name"]:
+                location_id = data["location_id"]
+                print(f"✅ Create inventory location test passed (ID: {location_id})")
+                return True, location_id
+            else:
+                print(f"❌ Create inventory location test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create inventory location test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create inventory location test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create inventory location test failed: {str(e)}")
+        return False, None
+
+def test_get_inventory_locations():
+    """Test getting inventory locations"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get inventory locations test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get inventory locations...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-locations/", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if isinstance(data, list):
+                print(f"✅ Get inventory locations test passed (Found {len(data)} locations)")
+                return True
+            else:
+                print(f"❌ Get inventory locations test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get inventory locations test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get inventory locations test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get inventory locations test failed: {str(e)}")
+        return False
+
+def test_update_inventory_location(location_id):
+    """Test updating an inventory location"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not location_id:
+        print("❌ Update inventory location test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing update inventory location: {location_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Updated location data
+        payload = {
+            "location_name": f"Updated Location {datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "manager_name": "Test Manager",
+            "phone": "555-123-4567"
+        }
+        
+        response = requests.put(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-locations/{location_id}", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "location_id" in data and data["location_id"] == location_id and data["location_name"] == payload["location_name"]:
+                print("✅ Update inventory location test passed")
+                return True
+            else:
+                print(f"❌ Update inventory location test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Update inventory location test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Update inventory location test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Update inventory location test failed: {str(e)}")
+        return False
+
+def test_create_inventory_adjustment():
+    """Test creating an inventory adjustment"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create inventory adjustment test skipped: No access token or company ID available")
+        return False, None
+    
+    # First, get an item to adjust
+    try:
+        print("\n🔍 Getting an item for inventory adjustment...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/items/", 
+            headers=headers,
+            params={"page": 1, "page_size": 1},
+            timeout=TIMEOUT
+        )
+        
+        if response.status_code != 200:
+            print(f"❌ Failed to get items: Status code {response.status_code}")
+            return False, None
+        
+        data = response.json()
+        if not data.get("items") or len(data["items"]) == 0:
+            print("❌ No items found to adjust")
+            return False, None
+        
+        item_id = data["items"][0]["item_id"]
+        print(f"Found item ID: {item_id}")
+        
+        # Now create the adjustment
+        print("\n🔍 Testing create inventory adjustment...")
+        
+        payload = {
+            "item_id": item_id,
+            "adjustment_date": datetime.now().strftime("%Y-%m-%d"),
+            "adjustment_type": "quantity",
+            "quantity_adjustment": 10,
+            "unit_cost": 25.00,
+            "reason_code": "test",
+            "memo": "Test adjustment via API"
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-adjustments/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "adjustment_id" in data:
+                adjustment_id = data["adjustment_id"]
+                print(f"✅ Create inventory adjustment test passed (ID: {adjustment_id})")
+                return True, adjustment_id
+            else:
+                print(f"❌ Create inventory adjustment test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create inventory adjustment test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create inventory adjustment test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create inventory adjustment test failed: {str(e)}")
+        return False, None
+
+def test_get_inventory_adjustments():
+    """Test getting inventory adjustments"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get inventory adjustments test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get inventory adjustments...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with pagination parameters
+        params = {
+            "page": 1,
+            "page_size": 10,
+            "sort_by": "adjustment_date",
+            "sort_order": "desc"
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-adjustments/", 
+            headers=headers, 
+            params=params,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get inventory adjustments test passed (Found {data['total']} adjustments)")
+                return True
+            else:
+                print(f"❌ Get inventory adjustments test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get inventory adjustments test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get inventory adjustments test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get inventory adjustments test failed: {str(e)}")
+        return False
+
+def test_get_adjustment_by_id(adjustment_id):
+    """Test getting an adjustment by ID"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not adjustment_id:
+        print("❌ Get adjustment by ID test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing get adjustment by ID: {adjustment_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-adjustments/{adjustment_id}", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "adjustment_id" in data and data["adjustment_id"] == adjustment_id:
+                print("✅ Get adjustment by ID test passed")
+                return True
+            else:
+                print(f"❌ Get adjustment by ID test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get adjustment by ID test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get adjustment by ID test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get adjustment by ID test failed: {str(e)}")
+        return False
+
+def test_create_purchase_order():
+    """Test creating a purchase order"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create purchase order test skipped: No access token or company ID available")
+        return False, None
+    
+    # First, get a vendor and an item
+    try:
+        print("\n🔍 Getting a vendor for purchase order...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        vendor_response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/vendors/", 
+            headers=headers,
+            params={"page": 1, "page_size": 1},
+            timeout=TIMEOUT
+        )
+        
+        if vendor_response.status_code != 200:
+            print(f"❌ Failed to get vendors: Status code {vendor_response.status_code}")
+            return False, None
+        
+        vendor_data = vendor_response.json()
+        if not vendor_data.get("items") or len(vendor_data["items"]) == 0:
+            print("❌ No vendors found for purchase order")
+            return False, None
+        
+        vendor_id = vendor_data["items"][0]["vendor_id"]
+        print(f"Found vendor ID: {vendor_id}")
+        
+        # Get an item
+        item_response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/items/", 
+            headers=headers,
+            params={"page": 1, "page_size": 1},
+            timeout=TIMEOUT
+        )
+        
+        if item_response.status_code != 200:
+            print(f"❌ Failed to get items: Status code {item_response.status_code}")
+            return False, None
+        
+        item_data = item_response.json()
+        if not item_data.get("items") or len(item_data["items"]) == 0:
+            print("❌ No items found for purchase order")
+            return False, None
+        
+        item_id = item_data["items"][0]["item_id"]
+        print(f"Found item ID: {item_id}")
+        
+        # Now create the purchase order
+        print("\n🔍 Testing create purchase order...")
+        
+        payload = {
+            "vendor_id": vendor_id,
+            "po_date": datetime.now().strftime("%Y-%m-%d"),
+            "expected_date": (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"),
+            "memo": "Test purchase order via API",
+            "lines": [
+                {
+                    "item_id": item_id,
+                    "description": "Test item",
+                    "quantity_ordered": 5,
+                    "unit_cost": 20.00
+                }
+            ]
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/purchase-orders/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "purchase_order_id" in data:
+                po_id = data["purchase_order_id"]
+                print(f"✅ Create purchase order test passed (ID: {po_id})")
+                return True, po_id
+            else:
+                print(f"❌ Create purchase order test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create purchase order test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create purchase order test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create purchase order test failed: {str(e)}")
+        return False, None
+
+def test_get_purchase_orders():
+    """Test getting purchase orders"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get purchase orders test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get purchase orders...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with pagination parameters
+        params = {
+            "page": 1,
+            "page_size": 10,
+            "sort_by": "po_date",
+            "sort_order": "desc"
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/purchase-orders/", 
+            headers=headers, 
+            params=params,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get purchase orders test passed (Found {data['total']} purchase orders)")
+                return True
+            else:
+                print(f"❌ Get purchase orders test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get purchase orders test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get purchase orders test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get purchase orders test failed: {str(e)}")
+        return False
+
+def test_get_purchase_order_by_id(po_id):
+    """Test getting a purchase order by ID"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not po_id:
+        print("❌ Get purchase order by ID test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing get purchase order by ID: {po_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/purchase-orders/{po_id}", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "purchase_order_id" in data and data["purchase_order_id"] == po_id:
+                print("✅ Get purchase order by ID test passed")
+                return True
+            else:
+                print(f"❌ Get purchase order by ID test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get purchase order by ID test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get purchase order by ID test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get purchase order by ID test failed: {str(e)}")
+        return False
+
+def test_update_purchase_order(po_id):
+    """Test updating a purchase order"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not po_id:
+        print("❌ Update purchase order test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing update purchase order: {po_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Updated purchase order data
+        payload = {
+            "memo": f"Updated memo {datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "reference_number": "REF-123"
+        }
+        
+        response = requests.put(
+            f"{API_URL}/companies/{COMPANY_ID}/purchase-orders/{po_id}", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "purchase_order_id" in data and data["purchase_order_id"] == po_id and data["memo"] == payload["memo"]:
+                print("✅ Update purchase order test passed")
+                return True
+            else:
+                print(f"❌ Update purchase order test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Update purchase order test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Update purchase order test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Update purchase order test failed: {str(e)}")
+        return False
+
+def test_create_inventory_receipt(po_id=None):
+    """Test creating an inventory receipt"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create inventory receipt test skipped: No access token or company ID available")
+        return False, None
+    
+    # First, get a vendor and an item if no PO is provided
+    try:
+        print("\n🔍 Setting up for inventory receipt...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        vendor_id = None
+        item_id = None
+        
+        if po_id:
+            # Get PO details to use the same vendor and items
+            po_response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/purchase-orders/{po_id}", 
+                headers=headers,
+                timeout=TIMEOUT
+            )
+            
+            if po_response.status_code == 200:
+                po_data = po_response.json()
+                vendor_id = po_data.get("vendor_id")
+                if po_data.get("lines") and len(po_data["lines"]) > 0:
+                    po_line = po_data["lines"][0]
+                    item_id = po_line.get("item_id")
+                    po_line_id = po_line.get("po_line_id")
+                    print(f"Using vendor ID: {vendor_id}, item ID: {item_id}, PO line ID: {po_line_id}")
+                else:
+                    print("❌ No lines found in purchase order")
+                    po_id = None  # Reset to get new vendor and item
+            else:
+                print(f"❌ Failed to get purchase order: Status code {po_response.status_code}")
+                po_id = None  # Reset to get new vendor and item
+        
+        if not vendor_id:
+            # Get a vendor
+            vendor_response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/vendors/", 
+                headers=headers,
+                params={"page": 1, "page_size": 1},
+                timeout=TIMEOUT
+            )
+            
+            if vendor_response.status_code != 200:
+                print(f"❌ Failed to get vendors: Status code {vendor_response.status_code}")
+                return False, None
+            
+            vendor_data = vendor_response.json()
+            if not vendor_data.get("items") or len(vendor_data["items"]) == 0:
+                print("❌ No vendors found for inventory receipt")
+                return False, None
+            
+            vendor_id = vendor_data["items"][0]["vendor_id"]
+            print(f"Found vendor ID: {vendor_id}")
+        
+        if not item_id:
+            # Get an item
+            item_response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/items/", 
+                headers=headers,
+                params={"page": 1, "page_size": 1},
+                timeout=TIMEOUT
+            )
+            
+            if item_response.status_code != 200:
+                print(f"❌ Failed to get items: Status code {item_response.status_code}")
+                return False, None
+            
+            item_data = item_response.json()
+            if not item_data.get("items") or len(item_data["items"]) == 0:
+                print("❌ No items found for inventory receipt")
+                return False, None
+            
+            item_id = item_data["items"][0]["item_id"]
+            print(f"Found item ID: {item_id}")
+        
+        # Now create the inventory receipt
+        print("\n🔍 Testing create inventory receipt...")
+        
+        receipt_lines = []
+        if po_id and 'po_line_id' in locals():
+            receipt_lines.append({
+                "item_id": item_id,
+                "po_line_id": po_line_id,
+                "quantity_received": 2,
+                "unit_cost": 20.00
+            })
+        else:
+            receipt_lines.append({
+                "item_id": item_id,
+                "quantity_received": 2,
+                "unit_cost": 20.00
+            })
+        
+        payload = {
+            "vendor_id": vendor_id,
+            "purchase_order_id": po_id if po_id else None,
+            "receipt_date": datetime.now().strftime("%Y-%m-%d"),
+            "vendor_invoice_number": f"INV-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "memo": "Test inventory receipt via API",
+            "lines": receipt_lines
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-receipts/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "receipt_id" in data:
+                receipt_id = data["receipt_id"]
+                print(f"✅ Create inventory receipt test passed (ID: {receipt_id})")
+                return True, receipt_id
+            else:
+                print(f"❌ Create inventory receipt test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create inventory receipt test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create inventory receipt test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create inventory receipt test failed: {str(e)}")
+        return False, None
+
+def test_get_inventory_receipts():
+    """Test getting inventory receipts"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get inventory receipts test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get inventory receipts...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with pagination parameters
+        params = {
+            "page": 1,
+            "page_size": 10,
+            "sort_by": "receipt_date",
+            "sort_order": "desc"
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-receipts/", 
+            headers=headers, 
+            params=params,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get inventory receipts test passed (Found {data['total']} receipts)")
+                return True
+            else:
+                print(f"❌ Get inventory receipts test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get inventory receipts test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get inventory receipts test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get inventory receipts test failed: {str(e)}")
+        return False
+
+def test_get_receipt_by_id(receipt_id):
+    """Test getting a receipt by ID"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not receipt_id:
+        print("❌ Get receipt by ID test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing get receipt by ID: {receipt_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-receipts/{receipt_id}", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "receipt_id" in data and data["receipt_id"] == receipt_id:
+                print("✅ Get receipt by ID test passed")
+                return True
+            else:
+                print(f"❌ Get receipt by ID test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get receipt by ID test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get receipt by ID test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get receipt by ID test failed: {str(e)}")
+        return False
+
+def test_create_inventory_assembly():
+    """Test creating an inventory assembly"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create inventory assembly test skipped: No access token or company ID available")
+        return False, None
+    
+    # First, get two items for the assembly
+    try:
+        print("\n🔍 Getting items for inventory assembly...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        item_response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/items/", 
+            headers=headers,
+            params={"page": 1, "page_size": 2},
+            timeout=TIMEOUT
+        )
+        
+        if item_response.status_code != 200:
+            print(f"❌ Failed to get items: Status code {item_response.status_code}")
+            return False, None
+        
+        item_data = item_response.json()
+        if not item_data.get("items") or len(item_data["items"]) < 2:
+            print("❌ Not enough items found for assembly")
+            return False, None
+        
+        assembly_item_id = item_data["items"][0]["item_id"]
+        component_item_id = item_data["items"][1]["item_id"]
+        print(f"Found assembly item ID: {assembly_item_id}, component item ID: {component_item_id}")
+        
+        # Now create the inventory assembly
+        print("\n🔍 Testing create inventory assembly...")
+        
+        payload = {
+            "assembly_item_id": assembly_item_id,
+            "component_item_id": component_item_id,
+            "quantity_needed": 2,
+            "unit_cost": 15.00,
+            "build_sequence": 1,
+            "is_optional": False,
+            "notes": "Test assembly via API"
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-assemblies/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "assembly_id" in data:
+                assembly_id = data["assembly_id"]
+                print(f"✅ Create inventory assembly test passed (ID: {assembly_id})")
+                return True, assembly_id
+            else:
+                print(f"❌ Create inventory assembly test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create inventory assembly test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create inventory assembly test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create inventory assembly test failed: {str(e)}")
+        return False, None
+
+def test_get_inventory_assemblies():
+    """Test getting inventory assemblies"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get inventory assemblies test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get inventory assemblies...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-assemblies/", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if isinstance(data, list):
+                print(f"✅ Get inventory assemblies test passed (Found {len(data)} assemblies)")
+                return True
+            else:
+                print(f"❌ Get inventory assemblies test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get inventory assemblies test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get inventory assemblies test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get inventory assemblies test failed: {str(e)}")
+        return False
+
+def test_update_inventory_assembly(assembly_id):
+    """Test updating an inventory assembly"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not assembly_id:
+        print("❌ Update inventory assembly test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing update inventory assembly: {assembly_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Updated assembly data
+        payload = {
+            "quantity_needed": 3,
+            "unit_cost": 18.00,
+            "notes": f"Updated assembly notes {datetime.now().strftime('%Y%m%d%H%M%S')}"
+        }
+        
+        response = requests.put(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-assemblies/{assembly_id}", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "assembly_id" in data and data["assembly_id"] == assembly_id:
+                print("✅ Update inventory assembly test passed")
+                return True
+            else:
+                print(f"❌ Update inventory assembly test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Update inventory assembly test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Update inventory assembly test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Update inventory assembly test failed: {str(e)}")
+        return False
+
+def test_inventory_reorder_report():
+    """Test generating inventory reorder report"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Inventory reorder report test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing inventory reorder report...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-reorder/report", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total_items" in data:
+                print(f"✅ Inventory reorder report test passed (Found {data['total_items']} items)")
+                return True
+            else:
+                print(f"❌ Inventory reorder report test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Inventory reorder report test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Inventory reorder report test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Inventory reorder report test failed: {str(e)}")
+        return False
+
+def test_auto_generate_purchase_orders():
+    """Test auto-generating purchase orders"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Auto-generate purchase orders test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing auto-generate purchase orders...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-reorder/auto-generate-pos", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            print(f"✅ Auto-generate purchase orders test passed (Generated {len(data)} purchase orders)")
+            return True
+        else:
+            print(f"❌ Auto-generate purchase orders test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Auto-generate purchase orders test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Auto-generate purchase orders test failed: {str(e)}")
+        return False
+
+def run_inventory_management_tests():
+    """Run all Inventory Management Module API tests"""
+    print("\n🔍 Starting QuickBooks Clone Inventory Management Module API tests...")
+    print(f"🕒 Test time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # Test results
+    results = {}
+    
+    # Login and get company access
+    results["login_demo_user"] = test_login_demo_user()
+    if results["login_demo_user"]:
+        results["get_user_companies"] = test_get_user_companies()
+        if COMPANY_ID:
+            results["company_access"] = test_company_access()
+        else:
+            print("❌ No company ID available, skipping company-specific tests")
+            return False
+    else:
+        print("❌ Login failed, skipping all other tests")
+        return False
+    
+    # Test Inventory Overview
+    print("\n📋 Testing Inventory Overview...")
+    results["inventory_overview"] = test_inventory_overview()
+    results["get_low_stock_items"] = test_get_low_stock_items()
+    
+    # Test Inventory Locations
+    print("\n📋 Testing Inventory Locations...")
+    location_result, location_id = test_create_inventory_location()
+    results["create_inventory_location"] = location_result
+    
+    results["get_inventory_locations"] = test_get_inventory_locations()
+    
+    if location_id:
+        results["update_inventory_location"] = test_update_inventory_location(location_id)
+    
+    # Test Inventory Adjustments
+    print("\n📋 Testing Inventory Adjustments...")
+    adjustment_result, adjustment_id = test_create_inventory_adjustment()
+    results["create_inventory_adjustment"] = adjustment_result
+    
+    results["get_inventory_adjustments"] = test_get_inventory_adjustments()
+    
+    if adjustment_id:
+        results["get_adjustment_by_id"] = test_get_adjustment_by_id(adjustment_id)
+    
+    # Test Purchase Orders
+    print("\n📋 Testing Purchase Orders...")
+    po_result, po_id = test_create_purchase_order()
+    results["create_purchase_order"] = po_result
+    
+    results["get_purchase_orders"] = test_get_purchase_orders()
+    
+    if po_id:
+        results["get_purchase_order_by_id"] = test_get_purchase_order_by_id(po_id)
+        results["update_purchase_order"] = test_update_purchase_order(po_id)
+    
+    # Test Inventory Receipts
+    print("\n📋 Testing Inventory Receipts...")
+    receipt_result, receipt_id = test_create_inventory_receipt(po_id if po_result else None)
+    results["create_inventory_receipt"] = receipt_result
+    
+    results["get_inventory_receipts"] = test_get_inventory_receipts()
+    
+    if receipt_id:
+        results["get_receipt_by_id"] = test_get_receipt_by_id(receipt_id)
+    
+    # Test Inventory Assemblies
+    print("\n📋 Testing Inventory Assemblies...")
+    assembly_result, assembly_id = test_create_inventory_assembly()
+    results["create_inventory_assembly"] = assembly_result
+    
+    results["get_inventory_assemblies"] = test_get_inventory_assemblies()
+    
+    if assembly_id:
+        results["update_inventory_assembly"] = test_update_inventory_assembly(assembly_id)
+    
+    # Test Inventory Reorder
+    print("\n📋 Testing Inventory Reorder...")
+    results["inventory_reorder_report"] = test_inventory_reorder_report()
+    results["auto_generate_purchase_orders"] = test_auto_generate_purchase_orders()
+    
+    # Print summary
+    print("\n📊 Inventory Management Module Test Summary:")
+    for test_name, result in results.items():
+        status = "✅ PASSED" if result else "❌ FAILED"
+        print(f"{test_name}: {status}")
+    
+    # Calculate overall success rate
+    success_count = sum(1 for result in results.values() if result)
+    total_count = len(results)
+    success_rate = (success_count / total_count) * 100 if total_count > 0 else 0
+    
+    print(f"\n🏆 Overall Success Rate: {success_rate:.2f}% ({success_count}/{total_count} tests passed)")
+    
+    return success_rate >= 80  # Consider test suite successful if at least 80% of tests pass
+
+def test_inventory_overview():
+    """Test getting inventory overview"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Inventory overview test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing inventory overview...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory/", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "total_items" in data and "total_value" in data:
+                print("✅ Inventory overview test passed")
+                return True
+            else:
+                print(f"❌ Inventory overview test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Inventory overview test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Inventory overview test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Inventory overview test failed: {str(e)}")
+        return False
+
 def test_get_item_inventory(item_id):
     """Test getting inventory for a specific item"""
     global ACCESS_TOKEN, COMPANY_ID
