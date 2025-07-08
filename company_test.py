@@ -277,18 +277,18 @@ def test_update_company_settings(company_id):
             "settings": [
                 {
                     "category": "general",
-                    "key": "default_currency",
-                    "value": "USD"
+                    "setting_key": "default_currency",
+                    "setting_value": {"value": "USD"}
                 },
                 {
                     "category": "general",
-                    "key": "default_language",
-                    "value": "en-US"
+                    "setting_key": "default_language",
+                    "setting_value": {"value": "en-US"}
                 },
                 {
                     "category": "invoicing",
-                    "key": "default_terms",
-                    "value": "Net 30"
+                    "setting_key": "default_terms",
+                    "setting_value": {"value": "Net 30"}
                 }
             ]
         }
