@@ -3,6 +3,18 @@ import axios from 'axios';
 // Get backend URL from environment
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
+// Ensure URL uses HTTPS if the environment URL is HTTPS
+const ensureHttps = (url) => {
+  // If we're running on the preview domain with HTTPS, ensure API calls use HTTPS
+  if (window.location.protocol === 'https:' && url.startsWith('http:')) {
+    return url.replace('http:', 'https:');
+  }
+  return url;
+};
+
+// Apply HTTPS if needed
+const SECURE_API_BASE_URL = ensureHttps(API_BASE_URL);
+
 // Create axios instance with base configuration
 const apiClient = axios.create({
   baseURL: `${API_BASE_URL}/api`,
