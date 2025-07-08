@@ -6,6 +6,7 @@ import os
 from datetime import datetime, timedelta
 import decimal
 from typing import Dict, Any, Optional, Tuple, List
+import io
 
 # Get the backend URL from the frontend .env file
 def get_backend_url():
@@ -133,6 +134,50 @@ def test_login_demo_user():
         return False
     except Exception as e:
         print(f"❌ Demo user login test failed: {str(e)}")
+        return False
+
+def test_token_refresh():
+    """Test token refresh functionality"""
+    global ACCESS_TOKEN, REFRESH_TOKEN
+    
+    if not REFRESH_TOKEN:
+        print("❌ Token refresh test skipped: No refresh token available")
+        return False
+    
+    try:
+        print("\n🔍 Testing token refresh...")
+        payload = {
+            "refresh_token": REFRESH_TOKEN
+        }
+        
+        response = requests.post(f"{API_URL}/auth/refresh-token", json=payload, timeout=TIMEOUT)
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "access_token" in data and "refresh_token" in data:
+                # Update tokens
+                ACCESS_TOKEN = data["access_token"]
+                REFRESH_TOKEN = data["refresh_token"]
+                print("✅ Token refresh test passed")
+                return True
+            else:
+                print(f"❌ Token refresh test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Token refresh test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Token refresh test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Token refresh test failed: {str(e)}")
         return False
 
 def test_get_user_companies():
