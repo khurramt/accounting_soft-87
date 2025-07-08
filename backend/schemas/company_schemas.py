@@ -11,6 +11,15 @@ class BusinessType(str, Enum):
     LLC = "llc"
     NON_PROFIT = "non_profit"
     OTHER = "other"
+    
+    @classmethod
+    def _missing_(cls, value):
+        # Case-insensitive matching
+        if isinstance(value, str):
+            for member in cls:
+                if member.value.lower() == value.lower():
+                    return member
+        return None
 
 class SubscriptionPlan(str, Enum):
     TRIAL = "trial"
