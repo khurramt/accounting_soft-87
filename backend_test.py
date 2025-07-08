@@ -3211,3 +3211,621 @@ def run_transaction_engine_tests():
         print("\n❌ Some Transaction Engine Module tests failed.")
     
     return all_passed
+
+# ===== BANKING INTEGRATION TESTS =====
+
+def test_create_bank_connection():
+    """Test creating a bank connection"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create bank connection test skipped: No access token or company ID available")
+        return False, None
+    
+    try:
+        print("\n🔍 Testing create bank connection...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Generate a unique connection name to avoid conflicts
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        payload = {
+            "connection_name": f"Test Bank Connection {timestamp}",
+            "institution_id": "inst_001",
+            "account_type": "checking",
+            "account_number": f"12345678{timestamp}",
+            "routing_number": "111000025",
+            "connection_status": "active",
+            "last_sync_date": datetime.now().isoformat(),
+            "balance": 5000.00,
+            "currency": "USD"
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/bank-connections", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "connection_id" in data and data.get("connection_name") == payload["connection_name"]:
+                connection_id = data["connection_id"]
+                print(f"✅ Create bank connection test passed (ID: {connection_id})")
+                return True, connection_id
+            else:
+                print(f"❌ Create bank connection test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create bank connection test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create bank connection test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create bank connection test failed: {str(e)}")
+        return False, None
+
+def test_get_bank_connections():
+    """Test getting bank connections"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get bank connections test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get bank connections...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with pagination parameters
+        params = {
+            "skip": 0,
+            "limit": 10,
+            "is_active": True
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/bank-connections", 
+            headers=headers, 
+            params=params,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "connections" in data and "total" in data and "page" in data:
+                print(f"✅ Get bank connections test passed (Found {data['total']} connections)")
+                return True
+            else:
+                print(f"❌ Get bank connections test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get bank connections test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get bank connections test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get bank connections test failed: {str(e)}")
+        return False
+
+def test_get_bank_connection_by_id(connection_id):
+    """Test getting a bank connection by ID"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not connection_id:
+        print("❌ Get bank connection by ID test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing get bank connection by ID: {connection_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/bank-connections/{connection_id}", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "connection_id" in data and data["connection_id"] == connection_id:
+                print("✅ Get bank connection by ID test passed")
+                return True
+            else:
+                print(f"❌ Get bank connection by ID test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get bank connection by ID test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get bank connection by ID test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get bank connection by ID test failed: {str(e)}")
+        return False
+
+def test_update_bank_connection(connection_id):
+    """Test updating a bank connection"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not connection_id:
+        print("❌ Update bank connection test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing update bank connection: {connection_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Updated connection data
+        payload = {
+            "connection_name": f"Updated Bank Connection {datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "balance": 7500.00,
+            "connection_status": "active"
+        }
+        
+        response = requests.put(
+            f"{API_URL}/companies/{COMPANY_ID}/bank-connections/{connection_id}", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "connection_id" in data and data["connection_id"] == connection_id:
+                print("✅ Update bank connection test passed")
+                return True
+            else:
+                print(f"❌ Update bank connection test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Update bank connection test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Update bank connection test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Update bank connection test failed: {str(e)}")
+        return False
+
+def test_sync_bank_connection(connection_id):
+    """Test syncing a bank connection"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not connection_id:
+        print("❌ Sync bank connection test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing sync bank connection: {connection_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/bank-connections/{connection_id}/sync", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "message" in data and "sync" in data["message"].lower():
+                print("✅ Sync bank connection test passed")
+                return True
+            else:
+                print(f"❌ Sync bank connection test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Sync bank connection test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Sync bank connection test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Sync bank connection test failed: {str(e)}")
+        return False
+
+def test_get_bank_transactions():
+    """Test getting bank transactions"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get bank transactions test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get bank transactions...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with filtering parameters
+        params = {
+            "skip": 0,
+            "limit": 20,
+            "start_date": (datetime.now() - timedelta(days=30)).date().isoformat(),
+            "end_date": datetime.now().date().isoformat(),
+            "status": "unmatched"
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/bank-transactions", 
+            headers=headers, 
+            params=params,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "transactions" in data and "total" in data and "page" in data:
+                print(f"✅ Get bank transactions test passed (Found {data['total']} transactions)")
+                return True
+            else:
+                print(f"❌ Get bank transactions test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get bank transactions test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get bank transactions test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get bank transactions test failed: {str(e)}")
+        return False
+
+def test_get_bank_transactions_by_connection(connection_id):
+    """Test getting bank transactions by connection ID"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not connection_id:
+        print("❌ Get bank transactions by connection test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing get bank transactions by connection: {connection_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/bank-transactions/{connection_id}", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if isinstance(data, list):
+                print(f"✅ Get bank transactions by connection test passed (Found {len(data)} transactions)")
+                return True
+            else:
+                print(f"❌ Get bank transactions by connection test failed: Expected list response")
+                return False
+        else:
+            print(f"❌ Get bank transactions by connection test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get bank transactions by connection test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get bank transactions by connection test failed: {str(e)}")
+        return False
+
+def test_search_institutions():
+    """Test searching bank institutions"""
+    global ACCESS_TOKEN
+    
+    if not ACCESS_TOKEN:
+        print("❌ Search institutions test skipped: No access token available")
+        return False
+    
+    try:
+        print("\n🔍 Testing search bank institutions...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with search parameters
+        params = {
+            "name_contains": "Bank",
+            "skip": 0,
+            "limit": 10,
+            "supports_ofx": True
+        }
+        
+        response = requests.get(
+            f"{API_URL}/banking/institutions/search", 
+            headers=headers, 
+            params=params,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "institutions" in data and "total" in data:
+                print(f"✅ Search institutions test passed (Found {data['total']} institutions)")
+                return True
+            else:
+                print(f"❌ Search institutions test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Search institutions test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Search institutions test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Search institutions test failed: {str(e)}")
+        return False
+
+def test_get_institution_by_id():
+    """Test getting a bank institution by ID"""
+    global ACCESS_TOKEN
+    
+    if not ACCESS_TOKEN:
+        print("❌ Get institution by ID test skipped: No access token available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get bank institution by ID...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Use a known institution ID from the sample data
+        institution_id = "inst_001"
+        
+        response = requests.get(
+            f"{API_URL}/banking/institutions/{institution_id}", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "institution_id" in data and data["institution_id"] == institution_id:
+                print("✅ Get institution by ID test passed")
+                return True
+            else:
+                print(f"❌ Get institution by ID test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get institution by ID test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get institution by ID test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get institution by ID test failed: {str(e)}")
+        return False
+
+def test_upload_bank_statement():
+    """Test uploading a bank statement file"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Upload bank statement test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing upload bank statement...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Create a simple CSV content for testing
+        csv_content = """Date,Description,Amount,Type
+2023-07-01,Initial Deposit,1000.00,credit
+2023-07-02,Coffee Shop,-5.50,debit
+2023-07-03,Salary Deposit,2500.00,credit
+2023-07-04,Grocery Store,-120.75,debit"""
+        
+        # Create a test file
+        files = {
+            'file': ('test_statement.csv', csv_content, 'text/csv')
+        }
+        
+        data = {
+            'file_type': 'csv',
+            'connection_id': 'test_connection_123'
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/bank-statements/upload", 
+            headers=headers,
+            files=files,
+            data=data,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            response_data = response.json()
+            print(f"Response: {pretty_print_json(response_data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "upload_id" in response_data and "status" in response_data:
+                print("✅ Upload bank statement test passed")
+                return True
+            else:
+                print(f"❌ Upload bank statement test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Upload bank statement test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Upload bank statement test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Upload bank statement test failed: {str(e)}")
+        return False
+
+def test_delete_bank_connection(connection_id):
+    """Test deleting a bank connection"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not connection_id:
+        print("❌ Delete bank connection test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing delete bank connection: {connection_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.delete(
+            f"{API_URL}/companies/{COMPANY_ID}/bank-connections/{connection_id}", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "message" in data and "deleted" in data["message"].lower():
+                print("✅ Delete bank connection test passed")
+                return True
+            else:
+                print(f"❌ Delete bank connection test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Delete bank connection test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Delete bank connection test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Delete bank connection test failed: {str(e)}")
+        return False
+
+def run_banking_integration_tests():
+    """Run all Banking Integration Module API tests"""
+    print("\n🔍 Starting QuickBooks Clone Banking Integration Module API tests...")
+    print(f"🕒 Test time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # Test results
+    results = {}
+    
+    # Login and get company access
+    results["login_demo_user"] = test_login_demo_user()
+    if results["login_demo_user"]:
+        results["get_user_companies"] = test_get_user_companies()
+        if COMPANY_ID:
+            results["company_access"] = test_company_access()
+        else:
+            print("❌ No company ID available, skipping banking tests")
+            return False
+    else:
+        print("❌ Login failed, skipping all banking tests")
+        return False
+    
+    # Test Banking Integration APIs
+    print("\n📋 Testing Banking Integration APIs...")
+    
+    # Test Bank Connection Management
+    print("\n🏦 Testing Bank Connection Management...")
+    connection_result, connection_id = test_create_bank_connection()
+    results["create_bank_connection"] = connection_result
+    
+    results["get_bank_connections"] = test_get_bank_connections()
+    
+    if connection_id:
+        results["get_bank_connection_by_id"] = test_get_bank_connection_by_id(connection_id)
+        results["update_bank_connection"] = test_update_bank_connection(connection_id)
+        results["sync_bank_connection"] = test_sync_bank_connection(connection_id)
+        results["get_bank_transactions_by_connection"] = test_get_bank_transactions_by_connection(connection_id)
+    
+    # Test Bank Transaction Management
+    print("\n💳 Testing Bank Transaction Management...")
+    results["get_bank_transactions"] = test_get_bank_transactions()
+    
+    # Test Institution Search
+    print("\n🏛️ Testing Institution Search...")
+    results["search_institutions"] = test_search_institutions()
+    results["get_institution_by_id"] = test_get_institution_by_id()
+    
+    # Test File Upload
+    print("\n📄 Testing File Upload...")
+    results["upload_bank_statement"] = test_upload_bank_statement()
+    
+    # Clean up - delete the test connection
+    if connection_id:
+        results["delete_bank_connection"] = test_delete_bank_connection(connection_id)
+    
+    # Print summary
+    print("\n📊 Banking Integration Module Test Summary:")
+    for test_name, result in results.items():
+        status = "✅ Passed" if result else "❌ Failed"
+        print(f"{test_name}: {status}")
+    
+    # Overall result
+    all_passed = all(results.values())
+    if all_passed:
+        print("\n🎉 All Banking Integration Module tests passed!")
+    else:
+        print("\n❌ Some Banking Integration Module tests failed.")
+    
+    return all_passed
