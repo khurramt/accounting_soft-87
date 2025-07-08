@@ -127,6 +127,13 @@ api_router.include_router(auth_router)
 # Include company management routes
 api_router.include_router(companies_router)
 
+# Include list management routes
+api_router.include_router(accounts_router)
+api_router.include_router(customers_router)
+api_router.include_router(vendors_router)
+api_router.include_router(items_router)
+api_router.include_router(employees_router)
+
 # Include the API router in the main app
 app.include_router(api_router)
 
