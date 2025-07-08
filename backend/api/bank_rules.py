@@ -6,7 +6,7 @@ import logging
 import uuid
 
 from database.connection import get_db
-from services.auth_service import get_current_user
+from services.security import get_current_user
 from models.user import User
 from models.banking import BankRule
 from schemas.banking_schemas import (
