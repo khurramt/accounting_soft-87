@@ -5,7 +5,7 @@ API_URL="https://1b5ad2ed-e909-4209-827e-1b1b242d629b.preview.emergentagent.com/
 echo "Using API URL: $API_URL"
 
 # Set the access token
-TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZjZjYzM1NjctMzk1My00NDQzLWE2Y2MtYzk3MGFlYjFlNTljIiwic2Vzc2lvbl9pZCI6IjA1NTk0ZGJjLTQ3NDQtNDU5Ny1iZDMyLTJlM2FhMTdlMGRhZSIsImV4cCI6MTc1MjAwNTM0OSwiaWF0IjoxNzUyMDA0NDQ5LCJ0eXBlIjoiYWNjZXNzIn0.lYlvezHO96epeifrGcZOfVvlcKlA2sBQk_0bLJg-FvM"
+TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZjZjYzM1NjctMzk1My00NDQzLWE2Y2MtYzk3MGFlYjFlNTljIiwic2Vzc2lvbl9pZCI6IjFhMjk0MmI4LTMyN2UtNDdjYy05MWZiLTM2MGQ5Y2EyYzBhMCIsImV4cCI6MTc1MjAwNTU0MiwiaWF0IjoxNzUyMDA0NjQyLCJ0eXBlIjoiYWNjZXNzIn0.klzOEYqf8Sf9qCmhqN1rgc23ogQfexohSlASwALVqhA"
 
 # Generate a timestamp for unique names
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
