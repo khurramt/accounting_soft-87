@@ -197,7 +197,7 @@ class SMSQueueResponse(BaseResponse):
     provider_message_id: Optional[str]
     delivery_status: Optional[str]
     created_at: datetime
-    updated_at: Optional[datetime]
+    updated_at: Optional[datetime] = None
 
 # Webhook schemas
 class WebhookSubscriptionCreate(BaseRequest):
