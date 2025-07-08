@@ -60,6 +60,7 @@ def test_login_demo_user():
                 ACCESS_TOKEN = data["access_token"]
                 REFRESH_TOKEN = data["refresh_token"]
                 USER_ID = data["user"]["user_id"]
+                TOKEN_TYPE = data["token_type"]
                 print("✅ Demo user login test passed")
                 return True
             else:
