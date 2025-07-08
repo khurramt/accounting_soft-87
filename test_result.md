@@ -492,9 +492,9 @@
 
 ## test_plan:
   current_focus:
-    - "AUDIT & SECURITY MODULE BACKEND - Fix case mismatch in AuditAction enum and permission issues in security endpoints"
+    - "AUDIT & SECURITY MODULE BACKEND - Test all fixed endpoints and functionality"
   stuck_tasks:
-    - "Audit & Security Module Implementation"
+    []
   test_all: false
   test_priority: "high_first"
 
