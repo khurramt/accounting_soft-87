@@ -446,7 +446,9 @@ class SecurityService:
                 "reports": ["read", "write", "export"],
                 "settings": ["read", "write"],
                 "audit": ["read", "export"],
-                "security": ["read", "write", "delete"]
+                "security": ["read", "write", "delete"],
+                "permissions": ["read", "write", "delete"],
+                "roles": ["read", "write", "delete"]
             },
             UserRole.MANAGER: {
                 "users": ["read", "write"],
