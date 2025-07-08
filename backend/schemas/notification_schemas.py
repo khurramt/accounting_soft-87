@@ -277,9 +277,9 @@ class NotificationPreferenceCreate(BaseRequest):
     email_enabled: bool = Field(default=True, description="Enable email notifications")
     sms_enabled: bool = Field(default=False, description="Enable SMS notifications")
     push_enabled: bool = Field(default=True, description="Enable push notifications")
-    frequency: str = Field(default="immediate", regex="^(immediate|daily|weekly|never)$")
-    quiet_hours_start: Optional[str] = Field(None, regex="^([01]?[0-9]|2[0-3]):[0-5][0-9]$")
-    quiet_hours_end: Optional[str] = Field(None, regex="^([01]?[0-9]|2[0-3]):[0-5][0-9]$")
+    frequency: str = Field(default="immediate", pattern="^(immediate|daily|weekly|never)$")
+    quiet_hours_start: Optional[str] = Field(None, pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$")
+    quiet_hours_end: Optional[str] = Field(None, pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$")
 
 class NotificationPreferenceUpdate(BaseModel):
     in_app_enabled: Optional[bool] = None
