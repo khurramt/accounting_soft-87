@@ -52,7 +52,7 @@ async def get_customers(
     state: Optional[str] = Query(None),
     is_active: Optional[bool] = Query(None),
     sort_by: Optional[str] = Query("customer_name"),
-    sort_order: str = Query("asc", regex="^(asc|desc)$"),
+    sort_order: str = Query("asc"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     user: User = Depends(get_current_user),
