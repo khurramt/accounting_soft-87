@@ -96,7 +96,7 @@ class FileAttachmentResponse(BaseModel):
     created_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class CompanyUserResponse(BaseModel):
     user_id: str
