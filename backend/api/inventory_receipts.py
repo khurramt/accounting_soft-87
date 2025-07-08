@@ -81,14 +81,16 @@ async def get_receipts(
             page_size=page_size
         )
         
-        # Implementation needed in service
-        # For now, return empty result
+        receipts, total = await InventoryReceiptService.get_receipts(
+            db, company_id, filters
+        )
+        
         return PaginatedResponse(
-            items=[],
-            total=0,
+            items=[InventoryReceiptResponse.from_orm(receipt) for receipt in receipts],
+            total=total,
             page=page,
             page_size=page_size,
-            total_pages=0
+            total_pages=(total + page_size - 1) // page_size
         )
         
     except HTTPException:
