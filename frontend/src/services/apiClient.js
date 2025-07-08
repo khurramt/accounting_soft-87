@@ -17,7 +17,7 @@ const SECURE_API_BASE_URL = ensureHttps(API_BASE_URL);
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: `${SECURE_API_BASE_URL}/api`,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
