@@ -6,7 +6,7 @@ import logging
 import uuid
 from datetime import datetime
 
-from database.connection import get_async_db
+from database.connection import get_db
 from services.auth_service import get_current_user
 from models.user import User
 from models.banking import BankReconciliation, ReconciliationStatusEnum
@@ -229,7 +229,7 @@ async def get_reconciliations(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get bank reconciliations for a company"""
     try:
@@ -253,7 +253,7 @@ async def create_reconciliation(
     company_id: str,
     reconciliation_data: BankReconciliationCreate,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Create a new bank reconciliation"""
     try:
@@ -276,7 +276,7 @@ async def get_reconciliation(
     company_id: str,
     reconciliation_id: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get a specific bank reconciliation"""
     try:
@@ -309,7 +309,7 @@ async def update_reconciliation(
     reconciliation_id: str,
     reconciliation_data: BankReconciliationUpdate,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Update a bank reconciliation"""
     try:
@@ -341,7 +341,7 @@ async def finalize_reconciliation(
     company_id: str,
     reconciliation_id: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Finalize a bank reconciliation"""
     try:
@@ -373,7 +373,7 @@ async def calculate_reconciliation(
     company_id: str,
     reconciliation_id: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Calculate reconciliation difference and outstanding items"""
     try:
