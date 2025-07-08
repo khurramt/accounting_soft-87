@@ -47,6 +47,8 @@ from api.email_management import router as email_management_router
 from api.webhooks import router as webhooks_router
 from api.sms_management import router as sms_management_router
 from api.notification_preferences import router as notification_preferences_router
+from api.audit import router as audit_router
+from api.security import router as security_router
 import uuid
 from datetime import datetime
 
