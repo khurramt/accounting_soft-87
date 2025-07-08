@@ -1510,7 +1510,8 @@ def test_list_companies():
         response = requests.get(
             f"{API_URL}/companies/", 
             headers=headers, 
-            timeout=TIMEOUT
+            timeout=TIMEOUT,
+            verify=False
         )
         print(f"Status Code: {response.status_code}")
         
@@ -1575,7 +1576,8 @@ def test_create_company():
             f"{API_URL}/companies/", 
             headers=headers, 
             json=payload, 
-            timeout=TIMEOUT
+            timeout=TIMEOUT,
+            verify=False
         )
         print(f"Status Code: {response.status_code}")
         
@@ -1619,7 +1621,8 @@ def test_get_company_by_id(company_id):
         response = requests.get(
             f"{API_URL}/companies/{company_id}", 
             headers=headers, 
-            timeout=TIMEOUT
+            timeout=TIMEOUT,
+            verify=False
         )
         print(f"Status Code: {response.status_code}")
         
@@ -1672,7 +1675,8 @@ def test_update_company(company_id):
             f"{API_URL}/companies/{company_id}", 
             headers=headers, 
             json=payload,
-            timeout=TIMEOUT
+            timeout=TIMEOUT,
+            verify=False
         )
         print(f"Status Code: {response.status_code}")
         
@@ -1715,7 +1719,8 @@ def test_get_company_settings(company_id):
         response = requests.get(
             f"{API_URL}/companies/{company_id}/settings", 
             headers=headers, 
-            timeout=TIMEOUT
+            timeout=TIMEOUT,
+            verify=False
         )
         print(f"Status Code: {response.status_code}")
         
@@ -1780,7 +1785,8 @@ def test_update_company_settings(company_id):
             f"{API_URL}/companies/{company_id}/settings", 
             headers=headers, 
             json=payload,
-            timeout=TIMEOUT
+            timeout=TIMEOUT,
+            verify=False
         )
         print(f"Status Code: {response.status_code}")
         
@@ -1823,7 +1829,8 @@ def test_delete_company(company_id):
         response = requests.delete(
             f"{API_URL}/companies/{company_id}", 
             headers=headers, 
-            timeout=TIMEOUT
+            timeout=TIMEOUT,
+            verify=False
         )
         print(f"Status Code: {response.status_code}")
         
