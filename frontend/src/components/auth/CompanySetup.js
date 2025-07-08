@@ -555,13 +555,28 @@ const CompanySetup = () => {
               ) : (
                 <Button
                   onClick={handleFinish}
+                  disabled={isLoading}
                   className="bg-green-600 hover:bg-green-700"
                 >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Finish Setup
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Creating Company...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Finish Setup
+                    </>
+                  )}
                 </Button>
               )}
             </div>
+            {error && (
+              <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {error}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
