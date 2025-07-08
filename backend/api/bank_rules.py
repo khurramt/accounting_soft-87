@@ -5,7 +5,7 @@ from typing import List, Optional
 import logging
 import uuid
 
-from database.connection import get_async_db
+from database.connection import get_db
 from services.auth_service import get_current_user
 from models.user import User
 from models.banking import BankRule
@@ -157,7 +157,7 @@ async def get_bank_rules(
     limit: int = Query(100, ge=1, le=1000),
     is_active: Optional[bool] = Query(None),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get bank rules for a company"""
     try:
@@ -191,7 +191,7 @@ async def create_bank_rule(
     company_id: str,
     rule_data: BankRuleCreate,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Create a new bank rule"""
     try:
@@ -214,7 +214,7 @@ async def get_bank_rule(
     company_id: str,
     rule_id: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get a specific bank rule"""
     try:
@@ -245,7 +245,7 @@ async def update_bank_rule(
     rule_id: str,
     rule_data: BankRuleUpdate,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Update a bank rule"""
     try:
@@ -277,7 +277,7 @@ async def delete_bank_rule(
     company_id: str,
     rule_id: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Delete a bank rule"""
     try:
