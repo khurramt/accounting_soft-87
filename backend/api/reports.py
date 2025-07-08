@@ -131,7 +131,7 @@ async def run_report(
     
     return ReportExecutionResponse.from_orm(execution)
 
-@router.get("/reports/{report_id}/data", response_model=ReportDataResponse)
+@router.get("/reports/definition/{report_id}/data", response_model=ReportDataResponse)
 async def get_report_data(
     company_id: str,
     report_id: str,
