@@ -669,6 +669,10 @@ class ReportExportService:
                 value = f"${value:,.2f}"
             table_data.append([key, str(value)])
         
+        # Handle empty summary data
+        if not table_data:
+            table_data = [["No summary data available", ""]]
+        
         table = Table(table_data)
         table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
