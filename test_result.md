@@ -49,12 +49,11 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "Task name 1"
-##     - "Task name 2"
+##     - "Vendor Management Integration - Phase 1.3"
 ##   stuck_tasks:
-##     - "Task name with persistent issues"
+##     - "None"
 ##   test_all: false
-##   test_priority: "high_first"  # or "sequential" or "stuck_first"
+##   test_priority: "high_first"
 ##
 ## agent_communication:
 ##     -agent: "main"  # or "testing" or "user"
