@@ -12,7 +12,7 @@ from schemas.audit_schemas import (
     AuditLogResponse, AuditLogFilter, AuditLogList,
     AuditReportRequest, AuditReportResponse
 )
-from models.audit import SecurityEvent
+from models.audit import SecurityEvent, AuditAction
 from schemas.audit_schemas import SecurityLogCreate
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
