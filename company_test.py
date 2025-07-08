@@ -102,8 +102,8 @@ def test_create_company():
             "phone": "555-123-4567",
             "email": f"test.company.{timestamp}@example.com",
             "website": "https://example.com",
-            "fiscal_year_start": "01-01",
-            "tax_year_start": "01-01",
+            "fiscal_year_start": "2025-01-01",
+            "tax_year_start": "2025-01-01",
             "currency": "USD",
             "language": "en-US"
         }
