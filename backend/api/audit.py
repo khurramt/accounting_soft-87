@@ -78,11 +78,22 @@ async def get_audit_logs(
                 detail="Insufficient permissions to view audit logs"
             )
         
+        # Convert action string to AuditAction enum if provided
+        action_enum = None
+        if action:
+            try:
+                action_enum = AuditAction(action.lower())
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid action value. Must be one of: {', '.join([e.value for e in AuditAction])}"
+                )
+        
         # Create filter object
         filters = AuditLogFilter(
             table_name=table_name,
             record_id=record_id,
-            action=action,
+            action=action_enum,
             user_id=user_id,
             date_from=date_from,
             date_to=date_to,
