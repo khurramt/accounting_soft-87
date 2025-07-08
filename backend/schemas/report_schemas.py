@@ -45,6 +45,25 @@ class ReportDefinitionBase(BaseModel):
     access_permissions: Dict[str, Any] = {"public": True}
     description: Optional[str] = None
 
+    @validator('default_filters', pre=True)
+    def convert_default_filters(cls, v):
+        """Convert empty dict to empty list for backwards compatibility"""
+        if isinstance(v, dict) and not v:  # empty dict
+            return []
+        elif isinstance(v, dict):
+            # Convert dict to list if needed (for backwards compatibility)
+            return []
+        return v
+
+    @validator('column_definitions', pre=True)
+    def convert_column_definitions(cls, v):
+        """Handle column_definitions conversion"""
+        if isinstance(v, list):
+            return v
+        elif isinstance(v, dict) and not v:  # empty dict
+            return []
+        return v
+
 class ReportDefinitionCreate(ReportDefinitionBase):
     pass
 
