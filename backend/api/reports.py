@@ -6,6 +6,7 @@ from datetime import datetime, date
 
 from database.connection import get_db
 from services.auth_service import auth_service
+from services.security import get_current_user
 from services.report_service import ReportService, MemorizedReportService, ReportGroupService
 from services.financial_report_service import FinancialReportService
 from services.report_export_service import ReportExportService
