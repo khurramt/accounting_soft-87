@@ -15,7 +15,7 @@ const apiClient = axios.create({
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('qb_access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
