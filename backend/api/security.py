@@ -499,12 +499,9 @@ async def get_security_settings(
                 detail="Insufficient permissions to view security settings"
             )
         
-        # Get security settings (implementation would need to be added to SecurityService)
-        # For now, return a placeholder response
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Get security settings not implemented yet"
-        )
+        # Get security settings
+        settings = await security_service.get_security_settings(company_id)
+        return settings
         
     except HTTPException:
         raise
