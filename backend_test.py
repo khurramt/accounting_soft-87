@@ -2542,11 +2542,31 @@ def run_transaction_tests():
         print("❌ Login failed, skipping all other tests")
         return False
     
-    # Test Invoice API
-    print("\n📋 Testing Invoice API...")
+    # Test Transaction Engine APIs
+    print("\n📋 Testing Transaction Engine APIs...")
+    
+    # Test Invoice Creation
     invoice_result, invoice_id = test_create_invoice()
     results["create_invoice"] = invoice_result
     
+    # Test Bill Creation
+    bill_result, bill_id = test_create_bill()
+    results["create_bill"] = bill_result
+    
+    # Test Payment Creation
+    payment_result, payment_id = test_create_payment()
+    results["create_payment"] = payment_result
+    
+    # Test General Transaction Creation
+    transaction_result, transaction_id = test_create_transaction()
+    results["create_transaction"] = transaction_result
+    
+    # Test Sales Receipt Creation
+    receipt_result, receipt_id = test_create_sales_receipt()
+    results["create_sales_receipt"] = receipt_result
+    
+    # Test Invoice API
+    print("\n📋 Testing Invoice API...")
     results["get_invoices"] = test_get_invoices()
     
     if invoice_id:
