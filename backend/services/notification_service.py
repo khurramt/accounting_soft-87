@@ -576,9 +576,9 @@ class EmailService(BaseNotificationService):
         await db.commit()
         await db.refresh(email)
         
-        # Process immediately if not scheduled
-        if not email_data.scheduled_at:
-            await EmailService._process_email(db, email)
+        # TODO: Process emails in background task instead of immediately
+        # if not email_data.scheduled_at:
+        #     await EmailService._process_email(db, email)
         
         logger.info("Email queued", 
                    email_id=email.email_id,
