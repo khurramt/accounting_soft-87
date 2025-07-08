@@ -49,8 +49,8 @@ async def get_payroll_items(
     search: Optional[str] = Query(None),
     item_type: Optional[str] = Query(None),
     is_active: Optional[bool] = Query(None),
-    sort_by: str = Query("item_name", regex="^(item_name|item_type|created_at)$"),
-    sort_order: str = Query("asc", regex="^(asc|desc)$"),
+    sort_by: str = Query("item_name", pattern="^(item_name|item_type|created_at)$"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
