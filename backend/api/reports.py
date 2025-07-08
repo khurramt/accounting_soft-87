@@ -96,7 +96,7 @@ async def get_reports(
         total_pages=total_pages
     )
 
-@router.get("/reports/{report_id}", response_model=ReportDefinitionResponse)
+@router.get("/reports/definition/{report_id}", response_model=ReportDefinitionResponse)
 async def get_report(
     company_id: str,
     report_id: str,
