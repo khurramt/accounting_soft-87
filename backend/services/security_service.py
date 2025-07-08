@@ -605,3 +605,91 @@ class SecurityService:
         
         except Exception as e:
             logger.error("Failed to check suspicious data access", error=str(e))
+    
+    async def get_security_settings(self, company_id: str) -> SecuritySettingsResponse:
+        """Get security settings for a company"""
+        try:
+            # Get existing settings
+            settings_query = select(SecuritySetting).where(
+                SecuritySetting.company_id == company_id
+            )
+            
+            result = await self.db.execute(settings_query)
+            settings = result.scalar_one_or_none()
+            
+            if not settings:
+                # Create default settings if none exist
+                settings = SecuritySetting(
+                    company_id=company_id,
+                    # Default values will be set by the model defaults
+                )
+                self.db.add(settings)
+                await self.db.commit()
+                await self.db.refresh(settings)
+            
+            return SecuritySettingsResponse(
+                setting_id=settings.setting_id,
+                company_id=settings.company_id,
+                password_policy=settings.password_policy,
+                session_settings=settings.session_settings,
+                access_control=settings.access_control,
+                audit_settings=settings.audit_settings,
+                created_at=settings.created_at,
+                updated_at=settings.updated_at
+            )
+            
+        except Exception as e:
+            logger.error("Failed to get security settings", error=str(e))
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to retrieve security settings"
+            )
+    
+    async def update_security_settings(self, company_id: str, settings_data: SecuritySettingsBase) -> SecuritySettingsResponse:
+        """Update security settings for a company"""
+        try:
+            # Get existing settings
+            settings_query = select(SecuritySetting).where(
+                SecuritySetting.company_id == company_id
+            )
+            
+            result = await self.db.execute(settings_query)
+            settings = result.scalar_one_or_none()
+            
+            if not settings:
+                # Create new settings if none exist
+                settings = SecuritySetting(
+                    company_id=company_id,
+                    password_policy=settings_data.password_policy,
+                    session_settings=settings_data.session_settings,
+                    access_control=settings_data.access_control,
+                    audit_settings=settings_data.audit_settings
+                )
+                self.db.add(settings)
+            else:
+                # Update existing settings
+                settings.password_policy = settings_data.password_policy
+                settings.session_settings = settings_data.session_settings
+                settings.access_control = settings_data.access_control
+                settings.audit_settings = settings_data.audit_settings
+            
+            await self.db.commit()
+            await self.db.refresh(settings)
+            
+            return SecuritySettingsResponse(
+                setting_id=settings.setting_id,
+                company_id=settings.company_id,
+                password_policy=settings.password_policy,
+                session_settings=settings.session_settings,
+                access_control=settings.access_control,
+                audit_settings=settings.audit_settings,
+                created_at=settings.created_at,
+                updated_at=settings.updated_at
+            )
+            
+        except Exception as e:
+            logger.error("Failed to update security settings", error=str(e))
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update security settings"
+            )
