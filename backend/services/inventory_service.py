@@ -799,6 +799,130 @@ class InventoryReceiptService(BaseInventoryService):
         return receipt
     
     @staticmethod
+    async def get_receipts(
+        db: AsyncSession,
+        company_id: str,
+        filters: ReceiptSearchFilters
+    ) -> Tuple[List[InventoryReceipt], int]:
+        """Get inventory receipts with filtering and pagination"""
+        
+        query = select(InventoryReceipt).options(
+            joinedload(InventoryReceipt.vendor),
+            joinedload(InventoryReceipt.purchase_order),
+            joinedload(InventoryReceipt.created_by_user),
+            selectinload(InventoryReceipt.receipt_lines).joinedload(ReceiptLine.item)
+        ).where(InventoryReceipt.company_id == company_id)
+        
+        # Apply filters
+        if filters.vendor_id:
+            query = query.where(InventoryReceipt.vendor_id == filters.vendor_id)
+        
+        if filters.status:
+            query = query.where(InventoryReceipt.status == filters.status)
+        
+        if filters.date_from:
+            query = query.where(InventoryReceipt.receipt_date >= filters.date_from)
+        
+        if filters.date_to:
+            query = query.where(InventoryReceipt.receipt_date <= filters.date_to)
+        
+        if filters.search:
+            search_term = f"%{filters.search}%"
+            query = query.join(Vendor).where(
+                or_(
+                    InventoryReceipt.receipt_number.ilike(search_term),
+                    InventoryReceipt.vendor_invoice_number.ilike(search_term),
+                    InventoryReceipt.tracking_number.ilike(search_term),
+                    InventoryReceipt.memo.ilike(search_term),
+                    Vendor.vendor_name.ilike(search_term)
+                )
+            )
+        
+        # Get total count
+        count_query = select(func.count()).select_from(query.subquery())
+        total_result = await db.execute(count_query)
+        total = total_result.scalar()
+        
+        # Apply sorting
+        if filters.sort_by:
+            sort_column = getattr(InventoryReceipt, filters.sort_by, InventoryReceipt.receipt_date)
+            if filters.sort_order == "desc":
+                query = query.order_by(desc(sort_column))
+            else:
+                query = query.order_by(asc(sort_column))
+        else:
+            query = query.order_by(desc(InventoryReceipt.receipt_date))
+        
+        # Apply pagination
+        offset = (filters.page - 1) * filters.page_size
+        query = query.offset(offset).limit(filters.page_size)
+        
+        result = await db.execute(query)
+        receipts = result.scalars().all()
+        
+        return receipts, total
+    
+    @staticmethod
+    async def get_receipt_by_id(
+        db: AsyncSession,
+        company_id: str,
+        receipt_id: str
+    ) -> Optional[InventoryReceipt]:
+        """Get receipt by ID"""
+        
+        result = await db.execute(
+            select(InventoryReceipt).options(
+                joinedload(InventoryReceipt.vendor),
+                joinedload(InventoryReceipt.purchase_order),
+                joinedload(InventoryReceipt.created_by_user),
+                selectinload(InventoryReceipt.receipt_lines).joinedload(ReceiptLine.item)
+            ).where(
+                and_(
+                    InventoryReceipt.receipt_id == receipt_id,
+                    InventoryReceipt.company_id == company_id
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+    
+    @staticmethod
+    async def update_receipt(
+        db: AsyncSession,
+        company_id: str,
+        receipt_id: str,
+        receipt_data: InventoryReceiptUpdate
+    ) -> Optional[InventoryReceipt]:
+        """Update an inventory receipt"""
+        
+        result = await db.execute(
+            select(InventoryReceipt).where(
+                and_(
+                    InventoryReceipt.receipt_id == receipt_id,
+                    InventoryReceipt.company_id == company_id
+                )
+            )
+        )
+        receipt = result.scalar_one_or_none()
+        
+        if not receipt:
+            return None
+        
+        # Check if receipt can be modified (not if already complete)
+        if receipt.status == ReceiptStatus.COMPLETE:
+            raise ValueError("Cannot modify receipt that has been completed")
+        
+        # Update fields
+        for field, value in receipt_data.dict(exclude_unset=True).items():
+            setattr(receipt, field, value)
+        
+        await db.commit()
+        await db.refresh(receipt)
+        
+        logger.info("Inventory receipt updated", 
+                   receipt_id=receipt_id)
+        
+        return receipt
+    @staticmethod
     async def _generate_receipt_number(db: AsyncSession, company_id: str) -> str:
         """Generate next receipt number"""
         result = await db.execute(
