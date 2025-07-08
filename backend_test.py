@@ -1171,7 +1171,7 @@ def test_create_item():
             "description": "Test item created via API",
             "sales_price": 49.99,
             "purchase_cost": 29.99,
-            "quantity_on_hand": 100,
+            "quantity_on_hand": 10,
             "reorder_point": 25,
             "manufacturer": "Test Manufacturer"
         }
