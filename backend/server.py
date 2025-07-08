@@ -26,6 +26,10 @@ from api.customers import router as customers_router
 from api.vendors import router as vendors_router
 from api.items import router as items_router
 from api.employees import router as employees_router
+from api.transactions import router as transactions_router
+from api.invoices import router as invoices_router
+from api.bills import router as bills_router
+from api.payments import router as payments_router
 import uuid
 from datetime import datetime
 
