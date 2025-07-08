@@ -227,30 +227,3 @@ async def delete_item(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete item"
         )
-
-@router.get("/low-stock", response_model=List[ItemResponse])
-async def get_low_stock_items(
-    company_id: str,
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """Get items with low stock"""
-    try:
-        # Verify user has access to company
-        if not await ItemService.verify_company_access(db, str(user.user_id), company_id):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access denied to this company"
-            )
-        
-        items = await ItemService.get_low_stock_items(db, company_id)
-        return [ItemResponse.from_orm(item) for item in items]
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error("Failed to get low stock items", error=str(e))
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get low stock items"
-        )
