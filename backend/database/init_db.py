@@ -38,8 +38,10 @@ async def create_tables():
 
 async def create_demo_data():
     """Create demo data for testing"""
+    import uuid
     from database.connection import AsyncSessionLocal
     from services.auth_service import auth_service
+    from models.reports import ReportDefinition, ReportCategory, ReportType
     
     async with AsyncSessionLocal() as session:
         try:
@@ -83,6 +85,189 @@ async def create_demo_data():
                 accepted_at=demo_user.created_at
             )
             session.add(membership)
+            
+            # Create system report definitions
+            system_reports = [
+                {
+                    "report_name": "Profit & Loss",
+                    "report_category": ReportCategory.COMPANY_FINANCIAL,
+                    "description": "Shows company income, expenses, and net profit over a period",
+                    "is_system_report": True,
+                    "parameters": {
+                        "start_date": {
+                            "name": "start_date",
+                            "type": "date",
+                            "label": "Start Date",
+                            "required": True
+                        },
+                        "end_date": {
+                            "name": "end_date",
+                            "type": "date", 
+                            "label": "End Date",
+                            "required": True
+                        },
+                        "comparison_type": {
+                            "name": "comparison_type",
+                            "type": "select",
+                            "label": "Comparison",
+                            "options": [
+                                {"value": "none", "label": "No Comparison"},
+                                {"value": "previous_period", "label": "Previous Period"},
+                                {"value": "previous_year", "label": "Previous Year"}
+                            ]
+                        }
+                    },
+                    "column_definitions": [
+                        {"name": "section", "label": "Section", "data_type": "string"},
+                        {"name": "account_name", "label": "Account", "data_type": "string"},
+                        {"name": "amount", "label": "Amount", "data_type": "currency", "alignment": "right"}
+                    ]
+                },
+                {
+                    "report_name": "Balance Sheet",
+                    "report_category": ReportCategory.COMPANY_FINANCIAL,
+                    "description": "Shows company assets, liabilities, and equity at a point in time",
+                    "is_system_report": True,
+                    "parameters": {
+                        "as_of_date": {
+                            "name": "as_of_date",
+                            "type": "date",
+                            "label": "As of Date",
+                            "required": True
+                        }
+                    },
+                    "column_definitions": [
+                        {"name": "section", "label": "Section", "data_type": "string"},
+                        {"name": "account_name", "label": "Account", "data_type": "string"},
+                        {"name": "amount", "label": "Amount", "data_type": "currency", "alignment": "right"}
+                    ]
+                },
+                {
+                    "report_name": "Cash Flow Statement",
+                    "report_category": ReportCategory.COMPANY_FINANCIAL,
+                    "description": "Shows cash inflows and outflows by activity type",
+                    "is_system_report": True,
+                    "parameters": {
+                        "start_date": {
+                            "name": "start_date",
+                            "type": "date",
+                            "label": "Start Date",
+                            "required": True
+                        },
+                        "end_date": {
+                            "name": "end_date",
+                            "type": "date",
+                            "label": "End Date",
+                            "required": True
+                        },
+                        "method": {
+                            "name": "method",
+                            "type": "select",
+                            "label": "Method",
+                            "options": [
+                                {"value": "indirect", "label": "Indirect Method"},
+                                {"value": "direct", "label": "Direct Method"}
+                            ]
+                        }
+                    },
+                    "column_definitions": [
+                        {"name": "section", "label": "Activity", "data_type": "string"},
+                        {"name": "account_name", "label": "Description", "data_type": "string"},
+                        {"name": "amount", "label": "Amount", "data_type": "currency", "alignment": "right"}
+                    ]
+                },
+                {
+                    "report_name": "Trial Balance",
+                    "report_category": ReportCategory.COMPANY_FINANCIAL,
+                    "description": "Shows all account balances to verify debits equal credits",
+                    "is_system_report": True,
+                    "parameters": {
+                        "as_of_date": {
+                            "name": "as_of_date",
+                            "type": "date",
+                            "label": "As of Date",
+                            "required": True
+                        },
+                        "include_zero_balances": {
+                            "name": "include_zero_balances",
+                            "type": "boolean",
+                            "label": "Include Zero Balances",
+                            "default_value": False
+                        }
+                    },
+                    "column_definitions": [
+                        {"name": "account_number", "label": "Account #", "data_type": "string"},
+                        {"name": "account_name", "label": "Account Name", "data_type": "string"},
+                        {"name": "debit_balance", "label": "Debit", "data_type": "currency", "alignment": "right"},
+                        {"name": "credit_balance", "label": "Credit", "data_type": "currency", "alignment": "right"}
+                    ]
+                },
+                {
+                    "report_name": "A/R Aging Summary",
+                    "report_category": ReportCategory.CUSTOMERS_RECEIVABLES,
+                    "description": "Shows outstanding customer invoices by age",
+                    "is_system_report": True,
+                    "parameters": {
+                        "as_of_date": {
+                            "name": "as_of_date",
+                            "type": "date",
+                            "label": "As of Date",
+                            "required": True
+                        },
+                        "aging_periods": {
+                            "name": "aging_periods",
+                            "type": "string",
+                            "label": "Aging Periods (days)",
+                            "default_value": "30,60,90,120"
+                        }
+                    },
+                    "column_definitions": [
+                        {"name": "customer_name", "label": "Customer", "data_type": "string"},
+                        {"name": "total_balance", "label": "Total", "data_type": "currency", "alignment": "right"},
+                        {"name": "current", "label": "Current", "data_type": "currency", "alignment": "right"},
+                        {"name": "1_30_days", "label": "1-30 Days", "data_type": "currency", "alignment": "right"},
+                        {"name": "31_60_days", "label": "31-60 Days", "data_type": "currency", "alignment": "right"},
+                        {"name": "61_90_days", "label": "61-90 Days", "data_type": "currency", "alignment": "right"},
+                        {"name": "over_90_days", "label": "Over 90 Days", "data_type": "currency", "alignment": "right"}
+                    ]
+                },
+                {
+                    "report_name": "A/P Aging Summary", 
+                    "report_category": ReportCategory.VENDORS_PAYABLES,
+                    "description": "Shows outstanding vendor bills by age",
+                    "is_system_report": True,
+                    "parameters": {
+                        "as_of_date": {
+                            "name": "as_of_date",
+                            "type": "date",
+                            "label": "As of Date",
+                            "required": True
+                        },
+                        "aging_periods": {
+                            "name": "aging_periods",
+                            "type": "string",
+                            "label": "Aging Periods (days)",
+                            "default_value": "30,60,90,120"
+                        }
+                    },
+                    "column_definitions": [
+                        {"name": "vendor_name", "label": "Vendor", "data_type": "string"},
+                        {"name": "total_balance", "label": "Total", "data_type": "currency", "alignment": "right"},
+                        {"name": "current", "label": "Current", "data_type": "currency", "alignment": "right"},
+                        {"name": "1_30_days", "label": "1-30 Days", "data_type": "currency", "alignment": "right"},
+                        {"name": "31_60_days", "label": "31-60 Days", "data_type": "currency", "alignment": "right"},
+                        {"name": "61_90_days", "label": "61-90 Days", "data_type": "currency", "alignment": "right"},
+                        {"name": "over_90_days", "label": "Over 90 Days", "data_type": "currency", "alignment": "right"}
+                    ]
+                }
+            ]
+            
+            for report_data in system_reports:
+                report = ReportDefinition(
+                    report_id=str(uuid.uuid4()),
+                    **report_data
+                )
+                session.add(report)
             
             await session.commit()
             logger.info("Demo data created successfully")
