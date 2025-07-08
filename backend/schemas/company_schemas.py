@@ -62,7 +62,7 @@ class CompanyResponse(CompanyBase):
     trial_ends_at: Optional[datetime] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class CompanySettingRequest(BaseModel):
     category: str = Field(..., min_length=1, max_length=50)
