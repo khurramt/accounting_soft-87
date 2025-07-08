@@ -190,6 +190,10 @@ api_router.include_router(webhooks_router)
 api_router.include_router(sms_management_router)
 api_router.include_router(notification_preferences_router)
 
+# Include audit & security routes
+api_router.include_router(audit_router)
+api_router.include_router(security_router)
+
 # Include the API router in the main app
 app.include_router(api_router)
 
