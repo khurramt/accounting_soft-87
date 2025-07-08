@@ -167,6 +167,15 @@ api_router.include_router(bank_reconciliation_router)
 # Include payroll routes
 api_router.include_router(payroll_router)
 
+# Include inventory management routes
+api_router.include_router(inventory_router)
+api_router.include_router(inventory_adjustments_router)
+api_router.include_router(purchase_orders_router)
+api_router.include_router(inventory_receipts_router)
+api_router.include_router(inventory_locations_router)
+api_router.include_router(inventory_assemblies_router)
+api_router.include_router(inventory_reorder_router)
+
 # Include the API router in the main app
 app.include_router(api_router)
 
