@@ -110,7 +110,7 @@ class CompanyUserResponse(BaseModel):
     accepted_at: Optional[datetime] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class CompanyUserInviteRequest(BaseModel):
     email: str = Field(..., max_length=255)
