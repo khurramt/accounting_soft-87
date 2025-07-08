@@ -20,6 +20,7 @@ import structlog
 from contextlib import asynccontextmanager
 from database.connection import close_db_connections
 from api.auth import router as auth_router
+from api.companies import router as companies_router
 import uuid
 from datetime import datetime
 
