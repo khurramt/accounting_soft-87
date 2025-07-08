@@ -697,3 +697,149 @@ class SecurityService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update security settings"
             )
+    
+    async def get_user_permissions(self, company_id: str, user_id: str, page: int = 1, page_size: int = 50) -> UserPermissionList:
+        """Get permissions for a user"""
+        try:
+            # Get user permissions
+            permissions_query = select(UserPermission).where(
+                and_(
+                    UserPermission.user_id == user_id,
+                    UserPermission.company_id == company_id,
+                    UserPermission.is_active == True
+                )
+            ).order_by(UserPermission.created_at.desc())
+            
+            # Apply pagination
+            total_query = select(func.count(UserPermission.permission_id)).where(
+                and_(
+                    UserPermission.user_id == user_id,
+                    UserPermission.company_id == company_id,
+                    UserPermission.is_active == True
+                )
+            )
+            
+            total_result = await self.db.execute(total_query)
+            total = total_result.scalar()
+            
+            # Apply pagination to main query
+            permissions_query = permissions_query.offset((page - 1) * page_size).limit(page_size)
+            
+            result = await self.db.execute(permissions_query)
+            permissions = result.scalars().all()
+            
+            # Convert to response models
+            permission_responses = []
+            for permission in permissions:
+                permission_responses.append(UserPermissionResponse(
+                    permission_id=permission.permission_id,
+                    user_id=permission.user_id,
+                    company_id=permission.company_id,
+                    resource=permission.resource,
+                    actions=permission.actions,
+                    conditions=permission.conditions,
+                    granted_by=permission.granted_by,
+                    expires_at=permission.expires_at,
+                    is_active=permission.is_active,
+                    created_at=permission.created_at,
+                    updated_at=permission.updated_at
+                ))
+            
+            return UserPermissionList(
+                items=permission_responses,
+                total=total,
+                page=page,
+                page_size=page_size,
+                total_pages=ceil(total / page_size)
+            )
+            
+        except Exception as e:
+            logger.error("Failed to get user permissions", error=str(e))
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to retrieve user permissions"
+            )
+    
+    async def update_user_permissions(self, company_id: str, user_id: str, permissions: List[UserPermissionUpdate], current_user_id: str) -> List[UserPermissionResponse]:
+        """Update permissions for a user"""
+        try:
+            # First, deactivate all existing permissions for this user
+            deactivate_query = update(UserPermission).where(
+                and_(
+                    UserPermission.user_id == user_id,
+                    UserPermission.company_id == company_id
+                )
+            ).values(is_active=False)
+            
+            await self.db.execute(deactivate_query)
+            
+            # Create new permissions
+            updated_permissions = []
+            for perm_data in permissions:
+                # Check if this permission already exists
+                existing_query = select(UserPermission).where(
+                    and_(
+                        UserPermission.user_id == user_id,
+                        UserPermission.company_id == company_id,
+                        UserPermission.resource == perm_data.resource
+                    )
+                )
+                
+                existing_result = await self.db.execute(existing_query)
+                existing_permission = existing_result.scalar_one_or_none()
+                
+                if existing_permission:
+                    # Update existing permission
+                    existing_permission.actions = perm_data.actions
+                    existing_permission.conditions = perm_data.conditions
+                    existing_permission.expires_at = perm_data.expires_at
+                    existing_permission.is_active = True
+                    existing_permission.granted_by = current_user_id
+                    
+                    updated_permissions.append(existing_permission)
+                else:
+                    # Create new permission
+                    new_permission = UserPermission(
+                        user_id=user_id,
+                        company_id=company_id,
+                        resource=perm_data.resource,
+                        actions=perm_data.actions,
+                        conditions=perm_data.conditions,
+                        expires_at=perm_data.expires_at,
+                        granted_by=current_user_id,
+                        is_active=True
+                    )
+                    self.db.add(new_permission)
+                    updated_permissions.append(new_permission)
+            
+            await self.db.commit()
+            
+            # Refresh all permissions
+            for permission in updated_permissions:
+                await self.db.refresh(permission)
+            
+            # Convert to response models
+            permission_responses = []
+            for permission in updated_permissions:
+                permission_responses.append(UserPermissionResponse(
+                    permission_id=permission.permission_id,
+                    user_id=permission.user_id,
+                    company_id=permission.company_id,
+                    resource=permission.resource,
+                    actions=permission.actions,
+                    conditions=permission.conditions,
+                    granted_by=permission.granted_by,
+                    expires_at=permission.expires_at,
+                    is_active=permission.is_active,
+                    created_at=permission.created_at,
+                    updated_at=permission.updated_at
+                ))
+            
+            return permission_responses
+            
+        except Exception as e:
+            logger.error("Failed to update user permissions", error=str(e))
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update user permissions"
+            )
