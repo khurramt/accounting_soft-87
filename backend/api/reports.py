@@ -365,7 +365,7 @@ async def delete_report_group(
     return {"message": "Report group deleted successfully"}
 
 # Report Export Endpoints
-@router.post("/reports/{report_id}/export/pdf", response_model=ReportExportResponse)
+@router.post("/reports/definition/{report_id}/export/pdf", response_model=ReportExportResponse)
 async def export_report_to_pdf(
     company_id: str,
     report_id: str,
