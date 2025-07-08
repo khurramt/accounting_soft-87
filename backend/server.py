@@ -35,6 +35,13 @@ from api.banking import router as banking_router
 from api.bank_rules import router as bank_rules_router
 from api.bank_reconciliation import router as bank_reconciliation_router
 from api.payroll import router as payroll_router
+from api.inventory import router as inventory_router
+from api.inventory_adjustments import router as inventory_adjustments_router
+from api.purchase_orders import router as purchase_orders_router
+from api.inventory_receipts import router as inventory_receipts_router
+from api.inventory_locations import router as inventory_locations_router
+from api.inventory_assemblies import router as inventory_assemblies_router
+from api.inventory_reorder import router as inventory_reorder_router
 import uuid
 from datetime import datetime
 
