@@ -1412,7 +1412,7 @@ def test_get_low_stock_items():
         headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
         
         response = requests.get(
-            f"{API_URL}/companies/{COMPANY_ID}/items/low-stock/", 
+            f"{API_URL}/companies/{COMPANY_ID}/items/low-stock", 
             headers=headers, 
             timeout=TIMEOUT
         )
