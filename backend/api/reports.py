@@ -209,7 +209,7 @@ async def update_report_filters(
     # For now, just return success
     return {"message": "Filters updated successfully"}
 
-@router.get("/reports/{report_id}/columns")
+@router.get("/reports/definition/{report_id}/columns")
 async def get_report_columns(
     company_id: str,
     report_id: str,
