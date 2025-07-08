@@ -166,7 +166,7 @@ class EmailQueueResponse(BaseResponse):
     bounced_at: Optional[datetime]
     delivered_at: Optional[datetime]
     created_at: datetime
-    updated_at: Optional[datetime]
+    updated_at: Optional[datetime] = None
 
 # SMS Queue schemas
 class SMSSendRequest(BaseRequest):
