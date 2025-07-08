@@ -492,7 +492,7 @@
 
 ## test_plan:
   current_focus:
-    - "LIST MANAGEMENT MODULE BACKEND - Comprehensive testing of all 5 entities (Accounts, Customers, Vendors, Items, Employees) with CRUD operations, search/filtering, pagination, and business logic validation"
+    - "BANKING INTEGRATION MODULE BACKEND - Comprehensive testing of all banking features (Bank Connections, Transactions, Rules, Reconciliation, File Upload, Institution Search) with CRUD operations, transaction matching, and file parsing validation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
