@@ -28,62 +28,80 @@ class SecurityService:
     ) -> User:
         """Get current authenticated user"""
         
-        # Decode token
-        payload = auth_service.decode_access_token(credentials.credentials)
-        user_id = payload.get("user_id")
-        session_id = payload.get("session_id")
-        
-        # Check if token is blacklisted
-        redis = await get_redis()
-        is_blacklisted = await redis.get(f"blacklist:{session_id}")
-        if is_blacklisted:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token has been revoked"
-            )
-        
-        # Get user and session
-        result = await db.execute(
-            select(User, UserSession).join(UserSession).where(
-                and_(
-                    User.user_id == user_id,
-                    UserSession.session_id == session_id,
-                    UserSession.is_active == True,
-                    UserSession.expires_at > datetime.now(timezone.utc)
+        try:
+            # Decode token
+            payload = auth_service.decode_access_token(credentials.credentials)
+            user_id = payload.get("user_id")
+            session_id = payload.get("session_id")
+            
+            logger.info(f"Token decoded successfully: user_id={user_id}, session_id={session_id}")
+            
+            # Check if token is blacklisted
+            redis = await get_redis()
+            is_blacklisted = await redis.get(f"blacklist:{session_id}")
+            if is_blacklisted:
+                logger.warning(f"Token is blacklisted: session_id={session_id}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token has been revoked"
+                )
+            
+            logger.info(f"Token not blacklisted, checking user and session")
+            
+            # Get user and session
+            result = await db.execute(
+                select(User, UserSession).join(UserSession).where(
+                    and_(
+                        User.user_id == user_id,
+                        UserSession.session_id == session_id,
+                        UserSession.is_active == True,
+                        UserSession.expires_at > datetime.now(timezone.utc)
+                    )
                 )
             )
-        )
-        user_session = result.first()
-        
-        if not user_session:
+            user_session = result.first()
+            
+            if not user_session:
+                logger.warning(f"User or session not found: user_id={user_id}, session_id={session_id}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="User not found or session invalid"
+                )
+            
+            user, session = user_session
+            
+            # Check if user is active
+            if not user.is_active:
+                logger.warning(f"User account is deactivated: user_id={user_id}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="User account is deactivated"
+                )
+            
+            logger.info(f"User authenticated successfully: user_id={user_id}")
+            
+            # Update session last used
+            session.last_used = datetime.now(timezone.utc)
+            await db.commit()
+            
+            # Log access
+            logger.info(
+                "User accessed endpoint",
+                user_id=str(user.user_id),
+                endpoint=request.url.path,
+                method=request.method,
+                ip_address=self.get_client_ip(request)
+            )
+            
+            return user
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in get_current_user: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found or session invalid"
+                detail="Not authenticated"
             )
-        
-        user, session = user_session
-        
-        # Check if user is active
-        if not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User account is deactivated"
-            )
-        
-        # Update session last used
-        session.last_used = datetime.now(timezone.utc)
-        await db.commit()
-        
-        # Log access
-        logger.info(
-            "User accessed endpoint",
-            user_id=str(user.user_id),
-            endpoint=request.url.path,
-            method=request.method,
-            ip_address=self.get_client_ip(request)
-        )
-        
-        return user
     
     def get_client_ip(self, request: Request) -> str:
         """Get client IP address"""
