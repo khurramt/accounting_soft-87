@@ -156,11 +156,17 @@ async def update_receipt(
                 detail="Access denied to this company"
             )
         
-        # Implementation needed in service
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Receipt not found"
+        updated_receipt = await InventoryReceiptService.update_receipt(
+            db, company_id, receipt_id, receipt_data
         )
+        
+        if not updated_receipt:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Receipt not found"
+            )
+        
+        return InventoryReceiptResponse.from_orm(updated_receipt)
         
     except HTTPException:
         raise
