@@ -141,7 +141,6 @@ class EmailSendRequest(BaseRequest):
     scheduled_at: Optional[datetime] = None
 
 class EmailTemplatePreview(BaseRequest):
-    template_id: str = Field(..., description="Template ID")
     variables: Optional[Dict[str, Any]] = None
 
 class EmailQueueResponse(BaseResponse):
