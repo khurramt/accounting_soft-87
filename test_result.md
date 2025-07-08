@@ -492,8 +492,9 @@
 
 ## test_plan:
   current_focus:
-    - "AUDIT & SECURITY MODULE BACKEND - Comprehensive testing of all audit and security features (Audit Logs, Security Logs, Roles, User Permissions, Security Settings) with CRUD operations, permission checking, threat detection, and compliance reporting validation"
-  stuck_tasks: []
+    - "AUDIT & SECURITY MODULE BACKEND - Fix case mismatch in AuditAction enum and permission issues in security endpoints"
+  stuck_tasks:
+    - "Audit & Security Module Implementation"
   test_all: false
   test_priority: "high_first"
 
