@@ -1797,6 +1797,815 @@ def run_list_management_tests():
     
     return all_passed
 
+# ===== TRANSACTION API TESTS =====
+
+def test_create_invoice():
+    """Test creating an invoice"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create invoice test skipped: No access token or company ID available")
+        return False, None
+    
+    try:
+        print("\n🔍 Testing create invoice...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # First, create a customer for the invoice
+        customer_success, customer_id = test_create_customer()
+        if not customer_success or not customer_id:
+            print("❌ Create invoice test failed: Could not create customer")
+            return False, None
+        
+        # Create an item for the invoice line
+        item_success, item_id = test_create_item()
+        if not item_success or not item_id:
+            print("❌ Create invoice test failed: Could not create item")
+            return False, None
+        
+        # Generate a unique invoice
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        # Create invoice payload
+        payload = {
+            "transaction_type": "invoice",
+            "transaction_date": datetime.now().strftime("%Y-%m-%d"),
+            "due_date": (datetime.now().replace(day=1) + timedelta(days=30)).strftime("%Y-%m-%d"),
+            "customer_id": customer_id,
+            "memo": f"Test invoice created via API {timestamp}",
+            "payment_terms": "Net 30",
+            "billing_address": {
+                "line1": "123 Billing St",
+                "city": "Billing City",
+                "state": "BC",
+                "zip_code": "12345",
+                "country": "US"
+            },
+            "shipping_address": {
+                "line1": "456 Shipping St",
+                "city": "Shipping City",
+                "state": "SC",
+                "zip_code": "54321",
+                "country": "US"
+            },
+            "lines": [
+                {
+                    "line_number": 1,
+                    "line_type": "item",
+                    "item_id": item_id,
+                    "description": "Test product",
+                    "quantity": 2,
+                    "unit_price": 100.00,
+                    "tax_rate": 8.25
+                },
+                {
+                    "line_number": 2,
+                    "line_type": "item",
+                    "description": "Additional service",
+                    "quantity": 1,
+                    "unit_price": 50.00,
+                    "tax_rate": 8.25
+                }
+            ]
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/invoices/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "transaction_id" in data and data.get("transaction_type") == "invoice":
+                invoice_id = data["transaction_id"]
+                print(f"✅ Create invoice test passed (ID: {invoice_id})")
+                return True, invoice_id
+            else:
+                print(f"❌ Create invoice test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create invoice test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create invoice test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create invoice test failed: {str(e)}")
+        return False, None
+
+def test_get_invoices():
+    """Test getting invoices with filtering"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get invoices test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get invoices with filtering...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with filtering parameters
+        params = {
+            "page": 1,
+            "page_size": 10,
+            "sort_by": "transaction_date",
+            "sort_order": "desc"
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/invoices/", 
+            headers=headers, 
+            params=params,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data and "page" in data:
+                print(f"✅ Get invoices test passed (Found {data['total']} invoices)")
+                return True
+            else:
+                print(f"❌ Get invoices test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get invoices test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get invoices test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get invoices test failed: {str(e)}")
+        return False
+
+def test_get_invoice_by_id(invoice_id):
+    """Test getting an invoice by ID"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not invoice_id:
+        print("❌ Get invoice by ID test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing get invoice by ID: {invoice_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/invoices/{invoice_id}", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "transaction_id" in data and data["transaction_id"] == invoice_id:
+                print("✅ Get invoice by ID test passed")
+                return True
+            else:
+                print(f"❌ Get invoice by ID test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get invoice by ID test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get invoice by ID test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get invoice by ID test failed: {str(e)}")
+        return False
+
+def test_update_invoice(invoice_id):
+    """Test updating an invoice"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not invoice_id:
+        print("❌ Update invoice test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing update invoice: {invoice_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Updated invoice data
+        payload = {
+            "memo": f"Updated invoice memo {datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "payment_terms": "Net 15"
+        }
+        
+        response = requests.put(
+            f"{API_URL}/companies/{COMPANY_ID}/invoices/{invoice_id}", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "transaction_id" in data and data["transaction_id"] == invoice_id and data["memo"] == payload["memo"]:
+                print("✅ Update invoice test passed")
+                return True
+            else:
+                print(f"❌ Update invoice test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Update invoice test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Update invoice test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Update invoice test failed: {str(e)}")
+        return False
+
+def test_post_invoice(invoice_id):
+    """Test posting an invoice"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not invoice_id:
+        print("❌ Post invoice test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing post invoice: {invoice_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        payload = {
+            "posting_date": datetime.now().strftime("%Y-%m-%d")
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/transactions/{invoice_id}/post", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "transaction_id" in data and data["transaction_id"] == invoice_id and data["is_posted"] == True:
+                print("✅ Post invoice test passed")
+                return True
+            else:
+                print(f"❌ Post invoice test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Post invoice test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Post invoice test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Post invoice test failed: {str(e)}")
+        return False
+
+def test_void_invoice(invoice_id):
+    """Test voiding an invoice"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not invoice_id:
+        print("❌ Void invoice test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing void invoice: {invoice_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        payload = {
+            "reason": "Testing void functionality"
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/transactions/{invoice_id}/void", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "transaction_id" in data and data["transaction_id"] == invoice_id and data["is_void"] == True:
+                print("✅ Void invoice test passed")
+                return True
+            else:
+                print(f"❌ Void invoice test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Void invoice test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Void invoice test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Void invoice test failed: {str(e)}")
+        return False
+
+def test_create_bill():
+    """Test creating a bill"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create bill test skipped: No access token or company ID available")
+        return False, None
+    
+    try:
+        print("\n🔍 Testing create bill...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # First, create a vendor for the bill
+        vendor_success, vendor_id = test_create_vendor()
+        if not vendor_success or not vendor_id:
+            print("❌ Create bill test failed: Could not create vendor")
+            return False, None
+        
+        # Create an item for the bill line
+        item_success, item_id = test_create_item()
+        if not item_success or not item_id:
+            print("❌ Create bill test failed: Could not create item")
+            return False, None
+        
+        # Generate a unique bill
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        # Create bill payload
+        payload = {
+            "transaction_type": "bill",
+            "transaction_date": datetime.now().strftime("%Y-%m-%d"),
+            "due_date": (datetime.now().replace(day=1) + timedelta(days=30)).strftime("%Y-%m-%d"),
+            "vendor_id": vendor_id,
+            "memo": f"Test bill created via API {timestamp}",
+            "payment_terms": "Net 30",
+            "lines": [
+                {
+                    "line_number": 1,
+                    "line_type": "item",
+                    "item_id": item_id,
+                    "description": "Test product purchase",
+                    "quantity": 5,
+                    "unit_price": 80.00
+                },
+                {
+                    "line_number": 2,
+                    "line_type": "account",
+                    "description": "Consulting services",
+                    "quantity": 1,
+                    "unit_price": 200.00
+                }
+            ]
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/bills/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "transaction_id" in data and data.get("transaction_type") == "bill":
+                bill_id = data["transaction_id"]
+                print(f"✅ Create bill test passed (ID: {bill_id})")
+                return True, bill_id
+            else:
+                print(f"❌ Create bill test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create bill test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create bill test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create bill test failed: {str(e)}")
+        return False, None
+
+def test_get_bills():
+    """Test getting bills with filtering"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get bills test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get bills with filtering...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with filtering parameters
+        params = {
+            "page": 1,
+            "page_size": 10,
+            "sort_by": "transaction_date",
+            "sort_order": "desc"
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/bills/", 
+            headers=headers, 
+            params=params,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data and "page" in data:
+                print(f"✅ Get bills test passed (Found {data['total']} bills)")
+                return True
+            else:
+                print(f"❌ Get bills test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get bills test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get bills test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get bills test failed: {str(e)}")
+        return False
+
+def test_get_bill_by_id(bill_id):
+    """Test getting a bill by ID"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not bill_id:
+        print("❌ Get bill by ID test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing get bill by ID: {bill_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/bills/{bill_id}", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "transaction_id" in data and data["transaction_id"] == bill_id:
+                print("✅ Get bill by ID test passed")
+                return True
+            else:
+                print(f"❌ Get bill by ID test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get bill by ID test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get bill by ID test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get bill by ID test failed: {str(e)}")
+        return False
+
+def test_post_bill(bill_id):
+    """Test posting a bill"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not bill_id:
+        print("❌ Post bill test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing post bill: {bill_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        payload = {
+            "posting_date": datetime.now().strftime("%Y-%m-%d")
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/transactions/{bill_id}/post", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "transaction_id" in data and data["transaction_id"] == bill_id and data["is_posted"] == True:
+                print("✅ Post bill test passed")
+                return True
+            else:
+                print(f"❌ Post bill test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Post bill test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Post bill test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Post bill test failed: {str(e)}")
+        return False
+
+def test_create_payment():
+    """Test creating a payment and applying it to an invoice"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create payment test skipped: No access token or company ID available")
+        return False, None
+    
+    try:
+        print("\n🔍 Testing create payment...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # First, create an invoice to apply payment to
+        invoice_success, invoice_id = test_create_invoice()
+        if not invoice_success or not invoice_id:
+            print("❌ Create payment test failed: Could not create invoice")
+            return False, None
+        
+        # Post the invoice
+        post_success = test_post_invoice(invoice_id)
+        if not post_success:
+            print("❌ Create payment test failed: Could not post invoice")
+            return False, None
+        
+        # Get the invoice to determine amount
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/invoices/{invoice_id}", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        
+        if response.status_code != 200:
+            print(f"❌ Create payment test failed: Could not get invoice details")
+            return False, None
+        
+        invoice_data = response.json()
+        invoice_amount = float(invoice_data.get("total_amount", 0))
+        customer_id = invoice_data.get("customer_id")
+        
+        # Create an account for deposit
+        account_success, account_id = test_create_account()
+        if not account_success or not account_id:
+            print("❌ Create payment test failed: Could not create deposit account")
+            return False, None
+        
+        # Generate a unique payment
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        # Create payment payload
+        payload = {
+            "payment_date": datetime.now().strftime("%Y-%m-%d"),
+            "payment_type": "check",
+            "payment_method": "Check #12345",
+            "reference_number": f"REF-{timestamp}",
+            "customer_id": customer_id,
+            "amount_received": invoice_amount,
+            "deposit_to_account_id": account_id,
+            "memo": f"Payment for invoice {invoice_id}",
+            "applications": [
+                {
+                    "transaction_id": invoice_id,
+                    "amount_applied": invoice_amount,
+                    "discount_taken": 0
+                }
+            ]
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/payments/", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False, None
+        
+        if response.status_code == 201:
+            if "payment_id" in data:
+                payment_id = data["payment_id"]
+                print(f"✅ Create payment test passed (ID: {payment_id})")
+                return True, payment_id
+            else:
+                print(f"❌ Create payment test failed: Unexpected response")
+                return False, None
+        else:
+            print(f"❌ Create payment test failed: Status code {response.status_code}")
+            return False, None
+    except requests.exceptions.Timeout:
+        print(f"❌ Create payment test failed: Request timed out after {TIMEOUT} seconds")
+        return False, None
+    except Exception as e:
+        print(f"❌ Create payment test failed: {str(e)}")
+        return False, None
+
+def test_check_invoice_balance(invoice_id):
+    """Test checking invoice balance after payment"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not invoice_id:
+        print("❌ Check invoice balance test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing check invoice balance after payment: {invoice_id}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/invoices/{invoice_id}", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "transaction_id" in data and data["transaction_id"] == invoice_id:
+                balance_due = float(data.get("balance_due", 0))
+                if balance_due == 0:
+                    print("✅ Check invoice balance test passed - Balance is zero after payment")
+                    return True
+                else:
+                    print(f"❌ Check invoice balance test failed: Balance due is {balance_due}, expected 0")
+                    return False
+            else:
+                print(f"❌ Check invoice balance test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Check invoice balance test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Check invoice balance test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Check invoice balance test failed: {str(e)}")
+        return False
+
+def run_transaction_tests():
+    """Run all Transaction Module API tests"""
+    print("\n🔍 Starting QuickBooks Clone Transaction Module API tests...")
+    print(f"🕒 Test time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # Test results
+    results = {}
+    
+    # Login and get company access
+    results["login_demo_user"] = test_login_demo_user()
+    if results["login_demo_user"]:
+        results["get_user_companies"] = test_get_user_companies()
+        if COMPANY_ID:
+            results["company_access"] = test_company_access()
+        else:
+            print("❌ No company ID available, skipping company-specific tests")
+            return False
+    else:
+        print("❌ Login failed, skipping all other tests")
+        return False
+    
+    # Test Invoice API
+    print("\n📋 Testing Invoice API...")
+    invoice_result, invoice_id = test_create_invoice()
+    results["create_invoice"] = invoice_result
+    
+    results["get_invoices"] = test_get_invoices()
+    
+    if invoice_id:
+        results["get_invoice_by_id"] = test_get_invoice_by_id(invoice_id)
+        results["update_invoice"] = test_update_invoice(invoice_id)
+        results["post_invoice"] = test_post_invoice(invoice_id)
+    
+    # Test Bill API
+    print("\n📋 Testing Bill API...")
+    bill_result, bill_id = test_create_bill()
+    results["create_bill"] = bill_result
+    
+    results["get_bills"] = test_get_bills()
+    
+    if bill_id:
+        results["get_bill_by_id"] = test_get_bill_by_id(bill_id)
+        results["post_bill"] = test_post_bill(bill_id)
+    
+    # Test Payment API
+    print("\n📋 Testing Payment API...")
+    # Create a new invoice for payment testing
+    payment_invoice_result, payment_invoice_id = test_create_invoice()
+    results["create_payment_invoice"] = payment_invoice_result
+    
+    if payment_invoice_id:
+        results["post_payment_invoice"] = test_post_invoice(payment_invoice_id)
+        payment_result, payment_id = test_create_payment()
+        results["create_payment"] = payment_result
+        
+        if payment_result:
+            results["check_invoice_balance"] = test_check_invoice_balance(payment_invoice_id)
+    
+    # Test voiding a transaction
+    if invoice_id:
+        # Create a new invoice for void testing
+        void_invoice_result, void_invoice_id = test_create_invoice()
+        results["create_void_invoice"] = void_invoice_result
+        
+        if void_invoice_id:
+            results["post_void_invoice"] = test_post_invoice(void_invoice_id)
+            results["void_invoice"] = test_void_invoice(void_invoice_id)
+    
+    # Print summary
+    print("\n📊 Transaction Tests Summary:")
+    for test_name, result in results.items():
+        status = "✅ PASSED" if result else "❌ FAILED"
+        print(f"{test_name}: {status}")
+    
+    # Overall result
+    all_passed = all(results.values())
+    print(f"\n🏁 Overall Transaction Tests Result: {'✅ ALL TESTS PASSED' if all_passed else '❌ SOME TESTS FAILED'}")
+    
+    return all_passed
+
 if __name__ == "__main__":
-    success = run_list_management_tests()
+    # Run the appropriate test suite based on command line arguments
+    if len(sys.argv) > 1 and sys.argv[1] == "transactions":
+        success = run_transaction_tests()
+    else:
+        success = run_list_management_tests()
+    
     sys.exit(0 if success else 1)
