@@ -21,6 +21,11 @@ from contextlib import asynccontextmanager
 from database.connection import close_db_connections
 from api.auth import router as auth_router
 from api.companies import router as companies_router
+from api.accounts import router as accounts_router
+from api.customers import router as customers_router
+from api.vendors import router as vendors_router
+from api.items import router as items_router
+from api.employees import router as employees_router
 import uuid
 from datetime import datetime
 
