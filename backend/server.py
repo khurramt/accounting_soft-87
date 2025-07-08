@@ -30,6 +30,7 @@ from api.transactions import router as transactions_router
 from api.invoices import router as invoices_router
 from api.bills import router as bills_router
 from api.payments import router as payments_router
+from api.reports import router as reports_router
 import uuid
 from datetime import datetime
 
