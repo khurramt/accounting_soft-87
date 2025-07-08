@@ -12,6 +12,7 @@ from database.connection import Base, DATABASE_URL, ASYNC_DATABASE_URL
 from models.user import User, UserSession, CompanyMembership, Company, CompanySetting, FileAttachment, UserRole
 from models.list_management import Account, Customer, Vendor, Item, Employee
 from models.transactions import Transaction, TransactionLine, JournalEntry, Payment, PaymentApplication, RecurringTransaction
+from models.reports import ReportDefinition, MemorizedReport, MemorizedReportGroup, ReportCache, ReportExecution, ReportTemplate
 import structlog
 
 logger = structlog.get_logger()
