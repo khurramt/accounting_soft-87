@@ -44,7 +44,7 @@ CREATE_PAYLOAD='{
     "currency": "USD",
     "language": "en-US"
 }'
-CREATE_RESPONSE=$(curl -k -s -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d "$CREATE_PAYLOAD" $API_URL/companies/)
+CREATE_RESPONSE=$(wget --no-check-certificate -qO- --header="Authorization: Bearer $TOKEN" --header="Content-Type: application/json" --post-data="$CREATE_PAYLOAD" $API_URL/companies/)
 echo "Response: $CREATE_RESPONSE"
 
 # Extract company_id from response
