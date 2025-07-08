@@ -863,7 +863,7 @@ def test_export_report_to_pdf():
         }
         
         response = requests.post(
-            f"{API_URL}/companies/{COMPANY_ID}/reports/{report_id}/export/pdf", 
+            f"{API_URL}/companies/{COMPANY_ID}/reports/definition/{report_id}/export/pdf", 
             headers=headers, 
             json=payload, 
             timeout=TIMEOUT
