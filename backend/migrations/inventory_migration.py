@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(backend_dir))
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
-from database.connection import get_async_engine, get_async_session_factory
+from database.connection import engine, AsyncSessionLocal, Base
 from models.inventory import (
     InventoryAdjustment, PurchaseOrder, PurchaseOrderLine, InventoryReceipt,
     ReceiptLine, InventoryTransaction, InventoryLocation, ItemLocation,
@@ -32,11 +32,6 @@ logger = structlog.get_logger()
 async def create_inventory_tables():
     """Create all inventory tables"""
     try:
-        engine = get_async_engine()
-        
-        # Import Base from database.connection to ensure all models are registered
-        from database.connection import Base
-        
         # Create all tables
         async with engine.begin() as conn:
             # Drop existing inventory tables (for development only)
@@ -83,9 +78,7 @@ async def create_inventory_tables():
 async def create_sample_inventory_data():
     """Create sample inventory data for development and testing"""
     try:
-        async_session_factory = get_async_session_factory()
-        
-        async with async_session_factory() as db:
+        async with AsyncSessionLocal() as db:
             # Get sample company and user
             company_result = await db.execute(
                 select(Company).where(Company.company_name == "Demo Company")
