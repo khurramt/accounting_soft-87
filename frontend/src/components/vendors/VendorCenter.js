@@ -76,18 +76,18 @@ const VendorCenter = () => {
 
   // Fetch vendor transactions when vendor is selected
   useEffect(() => {
-    if (selectedVendor && selectedCompany) {
+    if (selectedVendor && currentCompany) {
       fetchVendorTransactions();
     }
-  }, [selectedVendor, selectedCompany]);
+  }, [selectedVendor, currentCompany]);
 
   const fetchVendorTransactions = async () => {
-    if (!selectedVendor || !selectedCompany) return;
+    if (!selectedVendor || !currentCompany) return;
     
     setLoadingTransactions(true);
     
     try {
-      const data = await vendorService.getVendorTransactions(selectedCompany.company_id, selectedVendor.vendor_id);
+      const data = await vendorService.getVendorTransactions(currentCompany.company_id, selectedVendor.vendor_id);
       setVendorTransactions(data.transactions || []);
     } catch (err) {
       console.error('Error fetching vendor transactions:', err);
