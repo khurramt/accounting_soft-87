@@ -764,8 +764,8 @@ async def get_payroll_liabilities(
     status: Optional[str] = Query(None),
     liability_type: Optional[str] = Query(None),
     due_before: Optional[date] = Query(None),
-    sort_by: str = Query("due_date", regex="^(due_date|amount|created_at)$"),
-    sort_order: str = Query("asc", regex="^(asc|desc)$"),
+    sort_by: str = Query("due_date", pattern="^(due_date|amount|created_at)$"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
