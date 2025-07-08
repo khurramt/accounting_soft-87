@@ -498,8 +498,8 @@ async def get_payroll_runs(
     page_size: int = Query(50, ge=1, le=100),
     status: Optional[str] = Query(None),
     year: Optional[int] = Query(None),
-    sort_by: str = Query("pay_date", regex="^(pay_date|pay_period_start|created_at)$"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    sort_by: str = Query("pay_date", pattern="^(pay_date|pay_period_start|created_at)$"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
