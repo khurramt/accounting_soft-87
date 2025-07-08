@@ -85,6 +85,8 @@ class Account(Base):
     company = relationship("Company", foreign_keys=[company_id])
     parent_account = relationship("Account", remote_side=[account_id])
     child_accounts = relationship("Account", back_populates="parent_account")
+    bank_connections = relationship("BankConnection", back_populates="account")
+    bank_reconciliations = relationship("BankReconciliation", back_populates="account")
     
     def __repr__(self):
         return f"<Account {self.account_name}>"
