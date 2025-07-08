@@ -7,7 +7,7 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 
 # PDF generation
-from reportlab.lib.pagesizes import letter, a4, legal, landscape, portrait
+from reportlab.lib.pagesizes import letter, A4, legal, landscape, portrait
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
@@ -622,7 +622,7 @@ class ReportExportService:
         """Get page size object from name"""
         sizes = {
             "letter": letter,
-            "a4": a4,
+            "a4": A4,
             "legal": legal
         }
         return sizes.get(page_size_name.lower(), letter)
