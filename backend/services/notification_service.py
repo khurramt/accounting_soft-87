@@ -770,9 +770,9 @@ class SMSService(BaseNotificationService):
         await db.commit()
         await db.refresh(sms)
         
-        # Process immediately if not scheduled
-        if not sms_data.scheduled_at:
-            await SMSService._process_sms(db, sms)
+        # TODO: Process SMS in background task instead of immediately
+        # if not sms_data.scheduled_at:
+        #     await SMSService._process_sms(db, sms)
         
         logger.info("SMS queued", 
                    sms_id=sms.sms_id,
