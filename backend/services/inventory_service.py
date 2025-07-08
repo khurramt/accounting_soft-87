@@ -1082,6 +1082,80 @@ class InventoryLocationService(BaseInventoryService):
         
         return f"{base_code}{count + 1:02d}"
     
+    
+    @staticmethod
+    async def get_locations(
+        db: AsyncSession,
+        company_id: str,
+        is_active: Optional[bool] = None
+    ) -> List[InventoryLocation]:
+        """Get inventory locations for a company"""
+        
+        query = select(InventoryLocation).where(
+            InventoryLocation.company_id == company_id
+        )
+        
+        if is_active is not None:
+            query = query.where(InventoryLocation.is_active == is_active)
+        
+        query = query.order_by(InventoryLocation.location_name)
+        
+        result = await db.execute(query)
+        locations = result.scalars().all()
+        
+        return locations
+    
+    @staticmethod
+    async def get_location_by_id(
+        db: AsyncSession,
+        company_id: str,
+        location_id: str
+    ) -> Optional[InventoryLocation]:
+        """Get location by ID"""
+        
+        result = await db.execute(
+            select(InventoryLocation).where(
+                and_(
+                    InventoryLocation.location_id == location_id,
+                    InventoryLocation.company_id == company_id
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+    
+    @staticmethod
+    async def update_location(
+        db: AsyncSession,
+        company_id: str,
+        location_id: str,
+        location_data: InventoryLocationUpdate
+    ) -> Optional[InventoryLocation]:
+        """Update an inventory location"""
+        
+        result = await db.execute(
+            select(InventoryLocation).where(
+                and_(
+                    InventoryLocation.location_id == location_id,
+                    InventoryLocation.company_id == company_id
+                )
+            )
+        )
+        location = result.scalar_one_or_none()
+        
+        if not location:
+            return None
+        
+        # Update fields
+        for field, value in location_data.dict(exclude_unset=True).items():
+            setattr(location, field, value)
+        
+        await db.commit()
+        await db.refresh(location)
+        
+        logger.info("Inventory location updated", 
+                   location_id=location_id)
+        
+        return location
     @staticmethod
     async def get_location_items(
         db: AsyncSession,
