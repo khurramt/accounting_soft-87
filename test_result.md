@@ -492,7 +492,7 @@
 
 ## test_plan:
   current_focus:
-    - "BANKING INTEGRATION MODULE BACKEND - Comprehensive testing of all banking features (Bank Connections, Transactions, Rules, Reconciliation, File Upload, Institution Search) with CRUD operations, transaction matching, and file parsing validation"
+    - "AUDIT & SECURITY MODULE BACKEND - Comprehensive testing of all audit and security features (Audit Logs, Security Logs, Roles, User Permissions, Security Settings) with CRUD operations, permission checking, threat detection, and compliance reporting validation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
