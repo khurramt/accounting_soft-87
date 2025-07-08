@@ -2,6 +2,7 @@ from .user import User, UserSession, CompanyMembership, Company, CompanySetting,
 from .list_management import Account, Customer, Vendor, Item, Employee
 from .transactions import Transaction, TransactionLine
 from .banking import BankConnection, BankTransaction, BankRule, BankReconciliation, BankInstitution, BankStatementImport
+from .audit import AuditLog, SecurityLog, Role, UserPermission, SecuritySetting
 
 __all__ = [
     "User",
@@ -22,5 +23,10 @@ __all__ = [
     "BankRule",
     "BankReconciliation",
     "BankInstitution",
-    "BankStatementImport"
+    "BankStatementImport",
+    "AuditLog",
+    "SecurityLog",
+    "Role",
+    "UserPermission",
+    "SecuritySetting"
 ]
