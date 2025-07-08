@@ -491,9 +491,16 @@ class SearchFilters(BaseModel):
     search: Optional[str] = None
     is_active: Optional[bool] = None
     sort_by: Optional[str] = None
-    sort_order: Optional[str] = Field(default="asc", regex="^(asc|desc)$")
+    sort_order: Optional[str] = Field(default="asc")
     page: int = Field(default=1, ge=1)
     page_size: int = Field(default=20, ge=1, le=100)
+    
+    @field_validator('sort_order')
+    @classmethod
+    def validate_sort_order(cls, v):
+        if v not in ['asc', 'desc']:
+            raise ValueError('sort_order must be either "asc" or "desc"')
+        return v
 
 class AccountSearchFilters(SearchFilters):
     account_type: Optional[AccountType] = None
