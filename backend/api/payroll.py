@@ -662,8 +662,8 @@ async def get_paychecks(
     is_void: Optional[bool] = Query(None),
     start_date: Optional[date] = Query(None),
     end_date: Optional[date] = Query(None),
-    sort_by: str = Query("pay_date", regex="^(pay_date|check_number|created_at)$"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    sort_by: str = Query("pay_date", pattern="^(pay_date|check_number|created_at)$"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
