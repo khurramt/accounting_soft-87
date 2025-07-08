@@ -138,6 +138,12 @@ api_router.include_router(vendors_router)
 api_router.include_router(items_router)
 api_router.include_router(employees_router)
 
+# Include transaction management routes
+api_router.include_router(transactions_router)
+api_router.include_router(invoices_router)
+api_router.include_router(bills_router)
+api_router.include_router(payments_router)
+
 # Include the API router in the main app
 app.include_router(api_router)
 
