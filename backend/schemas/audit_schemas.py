@@ -215,7 +215,7 @@ class AuditReportRequest(BaseModel):
     date_to: datetime = Field(..., description="Report end date")
     include_tables: Optional[List[str]] = Field(None, description="Specific tables to include")
     include_users: Optional[List[str]] = Field(None, description="Specific users to include")
-    format: str = Field("json", regex="^(json|csv|pdf)$", description="Report format")
+    format: str = Field("json", pattern="^(json|csv|pdf)$", description="Report format")
 
 class AuditReportResponse(BaseModel):
     report_id: str = Field(..., description="Unique report ID")
