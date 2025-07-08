@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { mockCustomers, mockTransactions } from "../../data/mockData";
+import { useCompany } from "../../contexts/CompanyContext";
+import customerService from "../../services/customerService";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
@@ -19,7 +20,9 @@ import {
   MapPin,
   Edit,
   Trash2,
-  Filter
+  Filter,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 
 const CustomerCenter = () => {
