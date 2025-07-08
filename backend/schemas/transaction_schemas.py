@@ -70,7 +70,7 @@ class TransactionLineResponse(TransactionLineBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Transaction Schemas
 class TransactionBase(BaseModel):
@@ -145,7 +145,7 @@ class TransactionResponse(TransactionBase):
     lines: List[TransactionLineResponse] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Invoice-specific schemas
 class InvoiceCreate(TransactionCreate):
@@ -234,7 +234,7 @@ class PaymentResponse(PaymentBase):
     applications: List[PaymentApplicationSchema] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Recurring Transaction Schemas
 class RecurringTransactionBase(BaseModel):
@@ -266,7 +266,7 @@ class RecurringTransactionResponse(RecurringTransactionBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Search and Filter Schemas
 class TransactionSearchFilters(BaseModel):
@@ -314,7 +314,7 @@ class JournalEntryResponse(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Transaction Summary Schemas
 class TransactionSummary(BaseModel):
