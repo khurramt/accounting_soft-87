@@ -553,12 +553,9 @@ async def update_security_settings(
                 detail="Insufficient permissions to update security settings"
             )
         
-        # Update security settings (implementation would need to be added to SecurityService)
-        # For now, return a placeholder response
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Update security settings not implemented yet"
-        )
+        # Update security settings
+        updated_settings = await security_service.update_security_settings(company_id, settings)
+        return updated_settings
         
     except HTTPException:
         raise
