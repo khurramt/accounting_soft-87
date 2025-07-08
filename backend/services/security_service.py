@@ -776,6 +776,10 @@ class SecurityService:
             # Create new permissions
             updated_permissions = []
             for perm_data in permissions:
+                # Skip if resource not specified
+                if not perm_data.resource:
+                    continue
+                    
                 # Check if this permission already exists
                 existing_query = select(UserPermission).where(
                     and_(
@@ -790,10 +794,16 @@ class SecurityService:
                 
                 if existing_permission:
                     # Update existing permission
-                    existing_permission.actions = perm_data.actions
-                    existing_permission.conditions = perm_data.conditions
-                    existing_permission.expires_at = perm_data.expires_at
-                    existing_permission.is_active = True
+                    if perm_data.actions is not None:
+                        existing_permission.actions = perm_data.actions
+                    if perm_data.conditions is not None:
+                        existing_permission.conditions = perm_data.conditions
+                    if perm_data.expires_at is not None:
+                        existing_permission.expires_at = perm_data.expires_at
+                    if perm_data.is_active is not None:
+                        existing_permission.is_active = perm_data.is_active
+                    else:
+                        existing_permission.is_active = True
                     existing_permission.granted_by = current_user_id
                     
                     updated_permissions.append(existing_permission)
@@ -803,11 +813,11 @@ class SecurityService:
                         user_id=user_id,
                         company_id=company_id,
                         resource=perm_data.resource,
-                        actions=perm_data.actions,
-                        conditions=perm_data.conditions,
+                        actions=perm_data.actions or [],
+                        conditions=perm_data.conditions or {},
                         expires_at=perm_data.expires_at,
                         granted_by=current_user_id,
-                        is_active=True
+                        is_active=perm_data.is_active if perm_data.is_active is not None else True
                     )
                     self.db.add(new_permission)
                     updated_permissions.append(new_permission)
