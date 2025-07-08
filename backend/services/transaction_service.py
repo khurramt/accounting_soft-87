@@ -392,10 +392,10 @@ class TransactionService(BaseListService):
         tax_amount = Decimal('0.0')
         
         for line_data in lines_data:
-            quantity = line_data.get('quantity', Decimal('1.0')) or Decimal('1.0')
-            unit_price = line_data.get('unit_price', Decimal('0.0')) or Decimal('0.0')
-            discount_amount = line_data.get('discount_amount', Decimal('0.0')) or Decimal('0.0')
-            line_tax = line_data.get('tax_amount', Decimal('0.0')) or Decimal('0.0')
+            quantity = getattr(line_data, 'quantity', Decimal('1.0')) or Decimal('1.0')
+            unit_price = getattr(line_data, 'unit_price', Decimal('0.0')) or Decimal('0.0')
+            discount_amount = getattr(line_data, 'discount_amount', Decimal('0.0')) or Decimal('0.0')
+            line_tax = getattr(line_data, 'tax_amount', Decimal('0.0')) or Decimal('0.0')
             
             line_subtotal = quantity * unit_price - discount_amount
             subtotal += line_subtotal
