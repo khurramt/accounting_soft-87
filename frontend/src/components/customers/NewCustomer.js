@@ -26,6 +26,11 @@ import {
 } from "lucide-react";
 
 const NewCustomer = () => {
+  const { currentCompany } = useCompany();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
   const [customerData, setCustomerData] = useState({
     // Address Info
     customerName: "",
