@@ -118,12 +118,17 @@ async def get_adjustment(
                 detail="Access denied to this company"
             )
         
-        # Get adjustment by ID (implementation needed in service)
-        # For now, return a placeholder
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Adjustment not found"
+        adjustment = await InventoryAdjustmentService.get_adjustment_by_id(
+            db, company_id, adjustment_id
         )
+        
+        if not adjustment:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Adjustment not found"
+            )
+        
+        return InventoryAdjustmentResponse.from_orm(adjustment)
         
     except HTTPException:
         raise
