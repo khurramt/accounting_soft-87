@@ -133,42 +133,44 @@ class NotificationService(BaseNotificationService):
     ) -> Tuple[List[Notification], int]:
         """Get notifications with filtering and pagination"""
         
-        query = select(Notification).where(
-            and_(
-                Notification.company_id == company_id,
-                Notification.user_id == user_id
-            )
-        )
+        # Base conditions
+        base_conditions = [
+            Notification.company_id == company_id,
+            Notification.user_id == user_id
+        ]
         
         # Apply filters
         if filters.notification_type:
-            query = query.where(Notification.notification_type == filters.notification_type)
+            base_conditions.append(Notification.notification_type == filters.notification_type)
         
         if filters.priority:
-            query = query.where(Notification.priority == filters.priority)
+            base_conditions.append(Notification.priority == filters.priority)
         
         if filters.read is not None:
-            query = query.where(Notification.read == filters.read)
+            base_conditions.append(Notification.read == filters.read)
         
         if filters.date_from:
-            query = query.where(Notification.created_at >= filters.date_from)
+            base_conditions.append(Notification.created_at >= filters.date_from)
         
         if filters.date_to:
-            query = query.where(Notification.created_at <= filters.date_to)
+            base_conditions.append(Notification.created_at <= filters.date_to)
         
         if filters.search:
             search_term = f"%{filters.search}%"
-            query = query.where(
+            base_conditions.append(
                 or_(
                     Notification.title.ilike(search_term),
                     Notification.message.ilike(search_term)
                 )
             )
         
-        # Get total count
-        count_query = select(func.count()).select_from(query.subquery())
+        # Get total count efficiently
+        count_query = select(func.count(Notification.notification_id)).where(and_(*base_conditions))
         total_result = await db.execute(count_query)
         total = total_result.scalar()
+        
+        # Build main query with same conditions
+        query = select(Notification).where(and_(*base_conditions))
         
         # Apply sorting
         if filters.sort_by:
