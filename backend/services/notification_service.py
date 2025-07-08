@@ -788,33 +788,35 @@ class SMSService(BaseNotificationService):
     ) -> Tuple[List[SMSQueue], int]:
         """Get SMS queue with filtering and pagination"""
         
-        query = select(SMSQueue).where(
-            SMSQueue.company_id == company_id
-        )
+        # Base conditions
+        base_conditions = [SMSQueue.company_id == company_id]
         
         # Apply filters
         if filters.status:
-            query = query.where(SMSQueue.status == filters.status)
+            base_conditions.append(SMSQueue.status == filters.status)
         
         if filters.date_from:
-            query = query.where(SMSQueue.created_at >= filters.date_from)
+            base_conditions.append(SMSQueue.created_at >= filters.date_from)
         
         if filters.date_to:
-            query = query.where(SMSQueue.created_at <= filters.date_to)
+            base_conditions.append(SMSQueue.created_at <= filters.date_to)
         
         if filters.search:
             search_term = f"%{filters.search}%"
-            query = query.where(
+            base_conditions.append(
                 or_(
                     SMSQueue.to_phone.ilike(search_term),
                     SMSQueue.message.ilike(search_term)
                 )
             )
         
-        # Get total count
-        count_query = select(func.count()).select_from(query.subquery())
+        # Get total count efficiently
+        count_query = select(func.count(SMSQueue.sms_id)).where(and_(*base_conditions))
         total_result = await db.execute(count_query)
         total = total_result.scalar()
+        
+        # Build main query with same conditions
+        query = select(SMSQueue).where(and_(*base_conditions))
         
         # Apply sorting
         if filters.sort_by:
