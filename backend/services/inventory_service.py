@@ -580,11 +580,13 @@ class PurchaseOrderService(BaseInventoryService):
         company_id: str,
         filters: PurchaseOrderSearchFilters
     ) -> Tuple[List[PurchaseOrder], int]:
-        """Get purchase orders with filtering"""
+        """Get purchase orders with filtering and pagination"""
         
-        query = select(PurchaseOrder).where(
-            PurchaseOrder.company_id == company_id
-        )
+        query = select(PurchaseOrder).options(
+            joinedload(PurchaseOrder.vendor),
+            joinedload(PurchaseOrder.created_by_user),
+            selectinload(PurchaseOrder.po_lines).joinedload(PurchaseOrderLine.item)
+        ).where(PurchaseOrder.company_id == company_id)
         
         # Apply filters
         if filters.vendor_id:
@@ -601,11 +603,12 @@ class PurchaseOrderService(BaseInventoryService):
         
         if filters.search:
             search_term = f"%{filters.search}%"
-            query = query.where(
+            query = query.join(Vendor).where(
                 or_(
                     PurchaseOrder.po_number.ilike(search_term),
                     PurchaseOrder.reference_number.ilike(search_term),
-                    PurchaseOrder.memo.ilike(search_term)
+                    PurchaseOrder.memo.ilike(search_term),
+                    Vendor.vendor_name.ilike(search_term)
                 )
             )
         
@@ -628,10 +631,105 @@ class PurchaseOrderService(BaseInventoryService):
         offset = (filters.page - 1) * filters.page_size
         query = query.offset(offset).limit(filters.page_size)
         
-        result = await db.execute(query.options(selectinload(PurchaseOrder.po_lines)))
+        result = await db.execute(query)
         purchase_orders = result.scalars().all()
         
         return purchase_orders, total
+    
+    @staticmethod
+    async def get_purchase_order_by_id(
+        db: AsyncSession,
+        company_id: str,
+        po_id: str
+    ) -> Optional[PurchaseOrder]:
+        """Get purchase order by ID"""
+        
+        result = await db.execute(
+            select(PurchaseOrder).options(
+                joinedload(PurchaseOrder.vendor),
+                joinedload(PurchaseOrder.created_by_user),
+                selectinload(PurchaseOrder.po_lines).joinedload(PurchaseOrderLine.item)
+            ).where(
+                and_(
+                    PurchaseOrder.purchase_order_id == po_id,
+                    PurchaseOrder.company_id == company_id
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+    
+    @staticmethod
+    async def update_purchase_order(
+        db: AsyncSession,
+        company_id: str,
+        po_id: str,
+        po_data: PurchaseOrderUpdate
+    ) -> Optional[PurchaseOrder]:
+        """Update a purchase order"""
+        
+        result = await db.execute(
+            select(PurchaseOrder).where(
+                and_(
+                    PurchaseOrder.purchase_order_id == po_id,
+                    PurchaseOrder.company_id == company_id
+                )
+            )
+        )
+        purchase_order = result.scalar_one_or_none()
+        
+        if not purchase_order:
+            return None
+        
+        # Check if PO can be modified (not if already received)
+        if purchase_order.status in [PurchaseOrderStatus.RECEIVED, PurchaseOrderStatus.CLOSED]:
+            raise ValueError("Cannot modify purchase order that has been received or closed")
+        
+        # Update fields
+        for field, value in po_data.dict(exclude_unset=True).items():
+            setattr(purchase_order, field, value)
+        
+        await db.commit()
+        await db.refresh(purchase_order)
+        
+        logger.info("Purchase order updated", 
+                   po_id=po_id)
+        
+        return purchase_order
+    
+    @staticmethod
+    async def delete_purchase_order(
+        db: AsyncSession,
+        company_id: str,
+        po_id: str
+    ) -> bool:
+        """Delete a purchase order (soft delete)"""
+        
+        result = await db.execute(
+            select(PurchaseOrder).where(
+                and_(
+                    PurchaseOrder.purchase_order_id == po_id,
+                    PurchaseOrder.company_id == company_id
+                )
+            )
+        )
+        purchase_order = result.scalar_one_or_none()
+        
+        if not purchase_order:
+            return False
+        
+        # Check if PO can be deleted (not if partially or fully received)
+        if purchase_order.status in [PurchaseOrderStatus.PARTIALLY_RECEIVED, PurchaseOrderStatus.RECEIVED]:
+            raise ValueError("Cannot delete purchase order that has been partially or fully received")
+        
+        # Mark as cancelled instead of hard delete to maintain audit trail
+        purchase_order.status = PurchaseOrderStatus.CANCELLED
+        
+        await db.commit()
+        
+        logger.info("Purchase order cancelled", 
+                   po_id=po_id)
+        
+        return True
 
 class InventoryReceiptService(BaseInventoryService):
     """Service for inventory receipt operations"""
