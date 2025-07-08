@@ -46,7 +46,7 @@ const VendorCenter = () => {
   }, [currentCompany, searchTerm, filterStatus]);
 
   const fetchVendors = async () => {
-    if (!selectedCompany) return;
+    if (!currentCompany) return;
     
     setLoading(true);
     setError(null);
@@ -59,7 +59,7 @@ const VendorCenter = () => {
         page: 1
       };
       
-      const data = await vendorService.getVendors(selectedCompany.company_id, filters);
+      const data = await vendorService.getVendors(currentCompany.company_id, filters);
       setVendors(data.items || []);
       
       // If we have vendors and no selected vendor, select the first one
