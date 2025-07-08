@@ -318,8 +318,8 @@ async def get_time_entries(
     end_date: Optional[date] = Query(None),
     approved: Optional[bool] = Query(None),
     billable: Optional[bool] = Query(None),
-    sort_by: str = Query("date", regex="^(date|hours|created_at)$"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    sort_by: str = Query("date", pattern="^(date|hours|created_at)$"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
