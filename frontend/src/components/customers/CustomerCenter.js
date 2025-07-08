@@ -340,22 +340,26 @@ const CustomerCenter = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div>
-                        <h3 className="font-semibold text-lg">{selectedCustomer.name}</h3>
-                        <p className="text-gray-600">{selectedCustomer.type}</p>
+                        <h3 className="font-semibold text-lg">{selectedCustomer.customer_name || selectedCustomer.name}</h3>
+                        <p className="text-gray-600">{selectedCustomer.customer_type || 'Customer'}</p>
                       </div>
                       
                       <div className="space-y-2">
                         <div className="flex items-center text-sm">
                           <Mail className="w-4 h-4 mr-2 text-gray-400" />
-                          <span>{selectedCustomer.email}</span>
+                          <span>{selectedCustomer.email || 'No email'}</span>
                         </div>
                         <div className="flex items-center text-sm">
                           <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                          <span>{selectedCustomer.phone}</span>
+                          <span>{selectedCustomer.phone || 'No phone'}</span>
                         </div>
                         <div className="flex items-center text-sm">
                           <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                          <span>{selectedCustomer.address}</span>
+                          <span>
+                            {selectedCustomer.address_line1 || selectedCustomer.address ? 
+                              `${selectedCustomer.address_line1 || selectedCustomer.address}${selectedCustomer.city ? ', ' + selectedCustomer.city : ''}${selectedCustomer.state ? ', ' + selectedCustomer.state : ''}${selectedCustomer.zip_code ? ' ' + selectedCustomer.zip_code : ''}` : 
+                              'No address'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -366,16 +370,16 @@ const CustomerCenter = () => {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <span>Current Balance:</span>
-                            <span className="font-semibold">${selectedCustomer.balance.toFixed(2)}</span>
+                            <span className="font-semibold">${(customerBalance || selectedCustomer.balance || 0).toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Payment Terms:</span>
-                            <span>{selectedCustomer.terms}</span>
+                            <span>{selectedCustomer.payment_terms || 'Net 30'}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Status:</span>
-                            <Badge variant={selectedCustomer.status === 'Active' ? 'default' : 'secondary'}>
-                              {selectedCustomer.status}
+                            <Badge variant={selectedCustomer.is_active ? 'default' : 'secondary'}>
+                              {selectedCustomer.is_active ? 'Active' : 'Inactive'}
                             </Badge>
                           </div>
                         </div>
