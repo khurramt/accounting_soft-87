@@ -80,7 +80,8 @@ class ReportExportService:
         """Export financial report data"""
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        base_filename = f"{financial_data.report_name.replace(' ', '_')}_{timestamp}"
+        sanitized_name = self._sanitize_filename(financial_data.report_name)
+        base_filename = f"{sanitized_name}_{timestamp}"
         
         if export_request.format == ReportFormat.PDF:
             return await self._export_financial_to_pdf(
