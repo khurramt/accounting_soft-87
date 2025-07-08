@@ -42,16 +42,15 @@ async def create_demo_data():
         try:
             # Create demo company
             demo_company = Company(
-                name="Demo Company",
+                company_name="Demo Company",
                 legal_name="Demo Company LLC",
                 industry="Technology",
                 business_type="LLC",
-                address={
-                    "street": "123 Main St",
-                    "city": "San Francisco",
-                    "state": "CA",
-                    "zip": "94105"
-                },
+                address_line1="123 Main St",
+                city="San Francisco",
+                state="CA",
+                zip_code="94105",
+                country="USA",
                 phone="(555) 123-4567",
                 email="info@democompany.com"
             )
