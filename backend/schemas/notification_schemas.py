@@ -206,7 +206,7 @@ class WebhookSubscriptionCreate(BaseRequest):
     secret_key: Optional[str] = None
     timeout_seconds: int = Field(default=30, ge=1, le=300, description="Timeout in seconds")
     headers: Optional[Dict[str, str]] = None
-    auth_type: Optional[str] = Field(default="none", regex="^(none|basic|bearer|api_key)$")
+    auth_type: Optional[str] = Field(default="none", pattern="^(none|basic|bearer|api_key)$")
     auth_config: Optional[Dict[str, Any]] = None
 
     @field_validator('webhook_url')
