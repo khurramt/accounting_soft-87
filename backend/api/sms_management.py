@@ -34,7 +34,25 @@ async def send_sms(
         sms = await SMSService.send_sms(
             db, company_id, sms_data
         )
-        return SMSQueueResponse.from_orm(sms)
+        
+        # Manually construct response to avoid MissingGreenlet error
+        return SMSQueueResponse(
+            sms_id=sms.sms_id,
+            company_id=sms.company_id,
+            to_phone=sms.to_phone,
+            message=sms.message,
+            status=sms.status,
+            attempts=sms.attempts,
+            max_attempts=sms.max_attempts,
+            last_error=sms.last_error,
+            scheduled_at=sms.scheduled_at,
+            sent_at=sms.sent_at,
+            delivered_at=sms.delivered_at,
+            provider_message_id=sms.provider_message_id,
+            delivery_status=sms.delivery_status,
+            created_at=sms.created_at,
+            updated_at=getattr(sms, 'updated_at', None)
+        )
         
     except ValueError as e:
         raise HTTPException(
