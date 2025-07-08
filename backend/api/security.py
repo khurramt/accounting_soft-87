@@ -416,7 +416,7 @@ async def update_user_permissions(
     request: Request,
     company_id: str,
     user_id: str,
-    permissions: List[UserPermissionCreate],
+    permissions: List[UserPermissionUpdate],
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
