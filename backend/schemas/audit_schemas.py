@@ -210,7 +210,7 @@ class SecuritySettingsResponse(SecuritySettingsBase):
 
 # Audit Report Schemas
 class AuditReportRequest(BaseModel):
-    report_type: str = Field(..., regex="^(summary|detailed|compliance|sox)$", description="Type of audit report")
+    report_type: str = Field(..., pattern="^(summary|detailed|compliance|sox)$", description="Type of audit report")
     date_from: datetime = Field(..., description="Report start date")
     date_to: datetime = Field(..., description="Report end date")
     include_tables: Optional[List[str]] = Field(None, description="Specific tables to include")
