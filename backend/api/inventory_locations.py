@@ -62,9 +62,11 @@ async def get_locations(
                 detail="Access denied to this company"
             )
         
-        # Implementation needed in service
-        # For now, return empty list
-        return []
+        locations = await InventoryLocationService.get_locations(
+            db, company_id, is_active
+        )
+        
+        return [InventoryLocationResponse.from_orm(location) for location in locations]
         
     except HTTPException:
         raise
