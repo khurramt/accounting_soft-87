@@ -264,28 +264,48 @@ const CustomerCenter = () => {
           </CardHeader>
           <CardContent className="p-0">
             <div className="max-h-96 overflow-y-auto">
-              {filteredCustomers.map((customer) => (
-                <div
-                  key={customer.id}
-                  className={`p-4 border-b cursor-pointer hover:bg-gray-50 transition-colors ${
-                    selectedCustomer?.id === customer.id ? 'bg-blue-50 border-blue-200' : ''
-                  }`}
-                  onClick={() => setSelectedCustomer(customer)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">{customer.name}</h4>
-                      <p className="text-sm text-gray-600">{customer.email}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">${customer.balance.toFixed(2)}</p>
-                      <Badge variant={customer.status === 'Active' ? 'default' : 'secondary'}>
-                        {customer.status}
-                      </Badge>
+              {loading ? (
+                <div className="p-4 text-center text-gray-500">
+                  <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                  Loading customers...
+                </div>
+              ) : customers.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  <p>No customers found</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-2"
+                    onClick={handleNewCustomer}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add First Customer
+                  </Button>
+                </div>
+              ) : (
+                customers.map((customer) => (
+                  <div
+                    key={customer.customer_id}
+                    className={`p-4 border-b cursor-pointer hover:bg-gray-50 transition-colors ${
+                      selectedCustomer?.customer_id === customer.customer_id ? 'bg-blue-50 border-blue-200' : ''
+                    }`}
+                    onClick={() => handleCustomerSelect(customer)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">{customer.customer_name || customer.name}</h4>
+                        <p className="text-sm text-gray-600">{customer.email || 'No email'}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">${(customer.balance || 0).toFixed(2)}</p>
+                        <Badge variant={customer.is_active ? 'default' : 'secondary'}>
+                          {customer.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
