@@ -38,15 +38,15 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
+        const refreshToken = localStorage.getItem('qb_refresh_token');
         if (refreshToken) {
           const response = await axios.post(`${API_BASE_URL}/api/auth/refresh-token`, {
             refresh_token: refreshToken,
           });
 
           const { access_token, refresh_token } = response.data;
-          localStorage.setItem('accessToken', access_token);
-          localStorage.setItem('refreshToken', refresh_token);
+          localStorage.setItem('qb_access_token', access_token);
+          localStorage.setItem('qb_refresh_token', refresh_token);
 
           // Retry original request with new token
           originalRequest.headers.Authorization = `Bearer ${access_token}`;
@@ -54,9 +54,10 @@ apiClient.interceptors.response.use(
         }
       } catch (refreshError) {
         // Refresh failed, clear tokens and redirect to login
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('currentUser');
+        localStorage.removeItem('qb_access_token');
+        localStorage.removeItem('qb_refresh_token');
+        localStorage.removeItem('qb_user');
+        localStorage.removeItem('qb_company');
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
