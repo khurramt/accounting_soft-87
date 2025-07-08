@@ -256,7 +256,72 @@ class InventoryService(BaseInventoryService):
                    valuation_id=valuation.valuation_id, 
                    total_cost=total_cost)
         
-        return valuation
+    @staticmethod
+    async def get_low_stock_items(
+        db: AsyncSession,
+        company_id: str,
+        location_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Get items with low stock levels"""
+        
+        query = select(ItemLocation).join(Item).options(
+            joinedload(ItemLocation.item),
+            joinedload(ItemLocation.location)
+        ).where(
+            and_(
+                Item.company_id == company_id,
+                Item.is_active == True,
+                ItemLocation.reorder_point > 0,
+                ItemLocation.quantity_on_hand <= ItemLocation.reorder_point
+            )
+        )
+        
+        if location_id:
+            query = query.where(ItemLocation.location_id == location_id)
+        
+        result = await db.execute(query)
+        item_locations = result.scalars().all()
+        
+        low_stock_items = []
+        for item_location in item_locations:
+            # Calculate days until stockout (simple estimation)
+            if item_location.quantity_on_hand > 0:
+                # Estimate based on average daily usage (placeholder calculation)
+                estimated_days_remaining = max(0, int(item_location.quantity_on_hand / 1))  # Assuming 1 unit per day usage
+            else:
+                estimated_days_remaining = 0
+            
+            # Calculate suggested order quantity
+            if item_location.reorder_quantity > 0:
+                suggested_order_qty = item_location.reorder_quantity
+            else:
+                # Default suggestion: bring to 3x reorder point
+                suggested_order_qty = max(0, (item_location.reorder_point * 3) - item_location.quantity_on_hand)
+            
+            low_stock_item = {
+                "item_id": item_location.item_id,
+                "item_name": item_location.item.item_name,
+                "item_number": item_location.item.item_number,
+                "location_id": item_location.location_id,
+                "location_name": item_location.location.location_name,
+                "current_quantity": float(item_location.quantity_on_hand),
+                "reorder_point": float(item_location.reorder_point),
+                "reorder_quantity": float(item_location.reorder_quantity or 0),
+                "quantity_below_reorder": float(item_location.reorder_point - item_location.quantity_on_hand),
+                "suggested_order_quantity": float(suggested_order_qty),
+                "last_cost": float(item_location.last_cost or 0),
+                "average_cost": float(item_location.average_cost or 0),
+                "total_value": float(item_location.total_value or 0),
+                "estimated_days_remaining": estimated_days_remaining,
+                "preferred_vendor_id": item_location.item.preferred_vendor_id,
+                "status": "critical" if item_location.quantity_on_hand <= 0 else "low"
+            }
+            low_stock_items.append(low_stock_item)
+        
+        # Sort by most critical first (lowest quantity relative to reorder point)
+        low_stock_items.sort(key=lambda x: x["current_quantity"] / max(x["reorder_point"], 1))
+        
+        return low_stock_items
 
 class InventoryAdjustmentService(BaseInventoryService):
     """Service for inventory adjustments"""
