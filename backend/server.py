@@ -42,6 +42,11 @@ from api.inventory_receipts import router as inventory_receipts_router
 from api.inventory_locations import router as inventory_locations_router
 from api.inventory_assemblies import router as inventory_assemblies_router
 from api.inventory_reorder import router as inventory_reorder_router
+from api.notifications import router as notifications_router
+from api.email_management import router as email_management_router
+from api.webhooks import router as webhooks_router
+from api.sms_management import router as sms_management_router
+from api.notification_preferences import router as notification_preferences_router
 import uuid
 from datetime import datetime
 
