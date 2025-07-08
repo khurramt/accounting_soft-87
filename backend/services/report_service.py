@@ -311,6 +311,199 @@ class ReportService(BaseListService):
         
         # Default for unknown system reports
         return {"data": [], "summary": {}}
+
+    @staticmethod
+    async def _generate_profit_loss_data(db: AsyncSession, company_id: str, parameters: Dict[str, Any]):
+        """Generate Profit & Loss report data"""
+        from services.financial_report_service import FinancialReportService
+        from schemas.report_schemas import ProfitLossRequest
+        from datetime import date, datetime
+        
+        # Parse parameters to create request
+        start_date = parameters.get('start_date')
+        end_date = parameters.get('end_date')
+        
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        if isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            
+        request = ProfitLossRequest(
+            start_date=start_date or date.today().replace(day=1),
+            end_date=end_date or date.today(),
+            comparison_type=parameters.get('comparison_type', 'none'),
+            comparison_start_date=parameters.get('comparison_start_date'),
+            comparison_end_date=parameters.get('comparison_end_date'),
+            include_subtotals=parameters.get('include_subtotals', True),
+            show_cents=parameters.get('show_cents', True)
+        )
+        
+        financial_data = await FinancialReportService.generate_profit_loss_report(db, company_id, request)
+        
+        # Convert to standard report format
+        data = []
+        for section in financial_data.sections:
+            for line in section.lines:
+                data.append({
+                    'section': section.section_name,
+                    'account_name': line.account_name,
+                    'amount': float(line.amount),
+                    'comparison_amount': float(line.comparison_amount) if line.comparison_amount else None,
+                    'variance_amount': float(line.variance_amount) if line.variance_amount else None
+                })
+        
+        return {
+            "data": data,
+            "summary": {
+                "total_sections": len(financial_data.sections),
+                "grand_total": float(financial_data.grand_total) if financial_data.grand_total else 0,
+                "report_date": financial_data.report_date.isoformat(),
+                "comparison_date": financial_data.comparison_date.isoformat() if financial_data.comparison_date else None
+            }
+        }
+    
+    @staticmethod
+    async def _generate_balance_sheet_data(db: AsyncSession, company_id: str, parameters: Dict[str, Any]):
+        """Generate Balance Sheet report data"""
+        from services.financial_report_service import FinancialReportService
+        from schemas.report_schemas import BalanceSheetRequest
+        from datetime import date, datetime
+        
+        as_of_date = parameters.get('as_of_date')
+        if isinstance(as_of_date, str):
+            as_of_date = datetime.strptime(as_of_date, '%Y-%m-%d').date()
+            
+        request = BalanceSheetRequest(
+            as_of_date=as_of_date or date.today(),
+            comparison_date=parameters.get('comparison_date'),
+            include_subtotals=parameters.get('include_subtotals', True),
+            show_cents=parameters.get('show_cents', True)
+        )
+        
+        financial_data = await FinancialReportService.generate_balance_sheet_report(db, company_id, request)
+        
+        # Convert to standard report format
+        data = []
+        for section in financial_data.sections:
+            for line in section.lines:
+                data.append({
+                    'section': section.section_name,
+                    'account_name': line.account_name,
+                    'amount': float(line.amount),
+                    'comparison_amount': float(line.comparison_amount) if line.comparison_amount else None
+                })
+        
+        return {
+            "data": data,
+            "summary": {
+                "total_sections": len(financial_data.sections),
+                "total_assets": float(financial_data.grand_total) if financial_data.grand_total else 0,
+                "report_date": financial_data.report_date.isoformat()
+            }
+        }
+    
+    @staticmethod
+    async def _generate_cash_flow_data(db: AsyncSession, company_id: str, parameters: Dict[str, Any]):
+        """Generate Cash Flow report data"""
+        from services.financial_report_service import FinancialReportService
+        from schemas.report_schemas import CashFlowRequest
+        from datetime import date, datetime
+        
+        start_date = parameters.get('start_date')
+        end_date = parameters.get('end_date')
+        
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        if isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            
+        request = CashFlowRequest(
+            start_date=start_date or date.today().replace(day=1),
+            end_date=end_date or date.today(),
+            method=parameters.get('method', 'indirect'),
+            include_subtotals=parameters.get('include_subtotals', True),
+            show_cents=parameters.get('show_cents', True)
+        )
+        
+        financial_data = await FinancialReportService.generate_cash_flow_report(db, company_id, request)
+        
+        # Convert to standard report format
+        data = []
+        for section in financial_data.sections:
+            for line in section.lines:
+                data.append({
+                    'section': section.section_name,
+                    'account_name': line.account_name,
+                    'amount': float(line.amount)
+                })
+        
+        return {
+            "data": data,
+            "summary": {
+                "net_cash_change": float(financial_data.grand_total) if financial_data.grand_total else 0,
+                "period_start": start_date.isoformat(),
+                "period_end": end_date.isoformat()
+            }
+        }
+    
+    @staticmethod
+    async def _generate_trial_balance_data(db: AsyncSession, company_id: str, parameters: Dict[str, Any]):
+        """Generate Trial Balance report data"""
+        from services.financial_report_service import FinancialReportService
+        from schemas.report_schemas import TrialBalanceRequest
+        from datetime import date, datetime
+        
+        as_of_date = parameters.get('as_of_date')
+        if isinstance(as_of_date, str):
+            as_of_date = datetime.strptime(as_of_date, '%Y-%m-%d').date()
+            
+        request = TrialBalanceRequest(
+            as_of_date=as_of_date or date.today(),
+            include_zero_balances=parameters.get('include_zero_balances', False),
+            show_cents=parameters.get('show_cents', True)
+        )
+        
+        return await FinancialReportService.generate_trial_balance_report(db, company_id, request)
+    
+    @staticmethod
+    async def _generate_ar_aging_data(db: AsyncSession, company_id: str, parameters: Dict[str, Any]):
+        """Generate Accounts Receivable Aging report data"""
+        from services.financial_report_service import FinancialReportService
+        from schemas.report_schemas import AgingReportRequest
+        from datetime import date, datetime
+        
+        as_of_date = parameters.get('as_of_date')
+        if isinstance(as_of_date, str):
+            as_of_date = datetime.strptime(as_of_date, '%Y-%m-%d').date()
+            
+        request = AgingReportRequest(
+            as_of_date=as_of_date or date.today(),
+            aging_periods=parameters.get('aging_periods', [30, 60, 90, 120]),
+            include_zero_balances=parameters.get('include_zero_balances', False),
+            customer_id=parameters.get('customer_id')
+        )
+        
+        return await FinancialReportService.generate_ar_aging_report(db, company_id, request)
+    
+    @staticmethod
+    async def _generate_ap_aging_data(db: AsyncSession, company_id: str, parameters: Dict[str, Any]):
+        """Generate Accounts Payable Aging report data"""
+        from services.financial_report_service import FinancialReportService
+        from schemas.report_schemas import AgingReportRequest
+        from datetime import date, datetime
+        
+        as_of_date = parameters.get('as_of_date')
+        if isinstance(as_of_date, str):
+            as_of_date = datetime.strptime(as_of_date, '%Y-%m-%d').date()
+            
+        request = AgingReportRequest(
+            as_of_date=as_of_date or date.today(),
+            aging_periods=parameters.get('aging_periods', [30, 60, 90, 120]),
+            include_zero_balances=parameters.get('include_zero_balances', False),
+            vendor_id=parameters.get('vendor_id')
+        )
+        
+        return await FinancialReportService.generate_ap_aging_report(db, company_id, request)
     
     @staticmethod
     async def _execute_custom_sql_report(
