@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { mockVendors, mockBills } from "../../data/mockData";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
@@ -8,6 +7,8 @@ import { Badge } from "../ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { CompanyContext } from "../../contexts/CompanyContext";
+import vendorService from "../../services/vendorService";
 import { 
   Search, 
   Plus, 
@@ -21,7 +22,8 @@ import {
   Edit,
   Trash2,
   Filter,
-  Building
+  Building,
+  Loader2
 } from "lucide-react";
 
 const VendorCenter = () => {
