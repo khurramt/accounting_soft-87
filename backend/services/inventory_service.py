@@ -1439,6 +1439,82 @@ class InventoryAssemblyService(BaseInventoryService):
         logger.info("Inventory assembly created", 
                    assembly_id=assembly.assembly_id)
         
+    @staticmethod
+    async def get_assemblies(
+        db: AsyncSession,
+        company_id: str,
+        assembly_item_id: Optional[str] = None,
+        is_active: Optional[bool] = None
+    ) -> List[InventoryAssembly]:
+        """Get inventory assemblies for a company"""
+        
+        query = select(InventoryAssembly).options(
+            joinedload(InventoryAssembly.assembly_item),
+            joinedload(InventoryAssembly.component_item)
+        ).join(Item, InventoryAssembly.assembly_item_id == Item.item_id).where(
+            Item.company_id == company_id
+        )
+        
+        if assembly_item_id:
+            query = query.where(InventoryAssembly.assembly_item_id == assembly_item_id)
+        
+        if is_active is not None:
+            query = query.where(InventoryAssembly.is_active == is_active)
+        
+        query = query.order_by(InventoryAssembly.build_sequence)
+        
+        result = await db.execute(query)
+        assemblies = result.scalars().all()
+        
+        return assemblies
+    
+    @staticmethod
+    async def get_assembly_by_id(
+        db: AsyncSession,
+        company_id: str,
+        assembly_id: str
+    ) -> Optional[InventoryAssembly]:
+        """Get assembly by ID"""
+        
+        result = await db.execute(
+            select(InventoryAssembly).options(
+                joinedload(InventoryAssembly.assembly_item),
+                joinedload(InventoryAssembly.component_item)
+            ).join(Item, InventoryAssembly.assembly_item_id == Item.item_id).where(
+                and_(
+                    InventoryAssembly.assembly_id == assembly_id,
+                    Item.company_id == company_id
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+    
+    @staticmethod
+    async def update_assembly(
+        db: AsyncSession,
+        company_id: str,
+        assembly_id: str,
+        assembly_data: InventoryAssemblyUpdate
+    ) -> Optional[InventoryAssembly]:
+        """Update an inventory assembly"""
+        
+        assembly = await InventoryAssemblyService.get_assembly_by_id(
+            db, company_id, assembly_id
+        )
+        
+        if not assembly:
+            return None
+        
+        # Update fields
+        for field, value in assembly_data.dict(exclude_unset=True).items():
+            setattr(assembly, field, value)
+        
+        await db.commit()
+        await db.refresh(assembly)
+        
+        logger.info("Inventory assembly updated", 
+                   assembly_id=assembly_id)
+        
         return assembly
     
     @staticmethod
