@@ -347,7 +347,7 @@ const EnterBills = () => {
                                 <SelectValue placeholder="Select account" />
                               </SelectTrigger>
                               <SelectContent>
-                                {mockAccounts.map((account) => (
+                                {accounts.map((account) => (
                                   <SelectItem key={account.id} value={account.name}>
                                     {account.name}
                                   </SelectItem>
