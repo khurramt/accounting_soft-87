@@ -15,7 +15,7 @@ class CompanyService {
   // Create a new company
   async createCompany(companyData) {
     try {
-      const response = await apiClient.post('/companies', companyData);
+      const response = await apiClient.post('/companies/', companyData);
       return response.data;
     } catch (error) {
       console.error('Error creating company:', error);
