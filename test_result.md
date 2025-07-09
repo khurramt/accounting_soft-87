@@ -49,9 +49,9 @@
 ##
 ## test_plan:
   current_focus:
-    - "Vendor Management Integration - Phase 1.3"
+    - "Transaction Management Integration - Phase 1.4"
   stuck_tasks:
-    - "Vendor Management Integration - Phase 1.3"
+    - "Transaction Management Integration - Phase 1.4"
   test_all: false
   test_priority: "high_first"
 ##
