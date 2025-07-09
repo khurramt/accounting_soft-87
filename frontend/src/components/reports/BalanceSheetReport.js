@@ -93,7 +93,7 @@ const BalanceSheetReport = () => {
     };
     
     loadReportData();
-  }, [currentCompany, asOfDate, reportBasis, comparisonPeriod, reportFormat]);
+  }, [currentCompany, companyLoading, companyError, asOfDate, reportBasis, comparisonPeriod, reportFormat]);
 
   // Helper function to get previous year date
   const getPreviousYearDate = (date) => {
