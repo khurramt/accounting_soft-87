@@ -110,15 +110,15 @@ async def get_invoices(
         
         # Additional filtering for outstanding status
         if status == "outstanding":
-            invoices = [invoice for invoice in invoices if invoice.balance_due > 0]
+            invoices = [invoice for invoice in invoices if invoice.balance_due > Decimal('0')]
             total = len(invoices)
         elif status == "paid":
-            invoices = [invoice for invoice in invoices if invoice.balance_due == 0]
+            invoices = [invoice for invoice in invoices if invoice.balance_due == Decimal('0')]
             total = len(invoices)
         elif status == "overdue":
             from datetime import date
             today = date.today()
-            invoices = [invoice for invoice in invoices if invoice.balance_due > 0 and invoice.due_date and invoice.due_date < today]
+            invoices = [invoice for invoice in invoices if invoice.balance_due > Decimal('0') and invoice.due_date and invoice.due_date < today]
             total = len(invoices)
         
         return PaginatedResponse(
