@@ -56,6 +56,7 @@ async def get_invoices(
     search: Optional[str] = Query(None),
     customer_id: Optional[str] = Query(None),
     transaction_status: Optional[str] = Query(None),
+    status: Optional[str] = Query(None, description="Filter by invoice status (outstanding, paid, overdue)"),
     start_date: Optional[date] = Query(None),
     end_date: Optional[date] = Query(None),
     min_amount: Optional[float] = Query(None),
@@ -77,6 +78,17 @@ async def get_invoices(
                 detail="Access denied to this company"
             )
         
+        # Handle special status filters
+        if status == "outstanding":
+            is_posted = True
+            # We'll filter for invoices with balance_due > 0 in the service
+        elif status == "paid":
+            is_posted = True
+            # We'll filter for invoices with balance_due = 0 in the service
+        elif status == "overdue":
+            is_posted = True
+            # We'll filter for invoices with balance_due > 0 and due_date < today in the service
+        
         filters = TransactionSearchFilters(
             search=search,
             transaction_type=TransactionType.INVOICE,
@@ -94,6 +106,19 @@ async def get_invoices(
         )
         
         invoices, total = await TransactionService.get_transactions(db, company_id, filters)
+        
+        # Additional filtering for outstanding status
+        if status == "outstanding":
+            invoices = [invoice for invoice in invoices if invoice.balance_due > 0]
+            total = len(invoices)
+        elif status == "paid":
+            invoices = [invoice for invoice in invoices if invoice.balance_due == 0]
+            total = len(invoices)
+        elif status == "overdue":
+            from datetime import date
+            today = date.today()
+            invoices = [invoice for invoice in invoices if invoice.balance_due > 0 and invoice.due_date and invoice.due_date < today]
+            total = len(invoices)
         
         return PaginatedResponse(
             items=[InvoiceResponse.from_orm(invoice) for invoice in invoices],
