@@ -16,11 +16,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Get the backend URL from the frontend .env file
 def get_backend_url():
-    with open('/app/frontend/.env', 'r') as f:
-        for line in f:
-            if line.startswith('REACT_APP_BACKEND_URL='):
-                return line.strip().split('=')[1].strip('"\'')
-    return None
+    # Use local backend URL for testing
+    return "http://localhost:8001"
 
 BACKEND_URL = get_backend_url()
 if not BACKEND_URL:
