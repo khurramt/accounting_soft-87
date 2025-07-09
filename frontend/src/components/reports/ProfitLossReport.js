@@ -118,128 +118,41 @@ const ProfitLossReport = () => {
         return {
           startDate: new Date(currentYear, currentMonth, 1).toISOString().split('T')[0],
           endDate: new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0]
+    }
+  };
+
+  // Handle refresh report
+  const handleRefreshReport = () => {
+    if (!currentCompany) return;
+    
+    const loadReportData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const { startDate, endDate } = getDateRange(dateRange);
+        const params = {
+          start_date: startDate,
+          end_date: endDate,
+          comparison_type: comparisonPeriod === 'none' ? 'none' : comparisonPeriod,
+          include_subtotals: showDetail !== 'summary',
+          show_cents: true
         };
-    }
-  };
-    companyName: "Your Company Name",
-    reportTitle: "Profit & Loss",
-    period: "January 1 - 31, 2024",
-    reportBasis: "Accrual Basis",
-    generatedDate: "February 1, 2024",
-    income: {
-      title: "Income",
-      accounts: [
-        {
-          name: "Sales Revenue",
-          current: 125000.00,
-          previous: 118000.00,
-          budgeted: 120000.00,
-          subcategories: [
-            { name: "Product Sales", current: 95000.00, previous: 88000.00 },
-            { name: "Service Revenue", current: 30000.00, previous: 30000.00 }
-          ]
-        },
-        {
-          name: "Other Income",
-          current: 2500.00,
-          previous: 1800.00,
-          budgeted: 2000.00,
-          subcategories: [
-            { name: "Interest Income", current: 1500.00, previous: 1200.00 },
-            { name: "Miscellaneous Income", current: 1000.00, previous: 600.00 }
-          ]
-        }
-      ],
-      total: 127500.00,
-      previousTotal: 119800.00,
-      budgetedTotal: 122000.00
-    },
-    grossProfit: {
-      title: "Gross Profit",
-      current: 127500.00,
-      previous: 119800.00,
-      budgeted: 122000.00
-    },
-    expenses: {
-      title: "Expenses",
-      accounts: [
-        {
-          name: "Cost of Goods Sold",
-          current: 45000.00,
-          previous: 42000.00,
-          budgeted: 43000.00,
-          subcategories: [
-            { name: "Materials", current: 30000.00, previous: 28000.00 },
-            { name: "Direct Labor", current: 15000.00, previous: 14000.00 }
-          ]
-        },
-        {
-          name: "Operating Expenses", 
-          current: 32500.00,
-          previous: 31000.00,
-          budgeted: 33000.00,
-          subcategories: [
-            { name: "Rent", current: 8000.00, previous: 8000.00 },
-            { name: "Utilities", current: 1500.00, previous: 1400.00 },
-            { name: "Office Supplies", current: 800.00, previous: 750.00 },
-            { name: "Marketing", current: 5200.00, previous: 4800.00 },
-            { name: "Professional Services", current: 3500.00, previous: 3200.00 },
-            { name: "Insurance", current: 2500.00, previous: 2500.00 },
-            { name: "Depreciation", current: 2000.00, previous: 2000.00 },
-            { name: "Other Expenses", current: 9000.00, previous: 8350.00 }
-          ]
-        },
-        {
-          name: "Administrative Expenses",
-          current: 18500.00,
-          previous: 17200.00,
-          budgeted: 18000.00,
-          subcategories: [
-            { name: "Salaries & Wages", current: 12000.00, previous: 11500.00 },
-            { name: "Employee Benefits", current: 3500.00, previous: 3200.00 },
-            { name: "Payroll Taxes", current: 1500.00, previous: 1400.00 },
-            { name: "Training", current: 800.00, previous: 600.00 },
-            { name: "Other Admin", current: 700.00, previous: 500.00 }
-          ]
-        }
-      ],
-      total: 96000.00,
-      previousTotal: 90200.00,
-      budgetedTotal: 94000.00
-    },
-    netIncome: {
-      title: "Net Income",
-      current: 31500.00,
-      previous: 29600.00,
-      budgeted: 28000.00
-    }
-  });
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount);
+        
+        const data = await reportService.getProfitLossReport(currentCompany.id, params);
+        setReportData(data);
+      } catch (err) {
+        console.error('Error refreshing P&L report:', err);
+        setError(err.message || 'Failed to refresh report');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadReportData();
   };
 
-  const calculatePercentage = (current, previous) => {
-    if (previous === 0) return 0;
-    return ((current - previous) / previous * 100).toFixed(1);
-  };
-
-  const getVarianceColor = (current, previous) => {
-    if (current > previous) return 'text-green-600';
-    if (current < previous) return 'text-red-600';
-    return 'text-gray-600';
-  };
-
-  const getVarianceIcon = (current, previous) => {
-    if (current > previous) return <ArrowUpRight className="w-4 h-4 text-green-600" />;
-    if (current < previous) return <ArrowDownRight className="w-4 h-4 text-red-600" />;
-    return null;
-  };
-
+  // Handle various actions
   const handleExport = (format) => {
     console.log(`Exporting report as ${format}`);
   };
@@ -259,6 +172,65 @@ const ProfitLossReport = () => {
   const handleSchedule = () => {
     console.log("Opening schedule dialog");
   };
+
+  const getVarianceIcon = (current, previous) => {
+    const currentNum = typeof current === 'string' ? parseFloat(current) : current;
+    const previousNum = typeof previous === 'string' ? parseFloat(previous) : previous;
+    
+    if (currentNum > previousNum) return <ArrowUpRight className="w-4 h-4 text-green-600" />;
+    if (currentNum < previousNum) return <ArrowDownRight className="w-4 h-4 text-red-600" />;
+    return null;
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <span className="text-lg">Loading Profit & Loss Report...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="text-red-600 text-lg font-medium mb-2">Error Loading Report</div>
+            <div className="text-gray-600 mb-4">{error}</div>
+            <Button onClick={handleRefreshReport}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (!reportData) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="text-gray-600 text-lg font-medium mb-2">No Report Data Available</div>
+            <div className="text-gray-500 mb-4">Please check your date range and filters</div>
+            <Button onClick={handleRefreshReport}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh Report
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
