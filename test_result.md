@@ -602,9 +602,9 @@
 
   - task: "Transaction Management Integration - Phase 1.4"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/api/transactions.py, /app/backend/api/invoices.py, /app/backend/api/bills.py, /app/backend/api/payments.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -614,6 +614,9 @@
         - working: true
           agent: "testing"
           comment: "Comprehensive testing of the Transaction Management Integration APIs confirms that most functionality is working correctly. Successfully tested: 1) Transaction Management APIs - Create, read, post, void, and delete operations all working correctly. Search and filtering functionality working properly. 2) Invoice Management APIs - Create, read, delete, send email, and generate PDF operations working correctly. 3) Bill Management APIs - Create, read, and delete operations working correctly. 4) Payment Management APIs - Get payments endpoint working, but create payment has validation errors. Found issues: 1) Update operations for transactions, invoices, and bills return 500 errors. 2) Payment creation has validation errors related to the applications field. 3) Error handling for invalid company IDs returns 500 instead of 403/404. Despite these issues, the core functionality of transaction management is working correctly, allowing for the creation, retrieval, posting, voiding, and deletion of transactions, invoices, and bills."
+        - working: false
+          agent: "testing"
+          comment: "Comprehensive testing of the Transaction Management API fixes shows that the issues have not been fully resolved. 1) Status Parameter Conflict Fix (Fix #1): This appears to be working correctly as we can now filter transactions by status without errors. 2) Update Operations Fix (Fix #2): Still failing with 500 errors when trying to update invoices. 3) Payment Creation Fix (Fix #3): Still failing with validation errors related to the applications field. The error message indicates an issue with the Pydantic model validation for PaymentResponse. 4) Error Handling Fix (Fix #4): Still failing with 500 errors when using invalid company IDs instead of returning 403/404 status codes. These issues need to be addressed before the Transaction Management Integration can be considered fully functional."
 
 ## agent_communication:
     - agent: "main"
