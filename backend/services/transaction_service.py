@@ -216,13 +216,19 @@ class TransactionService(BaseListService):
             )
             
             # Create new lines
-            for line_data in lines_data:
+            for i, line_data in enumerate(lines_data):
                 line_total = await TransactionService._calculate_line_total(line_data)
+                line_dict = line_data.dict() if hasattr(line_data, 'dict') else line_data
+                
+                # Ensure line_number is set
+                if 'line_number' not in line_dict or line_dict['line_number'] is None:
+                    line_dict['line_number'] = i + 1
+                
                 line = TransactionLine(
                     line_id=str(uuid.uuid4()),
                     transaction_id=transaction.transaction_id,
                     line_total=line_total,
-                    **line_data.dict() if hasattr(line_data, 'dict') else line_data
+                    **line_dict
                 )
                 db.add(line)
             
