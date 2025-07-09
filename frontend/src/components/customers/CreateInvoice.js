@@ -24,6 +24,9 @@ import {
 } from "lucide-react";
 
 const CreateInvoice = () => {
+  const navigate = useNavigate();
+  const { currentCompany } = useCompany();
+  
   const [invoiceData, setInvoiceData] = useState({
     customer: "",
     date: new Date().toISOString().split('T')[0],
@@ -44,7 +47,47 @@ const CreateInvoice = () => {
     ]
   });
 
-  const navigate = useNavigate();
+  const [customers, setCustomers] = useState([]);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Load customers and items on component mount
+  useEffect(() => {
+    if (currentCompany) {
+      loadCustomers();
+      loadItems();
+    }
+  }, [currentCompany]);
+
+  const loadCustomers = async () => {
+    try {
+      setLoading(true);
+      const response = await customerService.getCustomers(currentCompany.company_id);
+      setCustomers(response.items || []);
+    } catch (err) {
+      setError('Failed to load customers');
+      console.error('Error loading customers:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadItems = async () => {
+    try {
+      // Mock items for now - would integrate with items service when available
+      const mockItems = [
+        { id: '1', name: 'Consulting Services', price: 150.00 },
+        { id: '2', name: 'Software Development', price: 100.00 },
+        { id: '3', name: 'Project Management', price: 125.00 },
+        { id: '4', name: 'Technical Support', price: 75.00 }
+      ];
+      setItems(mockItems);
+    } catch (err) {
+      console.error('Error loading items:', err);
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setInvoiceData(prev => ({
