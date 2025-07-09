@@ -359,7 +359,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium">${invoice.balance_due.toFixed(2)}</div>
+                        <div className="font-medium">${formatCurrency(invoice.balance_due)}</div>
                         <div className="text-sm text-gray-600">{invoice.due_date}</div>
                       </div>
                     </div>
