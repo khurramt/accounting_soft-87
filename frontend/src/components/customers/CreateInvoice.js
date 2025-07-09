@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { mockCustomers, mockItems } from "../../data/mockData";
+import { useCompany } from "../../contexts/CompanyContext";
+import invoiceService from "../../services/invoiceService";
+import customerService from "../../services/customerService";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -16,7 +18,9 @@ import {
   Printer, 
   FileText,
   Calculator,
-  Calendar
+  Calendar,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 
 const CreateInvoice = () => {
