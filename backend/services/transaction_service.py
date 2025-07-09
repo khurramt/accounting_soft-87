@@ -222,7 +222,7 @@ class TransactionService(BaseListService):
                     line_id=str(uuid.uuid4()),
                     transaction_id=transaction.transaction_id,
                     line_total=line_total,
-                    **line_data
+                    **line_data.dict() if hasattr(line_data, 'dict') else line_data
                 )
                 db.add(line)
             
