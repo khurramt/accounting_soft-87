@@ -685,121 +685,144 @@ async def get_dashboard_summary(
         start_date = today.replace(day=1)
         end_date = today
     
-    # Get total income from posted transactions
-    income_query = select(
-        func.sum(Transaction.total_amount).label('total_income')
-    ).where(
-        and_(
-            Transaction.company_id == company_id,
-            Transaction.transaction_date >= start_date,
-            Transaction.transaction_date <= end_date,
-            Transaction.status == TransactionStatus.POSTED,
-            Transaction.transaction_type == TransactionType.INVOICE
+    try:
+        # Use a single optimized query to get all dashboard stats
+        # This combines multiple queries into one for better performance
+        dashboard_query = select(
+            func.sum(
+                case(
+                    (
+                        and_(
+                            Transaction.transaction_date >= start_date,
+                            Transaction.transaction_date <= end_date,
+                            Transaction.status == TransactionStatus.POSTED,
+                            Transaction.transaction_type == TransactionType.INVOICE
+                        ),
+                        Transaction.total_amount
+                    ),
+                    else_=0
+                )
+            ).label('total_income'),
+            func.sum(
+                case(
+                    (
+                        and_(
+                            Transaction.transaction_date >= start_date,
+                            Transaction.transaction_date <= end_date,
+                            Transaction.status == TransactionStatus.POSTED,
+                            Transaction.transaction_type == TransactionType.BILL
+                        ),
+                        Transaction.total_amount
+                    ),
+                    else_=0
+                )
+            ).label('total_expenses'),
+            func.sum(
+                case(
+                    (
+                        and_(
+                            Transaction.transaction_type == TransactionType.INVOICE,
+                            Transaction.status == TransactionStatus.POSTED,
+                            Transaction.balance_due > 0
+                        ),
+                        Transaction.balance_due
+                    ),
+                    else_=0
+                )
+            ).label('outstanding_amount')
+        ).where(
+            Transaction.company_id == company_id
         )
-    )
-    
-    income_result = await db.execute(income_query)
-    total_income = income_result.scalar() or Decimal('0.0')
-    
-    # Get total expenses from posted bills
-    expenses_query = select(
-        func.sum(Transaction.total_amount).label('total_expenses')
-    ).where(
-        and_(
-            Transaction.company_id == company_id,
-            Transaction.transaction_date >= start_date,
-            Transaction.transaction_date <= end_date,
-            Transaction.status == TransactionStatus.POSTED,
-            Transaction.transaction_type == TransactionType.BILL
-        )
-    )
-    
-    expenses_result = await db.execute(expenses_query)
-    total_expenses = expenses_result.scalar() or Decimal('0.0')
-    
-    # Calculate net income
-    net_income = total_income - total_expenses
-    
-    # Get outstanding invoices
-    outstanding_query = select(
-        func.sum(Transaction.balance_due).label('outstanding_amount')
-    ).where(
-        and_(
-            Transaction.company_id == company_id,
-            Transaction.transaction_type == TransactionType.INVOICE,
-            Transaction.status == TransactionStatus.POSTED,
-            Transaction.balance_due > 0
-        )
-    )
-    
-    outstanding_result = await db.execute(outstanding_query)
-    outstanding_invoices = outstanding_result.scalar() or Decimal('0.0')
-    
-    # Get recent transactions (last 10)
-    recent_query = select(Transaction).where(
-        and_(
-            Transaction.company_id == company_id,
-            Transaction.status == TransactionStatus.POSTED
-        )
-    ).order_by(desc(Transaction.created_at)).limit(10)
-    
-    recent_result = await db.execute(recent_query)
-    recent_transactions = recent_result.scalars().all()
-    
-    # Format recent transactions
-    recent_transactions_data = []
-    for tx in recent_transactions:
-        recent_transactions_data.append({
-            "transaction_id": tx.transaction_id,
-            "transaction_type": tx.transaction_type.value.title(),
-            "transaction_number": tx.transaction_number,
-            "customer_name": None,  # Will be populated when relationships are loaded
-            "vendor_name": None,
-            "transaction_date": tx.transaction_date.isoformat(),
-            "total_amount": float(tx.total_amount),
-            "status": tx.status.value.title()
-        })
-    
-    # Calculate percentage changes (mock for now)
-    income_change = "+12.5%"
-    expenses_change = "+8.2%"
-    net_income_change = "+15.3%"
-    outstanding_change = "-5.2%"
-    
-    return {
-        "date_range": date_range,
-        "start_date": start_date.isoformat(),
-        "end_date": end_date.isoformat(),
-        "stats": {
-            "total_income": {
-                "value": float(total_income),
-                "change": income_change,
-                "trend": "up"
+        
+        result = await db.execute(dashboard_query)
+        row = result.first()
+        
+        total_income = row.total_income or Decimal('0.0')
+        total_expenses = row.total_expenses or Decimal('0.0')
+        outstanding_invoices = row.outstanding_amount or Decimal('0.0')
+        
+        # Calculate net income
+        net_income = total_income - total_expenses
+        
+        # Get recent transactions (last 10) with limited fields for better performance
+        recent_query = select(
+            Transaction.transaction_id,
+            Transaction.transaction_type,
+            Transaction.transaction_number,
+            Transaction.transaction_date,
+            Transaction.total_amount,
+            Transaction.status
+        ).where(
+            and_(
+                Transaction.company_id == company_id,
+                Transaction.status == TransactionStatus.POSTED
+            )
+        ).order_by(desc(Transaction.created_at)).limit(10)
+        
+        recent_result = await db.execute(recent_query)
+        recent_transactions = recent_result.all()
+        
+        # Format recent transactions
+        recent_transactions_data = []
+        for tx in recent_transactions:
+            recent_transactions_data.append({
+                "transaction_id": tx.transaction_id,
+                "transaction_type": tx.transaction_type.value.title(),
+                "transaction_number": tx.transaction_number,
+                "customer_name": None,  # Will be populated when relationships are loaded
+                "vendor_name": None,
+                "transaction_date": tx.transaction_date.isoformat(),
+                "total_amount": float(tx.total_amount),
+                "status": tx.status.value.title()
+            })
+        
+        # Calculate percentage changes (mock for now)
+        income_change = "+12.5%"
+        expenses_change = "+8.2%"
+        net_income_change = "+15.3%"
+        outstanding_change = "-5.2%"
+        
+        return {
+            "date_range": date_range,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "stats": {
+                "total_income": {
+                    "value": float(total_income),
+                    "change": income_change,
+                    "trend": "up"
+                },
+                "total_expenses": {
+                    "value": float(total_expenses),
+                    "change": expenses_change,
+                    "trend": "up"
+                },
+                "net_income": {
+                    "value": float(net_income),
+                    "change": net_income_change,
+                    "trend": "up"
+                },
+                "outstanding_invoices": {
+                    "value": float(outstanding_invoices),
+                    "change": outstanding_change,
+                    "trend": "down"
+                }
             },
-            "total_expenses": {
-                "value": float(total_expenses),
-                "change": expenses_change,
-                "trend": "up"
-            },
-            "net_income": {
-                "value": float(net_income),
-                "change": net_income_change,
-                "trend": "up"
-            },
-            "outstanding_invoices": {
-                "value": float(outstanding_invoices),
-                "change": outstanding_change,
-                "trend": "down"
+            "recent_transactions": recent_transactions_data,
+            "accounts_receivable": {
+                "current": float(outstanding_invoices * Decimal('0.6')),
+                "days_31_60": float(outstanding_invoices * Decimal('0.25')),
+                "days_61_90": float(outstanding_invoices * Decimal('0.1')),
+                "over_90_days": float(outstanding_invoices * Decimal('0.05'))
             }
-        },
-        "recent_transactions": recent_transactions_data,
-        "accounts_receivable": {
-            "current": float(outstanding_invoices * Decimal('0.6')),
-            "days_31_60": float(outstanding_invoices * Decimal('0.25')),
-            "days_61_90": float(outstanding_invoices * Decimal('0.1')),
-            "over_90_days": float(outstanding_invoices * Decimal('0.05'))
         }
-    }
+    
+    except Exception as e:
+        logger.error(f"Dashboard API error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating dashboard summary: {str(e)}"
+        )
 
 
 @router.get("/reports/ap-aging")
