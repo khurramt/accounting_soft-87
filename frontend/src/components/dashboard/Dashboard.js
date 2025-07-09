@@ -59,6 +59,8 @@ const Dashboard = () => {
         dashboardService.getDashboardAlerts(currentCompany.company_id)
       ]);
 
+      console.log('Dashboard API Response:', { dashData, recentTxns, outstandingInvs });
+
       setDashboardData(dashData);
       setRecentTransactions(recentTxns.items || []);
       setOutstandingInvoices(outstandingInvs.items || []);
