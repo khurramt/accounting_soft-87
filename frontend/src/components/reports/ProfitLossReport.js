@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useCompany } from "../../contexts/CompanyContext";
+import reportService from "../../services/reportService";
+import { formatCurrency, calculatePercentage, getVarianceColor } from "../../utils/formatCurrency";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -29,7 +32,8 @@ import {
   ArrowDownRight,
   Eye,
   Star,
-  Clock
+  Clock,
+  Loader2
 } from "lucide-react";
 
 const ProfitLossReport = () => {
