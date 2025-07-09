@@ -475,7 +475,7 @@ def test_get_transactions():
         filters = [
             {"name": "No filters", "params": {}},
             {"name": "Filter by transaction type", "params": {"transaction_type": "invoice"}},
-            {"name": "Filter by status", "params": {"status": "draft"}},
+            {"name": "Filter by status", "params": {"transaction_status": "draft"}},
             {"name": "Filter by date range", "params": {
                 "start_date": (date.today() - timedelta(days=30)).isoformat(),
                 "end_date": date.today().isoformat()
