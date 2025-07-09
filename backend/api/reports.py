@@ -1,8 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func, desc, and_
 from typing import List, Optional, Dict, Any
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+from decimal import Decimal
+from models.transactions import Transaction, TransactionLine, TransactionType, TransactionStatus
+from models.accounts import Account, AccountType
 
 from database.connection import get_db
 from services.auth_service import auth_service
