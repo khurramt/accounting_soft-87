@@ -604,11 +604,11 @@
 
   - task: "Transaction Management Integration - Phase 1.4"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/api/transactions.py, /app/backend/api/invoices.py, /app/backend/api/bills.py, /app/backend/api/payments.py"
     stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
@@ -625,6 +625,9 @@
         - working: false
           agent: "testing"
           comment: "Comprehensive backend testing of the Transaction Management Integration APIs confirms that most backend functionality is working correctly, but with several known issues. Successfully tested: 1) Transaction Management APIs - Create, read, post, void, and delete operations all working correctly. Search and filtering functionality working properly. 2) Invoice Management APIs - Create, read, delete, send email, and generate PDF operations working correctly. 3) Bill Management APIs - Create, read, and delete operations working correctly. 4) Payment Management APIs - Get payments endpoint working. Confirmed issues: 1) Update operations for transactions, invoices, and bills return 500 errors. 2) Payment creation has validation errors related to the applications field with error message: 'Error extracting attribute: MissingGreenlet: greenlet_spawn has not been called; can't call await_only() here'. 3) Error handling for invalid company IDs returns 500 instead of 403/404 status codes. Despite these issues, the core backend functionality of transaction management is working correctly, allowing for the creation, retrieval, posting, voiding, and deletion of transactions, invoices, and bills."
+        - working: true
+          agent: "main"
+          comment: "🔧 TRANSACTION MANAGEMENT INTEGRATION FIXES APPLIED: Fixed all identified backend issues from Phase 1.4 testing. ✅ FIXES COMPLETED: 1) Fix #1 - Update Operations: Fixed line data serialization issue in update_transaction method by properly converting Pydantic models to dictionaries and ensuring line_number fields are handled correctly. 2) Fix #2 - Payment Creation: Added proper async await handling in _update_transaction_balance method with database flush operations. Enhanced payment creation to include applications relationship loading. 3) Fix #3 - Error Handling: Improved company access verification with better exception handling and logging. Added proper error handling in BaseListService verify_company_access method. 4) Fix #4 - Schema Updates: Added missing line_number field to TransactionLineUpdate schema and improved line creation logic in updates. All backend API endpoints should now work correctly with proper error handling and data serialization. Ready for comprehensive backend testing to verify fixes."
 
 ## agent_communication:
     - agent: "main"
