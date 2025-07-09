@@ -97,7 +97,7 @@ const Dashboard = () => {
   const dashboardStats = dashboardData ? [
     {
       title: "Total Income",
-      value: `$${dashboardData.stats.total_income.value.toFixed(2)}`,
+      value: `$${formatCurrency(dashboardData.stats.total_income.value)}`,
       change: dashboardData.stats.total_income.change,
       trend: dashboardData.stats.total_income.trend,
       icon: TrendingUp,
@@ -105,7 +105,7 @@ const Dashboard = () => {
     },
     {
       title: "Total Expenses", 
-      value: `$${dashboardData.stats.total_expenses.value.toFixed(2)}`,
+      value: `$${formatCurrency(dashboardData.stats.total_expenses.value)}`,
       change: dashboardData.stats.total_expenses.change,
       trend: dashboardData.stats.total_expenses.trend,
       icon: TrendingDown,
@@ -113,7 +113,7 @@ const Dashboard = () => {
     },
     {
       title: "Net Income",
-      value: `$${dashboardData.stats.net_income.value.toFixed(2)}`,
+      value: `$${formatCurrency(dashboardData.stats.net_income.value)}`,
       change: dashboardData.stats.net_income.change,
       trend: dashboardData.stats.net_income.trend,
       icon: DollarSign,
@@ -121,7 +121,7 @@ const Dashboard = () => {
     },
     {
       title: "Outstanding Invoices",
-      value: `$${dashboardData.stats.outstanding_invoices.value.toFixed(2)}`,
+      value: `$${formatCurrency(dashboardData.stats.outstanding_invoices.value)}`,
       change: dashboardData.stats.outstanding_invoices.change,
       trend: dashboardData.stats.outstanding_invoices.trend,
       icon: Users,
