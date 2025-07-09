@@ -22,6 +22,9 @@ import {
 } from "lucide-react";
 
 const ReceivePayment = () => {
+  const navigate = useNavigate();
+  const { currentCompany } = useCompany();
+  
   const [paymentData, setPaymentData] = useState({
     customer: "",
     paymentDate: new Date().toISOString().split('T')[0],
@@ -32,7 +35,53 @@ const ReceivePayment = () => {
     selectedInvoices: []
   });
 
-  const navigate = useNavigate();
+  const [customers, setCustomers] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Load customers on component mount
+  useEffect(() => {
+    if (currentCompany) {
+      loadCustomers();
+    }
+  }, [currentCompany]);
+
+  // Load customer invoices when customer is selected
+  useEffect(() => {
+    if (currentCompany && paymentData.customer) {
+      loadCustomerInvoices();
+    } else {
+      setInvoices([]);
+    }
+  }, [currentCompany, paymentData.customer]);
+
+  const loadCustomers = async () => {
+    try {
+      setLoading(true);
+      const response = await customerService.getCustomers(currentCompany.company_id);
+      setCustomers(response.items || []);
+    } catch (err) {
+      setError('Failed to load customers');
+      console.error('Error loading customers:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCustomerInvoices = async () => {
+    try {
+      setLoading(true);
+      const response = await invoiceService.getOutstandingInvoices(currentCompany.company_id, paymentData.customer);
+      setInvoices(response.items || []);
+    } catch (err) {
+      setError('Failed to load customer invoices');
+      console.error('Error loading customer invoices:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setPaymentData(prev => ({
