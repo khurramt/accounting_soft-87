@@ -129,6 +129,67 @@
     priority: "high"
     needs_retesting: false
     status_history:
+        - working: false
+          agent: "main"
+          comment: "Authentication module implemented but login is failing with 500 error"
+        - working: false
+          agent: "testing"
+          comment: "Confirmed login is failing with 500 error. Issue is in password hashing."
+        - working: true
+          agent: "main"
+          comment: "Fixed password hashing issue. Login now works correctly."
+        - working: true
+          agent: "testing"
+          comment: "Login is now working correctly. Successfully tested login with demo user credentials."
+
+  - task: "Reports Integration - Profit and Loss Report API"
+    implemented: true
+    working: true
+    file: "/app/backend/api/reports.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "The Profit and Loss report API endpoint is working correctly. Successfully tested with various parameters including date ranges and comparison periods. Returns proper data structure with sections for Income, Gross Profit, and Expenses."
+
+  - task: "Reports Integration - Balance Sheet Report API"
+    implemented: true
+    working: true
+    file: "/app/backend/api/reports.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "The Balance Sheet report API endpoint is working correctly. Successfully tested with as_of_date parameter and comparison date. Returns proper data structure with sections for Assets, Liabilities, and Equity."
+
+  - task: "Reports Integration - Cash Flow Report API"
+    implemented: true
+    working: true
+    file: "/app/backend/api/reports.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "The Cash Flow report API endpoint is working correctly. Successfully tested with both indirect and direct methods. Returns proper data structure with sections for Operating, Investing, and Financing activities."
+
+  - task: "Reports Integration - Error Handling"
+    implemented: true
+    working: true
+    file: "/app/backend/api/reports.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Error handling for the report APIs is working correctly. Properly handles invalid company IDs (returns 403) and missing required parameters (returns 422 with detailed error messages)."
+    status_history:
         - working: true
           agent: "main"
           comment: "MAJOR SUCCESS! Complete authentication system implemented and working. Fixed database path issue and JSONResponse usage. All endpoints working: register, login, logout, refresh-token, get profile, sessions management. SQLite database properly initialized with demo data. Demo user (demo@quickbooks.com / Password123!) working perfectly. JWT tokens, bcrypt passwords, session management, rate limiting, security features all functional."
