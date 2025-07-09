@@ -49,9 +49,11 @@
 ##
 ## test_plan:
   current_focus:
-    - "Phase 2.2 Dashboard Frontend Integration - Ready for comprehensive testing"
-    - "Backend APIs: Dashboard, Transactions, Invoices integration"
-    - "Frontend: Dashboard component with real-time data display"
+    - "Phase 2.1 Dashboard Integration - Test frontend dashboard with real backend API integration"
+    - "Phase 2.2 Reports Integration - Test reports components with backend API integration"
+    - "Backend APIs: Dashboard summary, recent transactions, outstanding invoices working"
+    - "Reports APIs: profit-loss, balance-sheet, cash-flow endpoints available"
+    - "Frontend: Dashboard with real-time data, Reports components with API integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
