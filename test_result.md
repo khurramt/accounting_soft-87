@@ -49,12 +49,13 @@
 ##
 ## test_plan:
   current_focus:
-    - "Phase 2.1 Dashboard Integration - Test frontend dashboard with real backend API integration"
-    - "Phase 2.2 Reports Integration - Test reports components with backend API integration"
-    - "Backend APIs: Dashboard summary, recent transactions, outstanding invoices working"
-    - "Reports APIs: profit-loss, balance-sheet, cash-flow endpoints available"
-    - "Frontend: Dashboard with real-time data, Reports components with API integration"
-  stuck_tasks: []
+    - "Fix Dashboard Integration - JavaScript error: transaction.total_amount.toFixed is not a function"
+    - "Resolve data format mismatch between backend API responses and frontend component expectations"
+    - "Update Dashboard component to handle actual API response format"
+    - "Complete Reports Integration after Dashboard issues are resolved"
+  stuck_tasks:
+    - "Dashboard Integration - Phase 2.1"
+    - "Reports Integration - Phase 2.2"
   test_all: false
   test_priority: "high_first"
 ##
