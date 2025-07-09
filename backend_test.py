@@ -1422,6 +1422,8 @@ def test_update_bill():
                 return False
         else:
             print(f"❌ Update bill test failed: Status code {response.status_code}")
+            if response.status_code == 500:
+                print("⚠️ Known issue: Update operations return 500 errors")
             return False
     except requests.exceptions.Timeout:
         print(f"❌ Update bill test failed: Request timed out after {TIMEOUT} seconds")
