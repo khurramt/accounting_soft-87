@@ -40,15 +40,87 @@ const ProfitLossReport = () => {
   const [searchParams] = useSearchParams();
   const reportName = searchParams.get('report') || 'Profit & Loss';
   const category = searchParams.get('category') || 'Company & Financial';
+  const { currentCompany } = useCompany();
   
   const [dateRange, setDateRange] = useState("current-month");
   const [reportBasis, setReportBasis] = useState("accrual");
   const [reportFormat, setReportFormat] = useState("standard");
   const [comparisonPeriod, setComparisonPeriod] = useState("none");
   const [showDetail, setShowDetail] = useState("summary");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [reportData, setReportData] = useState(null);
 
-  // Mock P&L data
-  const [reportData] = useState({
+  // Load report data from backend
+  useEffect(() => {
+    const loadReportData = async () => {
+      if (!currentCompany) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Calculate date range
+        const { startDate, endDate } = getDateRange(dateRange);
+        
+        // Prepare report parameters
+        const params = {
+          start_date: startDate,
+          end_date: endDate,
+          comparison_type: comparisonPeriod === 'none' ? 'none' : comparisonPeriod,
+          include_subtotals: showDetail !== 'summary',
+          show_cents: true
+        };
+        
+        console.log('Loading P&L report with params:', params);
+        const data = await reportService.getProfitLossReport(currentCompany.id, params);
+        setReportData(data);
+      } catch (err) {
+        console.error('Error loading P&L report:', err);
+        setError(err.message || 'Failed to load report');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadReportData();
+  }, [currentCompany, dateRange, reportBasis, comparisonPeriod, showDetail]);
+
+  // Helper function to get date range
+  const getDateRange = (range) => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    
+    switch (range) {
+      case 'current-month':
+        return {
+          startDate: new Date(currentYear, currentMonth, 1).toISOString().split('T')[0],
+          endDate: new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0]
+        };
+      case 'last-month':
+        return {
+          startDate: new Date(currentYear, currentMonth - 1, 1).toISOString().split('T')[0],
+          endDate: new Date(currentYear, currentMonth, 0).toISOString().split('T')[0]
+        };
+      case 'current-quarter':
+        const quarterStart = Math.floor(currentMonth / 3) * 3;
+        return {
+          startDate: new Date(currentYear, quarterStart, 1).toISOString().split('T')[0],
+          endDate: new Date(currentYear, quarterStart + 3, 0).toISOString().split('T')[0]
+        };
+      case 'current-year':
+        return {
+          startDate: new Date(currentYear, 0, 1).toISOString().split('T')[0],
+          endDate: new Date(currentYear, 11, 31).toISOString().split('T')[0]
+        };
+      default:
+        return {
+          startDate: new Date(currentYear, currentMonth, 1).toISOString().split('T')[0],
+          endDate: new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0]
+        };
+    }
+  };
     companyName: "Your Company Name",
     reportTitle: "Profit & Loss",
     period: "January 1 - 31, 2024",
