@@ -55,7 +55,7 @@ async def get_transactions(
     company_id: str,
     search: Optional[str] = Query(None),
     transaction_type: Optional[str] = Query(None),
-    status: Optional[str] = Query(None),
+    transaction_status: Optional[str] = Query(None),
     customer_id: Optional[str] = Query(None),
     vendor_id: Optional[str] = Query(None),
     start_date: Optional[date] = Query(None),
