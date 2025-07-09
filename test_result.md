@@ -523,9 +523,9 @@
 
   - task: "Vendor Management Integration - Phase 1.3"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/services/vendorService.js, /app/frontend/src/components/vendors/VendorCenter.js, /app/frontend/src/components/vendors/NewVendor.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -538,6 +538,9 @@
         - working: true
           agent: "main"
           comment: "🔧 AUTHENTICATION ISSUE RESOLVED: Fixed the root cause of 403 Forbidden errors in vendor management integration. The issue was that the demo user 'demo@quickbooks.com' did not exist in the database. Steps taken: 1) Ran database initialization script (init_db.py) to create demo user and company 2) Created demo user with email 'demo@quickbooks.com' and password 'Password123!' 3) Created Demo Company with proper user membership 4) Fixed API endpoint URL issue - frontend was calling '/companies' but backend required '/companies/' 5) Updated companyService.js to use correct URLs with trailing slashes 6) Verified backend APIs work correctly with proper authentication tokens. Authentication flow now works properly: login API returns valid tokens, companies API returns company data with proper authentication. Ready for comprehensive testing of vendor management integration."
+        - working: false
+          agent: "testing"
+          comment: "Testing the Vendor Management Integration - Phase 1.3 revealed persistent authentication issues. While login with demo credentials (demo@quickbooks.com / Password123!) works successfully, subsequent API calls to fetch companies return 403 Forbidden errors. The console logs show 'Error loading companies: Request failed with status code 403' and 'Company selection error: Request failed with status code 403'. This prevents testing the vendor management functionality as we cannot proceed past the company selection screen. The login process correctly stores the authentication tokens in localStorage, but the API calls to the companies endpoint are being rejected with 403 errors. This suggests there may still be issues with how the tokens are being used in API requests or with the backend API permissions."
 
   - task: "Customer Management Integration - Phase 1.2"
     implemented: true
