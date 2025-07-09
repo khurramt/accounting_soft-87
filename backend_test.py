@@ -2187,7 +2187,7 @@ def test_transactions_api_with_recent_filter():
 
 if __name__ == "__main__":
     # Run tests
-    print("\n🔍 Starting QuickBooks Clone Transaction Management API tests...")
+    print("\n🔍 Starting QuickBooks Clone API tests...")
     print(f"🕒 Test time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     # Basic API tests
@@ -2203,6 +2203,18 @@ if __name__ == "__main__":
         test_get_customers()
         test_get_vendors()
         test_get_accounts()
+        
+        # Test the fixed APIs
+        print("\n===== TESTING FIXED APIs =====")
+        dashboard_result = test_dashboard_api()
+        invoices_result = test_invoices_api_with_status_filter()
+        transactions_result = test_transactions_api_with_recent_filter()
+        
+        # Print summary of fixed API tests
+        print("\n📋 Fixed API Test Summary:")
+        print(f"Dashboard API: {'✅ PASSED' if dashboard_result else '❌ FAILED'}")
+        print(f"Invoices API with status filter: {'✅ PASSED' if invoices_result else '❌ FAILED'}")
+        print(f"Transactions API with recent filter: {'✅ PASSED' if transactions_result else '❌ FAILED'}")
         
         # Transaction Management API tests
         print("\n===== TRANSACTION MANAGEMENT API TESTS =====")
@@ -2243,4 +2255,4 @@ if __name__ == "__main__":
         # Error handling tests
         test_transaction_error_handling()
     
-    print("\n✅ Transaction Management API tests completed.")
+    print("\n✅ API tests completed.")
