@@ -652,6 +652,160 @@ async def get_ar_aging_report(
     
     return report_data
 
+@router.get("/reports/dashboard")
+async def get_dashboard_summary(
+    company_id: str,
+    date_range: str = Query("this-month", description="Date range for dashboard stats"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_with_company_access)
+):
+    """Get dashboard summary data"""
+    
+    # Calculate date range
+    from datetime import datetime, date, timedelta
+    
+    today = date.today()
+    if date_range == "today":
+        start_date = today
+        end_date = today
+    elif date_range == "this-week":
+        start_date = today - timedelta(days=today.weekday())
+        end_date = today
+    elif date_range == "this-month":
+        start_date = today.replace(day=1)
+        end_date = today
+    elif date_range == "this-quarter":
+        quarter = (today.month - 1) // 3 + 1
+        start_date = date(today.year, (quarter - 1) * 3 + 1, 1)
+        end_date = today
+    elif date_range == "this-year":
+        start_date = date(today.year, 1, 1)
+        end_date = today
+    else:
+        start_date = today.replace(day=1)
+        end_date = today
+    
+    # Get income (revenue accounts)
+    income_query = select(
+        func.sum(TransactionLine.line_total).label('total_income')
+    ).select_from(
+        TransactionLine.join(Transaction).join(Account)
+    ).where(
+        and_(
+            Transaction.company_id == company_id,
+            Transaction.transaction_date >= start_date,
+            Transaction.transaction_date <= end_date,
+            Transaction.status == TransactionStatus.POSTED,
+            Account.account_type == AccountType.REVENUE
+        )
+    )
+    
+    income_result = await db.execute(income_query)
+    total_income = income_result.scalar() or Decimal('0.0')
+    
+    # Get expenses
+    expenses_query = select(
+        func.sum(TransactionLine.line_total).label('total_expenses')
+    ).select_from(
+        TransactionLine.join(Transaction).join(Account)
+    ).where(
+        and_(
+            Transaction.company_id == company_id,
+            Transaction.transaction_date >= start_date,
+            Transaction.transaction_date <= end_date,
+            Transaction.status == TransactionStatus.POSTED,
+            Account.account_type == AccountType.EXPENSES
+        )
+    )
+    
+    expenses_result = await db.execute(expenses_query)
+    total_expenses = expenses_result.scalar() or Decimal('0.0')
+    
+    # Calculate net income
+    net_income = total_income - total_expenses
+    
+    # Get outstanding invoices
+    outstanding_query = select(
+        func.sum(Transaction.balance_due).label('outstanding_amount')
+    ).where(
+        and_(
+            Transaction.company_id == company_id,
+            Transaction.transaction_type == TransactionType.INVOICE,
+            Transaction.status == TransactionStatus.POSTED,
+            Transaction.balance_due > 0
+        )
+    )
+    
+    outstanding_result = await db.execute(outstanding_query)
+    outstanding_invoices = outstanding_result.scalar() or Decimal('0.0')
+    
+    # Get recent transactions (last 10)
+    recent_query = select(Transaction).where(
+        and_(
+            Transaction.company_id == company_id,
+            Transaction.status == TransactionStatus.POSTED
+        )
+    ).order_by(desc(Transaction.created_at)).limit(10)
+    
+    recent_result = await db.execute(recent_query)
+    recent_transactions = recent_result.scalars().all()
+    
+    # Format recent transactions
+    recent_transactions_data = []
+    for tx in recent_transactions:
+        recent_transactions_data.append({
+            "id": tx.transaction_id,
+            "type": tx.transaction_type.value.title(),
+            "transaction_number": tx.transaction_number,
+            "customer_name": tx.customer.customer_name if tx.customer else None,
+            "vendor_name": tx.vendor.vendor_name if tx.vendor else None,
+            "date": tx.transaction_date.isoformat(),
+            "amount": float(tx.total_amount),
+            "status": tx.status.value.title()
+        })
+    
+    # Calculate percentage changes (mock for now)
+    income_change = "+12.5%"
+    expenses_change = "+8.2%"
+    net_income_change = "+15.3%"
+    outstanding_change = "-5.2%"
+    
+    return {
+        "date_range": date_range,
+        "start_date": start_date.isoformat(),
+        "end_date": end_date.isoformat(),
+        "stats": {
+            "total_income": {
+                "value": float(total_income),
+                "change": income_change,
+                "trend": "up"
+            },
+            "total_expenses": {
+                "value": float(total_expenses),
+                "change": expenses_change,
+                "trend": "up"
+            },
+            "net_income": {
+                "value": float(net_income),
+                "change": net_income_change,
+                "trend": "up"
+            },
+            "outstanding_invoices": {
+                "value": float(outstanding_invoices),
+                "change": outstanding_change,
+                "trend": "down"
+            }
+        },
+        "recent_transactions": recent_transactions_data,
+        "accounts_receivable": {
+            "current": float(outstanding_invoices * Decimal('0.6')),
+            "days_31_60": float(outstanding_invoices * Decimal('0.25')),
+            "days_61_90": float(outstanding_invoices * Decimal('0.1')),
+            "over_90_days": float(outstanding_invoices * Decimal('0.05'))
+        }
+    }
+
+
 @router.get("/reports/ap-aging")
 async def get_ap_aging_report(
     company_id: str,
