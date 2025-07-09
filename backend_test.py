@@ -8,6 +8,7 @@ import decimal
 from typing import Dict, Any, Optional, Tuple, List
 import io
 import urllib3
+import uuid
 import time
 
 # Disable SSL warnings
