@@ -106,7 +106,7 @@ const ProfitLossReport = () => {
     };
     
     loadReportData();
-  }, [currentCompany, dateRange, reportBasis, comparisonPeriod, showDetail]);
+  }, [currentCompany, companyLoading, companyError, dateRange, reportBasis, comparisonPeriod, showDetail]);
 
   // Helper function to get date range
   const getDateRange = (range) => {
