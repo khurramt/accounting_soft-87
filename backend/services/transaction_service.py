@@ -609,17 +609,26 @@ class PaymentService(BaseListService):
         # Create payment applications
         total_applied = Decimal('0.0')
         for app_data in payment_data.applications:
+            # Convert to dictionary if it's a Pydantic model
+            app_dict = app_data.dict() if hasattr(app_data, 'dict') else app_data
+            
             application = PaymentApplication(
                 application_id=str(uuid.uuid4()),
                 payment_id=payment.payment_id,
-                **app_data.dict()
+                **app_dict
             )
             db.add(application)
-            total_applied += app_data.amount_applied
+            
+            # Get amount_applied from the data
+            amount_applied = app_data.amount_applied if hasattr(app_data, 'amount_applied') else app_data.get('amount_applied', 0)
+            total_applied += amount_applied
+            
+            # Get transaction_id from the data
+            transaction_id = app_data.transaction_id if hasattr(app_data, 'transaction_id') else app_data.get('transaction_id')
             
             # Update transaction balance
             await PaymentService._update_transaction_balance(
-                db, app_data.transaction_id, app_data.amount_applied
+                db, transaction_id, amount_applied
             )
         
         # Verify total applied doesn't exceed payment amount
