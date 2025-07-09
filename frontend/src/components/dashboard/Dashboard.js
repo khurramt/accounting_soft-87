@@ -277,19 +277,19 @@ const Dashboard = () => {
                     <>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Current (0-30 days)</span>
-                        <span className="font-semibold">${dashboardData.accounts_receivable.current.toFixed(2)}</span>
+                        <span className="font-semibold">${formatCurrency(dashboardData.accounts_receivable.current)}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">31-60 days</span>
-                        <span className="font-semibold">${dashboardData.accounts_receivable.days_31_60.toFixed(2)}</span>
+                        <span className="font-semibold">${formatCurrency(dashboardData.accounts_receivable.days_31_60)}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">61-90 days</span>
-                        <span className="font-semibold">${dashboardData.accounts_receivable.days_61_90.toFixed(2)}</span>
+                        <span className="font-semibold">${formatCurrency(dashboardData.accounts_receivable.days_61_90)}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Over 90 days</span>
-                        <span className="font-semibold text-red-600">${dashboardData.accounts_receivable.over_90_days.toFixed(2)}</span>
+                        <span className="font-semibold text-red-600">${formatCurrency(dashboardData.accounts_receivable.over_90_days)}</span>
                       </div>
                     </>
                   )}
