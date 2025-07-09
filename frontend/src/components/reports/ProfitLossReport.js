@@ -40,7 +40,7 @@ const ProfitLossReport = () => {
   const [searchParams] = useSearchParams();
   const reportName = searchParams.get('report') || 'Profit & Loss';
   const category = searchParams.get('category') || 'Company & Financial';
-  const { currentCompany } = useCompany();
+  const { currentCompany, loading: companyLoading, error: companyError } = useCompany();
   
   const [dateRange, setDateRange] = useState("current-month");
   const [reportBasis, setReportBasis] = useState("accrual");
@@ -54,7 +54,29 @@ const ProfitLossReport = () => {
   // Load report data from backend
   useEffect(() => {
     const loadReportData = async () => {
-      if (!currentCompany) return;
+      // Wait for company context to be available
+      if (companyLoading) {
+        console.log('Waiting for company context to load...');
+        return;
+      }
+      
+      if (companyError) {
+        console.error('Company context error:', companyError);
+        setError(`Company context error: ${companyError}`);
+        return;
+      }
+      
+      if (!currentCompany) {
+        console.log('No current company selected');
+        setError('No company selected. Please select a company first.');
+        return;
+      }
+      
+      if (!currentCompany.id) {
+        console.error('Current company has no ID:', currentCompany);
+        setError('Invalid company data. Please select a company again.');
+        return;
+      }
       
       try {
         setLoading(true);
