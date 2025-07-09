@@ -118,6 +118,7 @@ const ProfitLossReport = () => {
         return {
           startDate: new Date(currentYear, currentMonth, 1).toISOString().split('T')[0],
           endDate: new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0]
+        };
     }
   };
 
@@ -340,7 +341,7 @@ const ProfitLossReport = () => {
             </div>
 
             <div className="flex items-end">
-              <Button className="w-full">
+              <Button className="w-full" onClick={handleRefreshReport}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Update Report
               </Button>
@@ -357,12 +358,15 @@ const ProfitLossReport = () => {
             <TrendingUp className="w-4 h-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(reportData.income.total)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(reportData.total_revenue || 0)}
+            </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              {getVarianceIcon(reportData.income.total, reportData.income.previousTotal)}
-              <span className={getVarianceColor(reportData.income.total, reportData.income.previousTotal)}>
-                {calculatePercentage(reportData.income.total, reportData.income.previousTotal)}% vs last period
-              </span>
+              {reportData.previous_total_revenue && (
+                <span className={getVarianceColor(reportData.total_revenue, reportData.previous_total_revenue)}>
+                  {calculatePercentage(reportData.total_revenue, reportData.previous_total_revenue)}% vs last period
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -373,12 +377,15 @@ const ProfitLossReport = () => {
             <TrendingDown className="w-4 h-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(reportData.expenses.total)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(reportData.total_expenses || 0)}
+            </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              {getVarianceIcon(reportData.expenses.total, reportData.expenses.previousTotal)}
-              <span className={getVarianceColor(reportData.expenses.total, reportData.expenses.previousTotal)}>
-                {calculatePercentage(reportData.expenses.total, reportData.expenses.previousTotal)}% vs last period
-              </span>
+              {reportData.previous_total_expenses && (
+                <span className={getVarianceColor(reportData.total_expenses, reportData.previous_total_expenses)}>
+                  {calculatePercentage(reportData.total_expenses, reportData.previous_total_expenses)}% vs last period
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -389,12 +396,15 @@ const ProfitLossReport = () => {
             <DollarSign className="w-4 h-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(reportData.netIncome.current)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(reportData.net_income || 0)}
+            </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              {getVarianceIcon(reportData.netIncome.current, reportData.netIncome.previous)}
-              <span className={getVarianceColor(reportData.netIncome.current, reportData.netIncome.previous)}>
-                {calculatePercentage(reportData.netIncome.current, reportData.netIncome.previous)}% vs last period
-              </span>
+              {reportData.previous_net_income && (
+                <span className={getVarianceColor(reportData.net_income, reportData.previous_net_income)}>
+                  {calculatePercentage(reportData.net_income, reportData.previous_net_income)}% vs last period
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -406,30 +416,34 @@ const ProfitLossReport = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(reportData.netIncome.current / reportData.income.total * 100).toFixed(1)}%
+              {reportData.total_revenue && reportData.total_revenue > 0 
+                ? ((reportData.net_income / reportData.total_revenue) * 100).toFixed(1) + '%'
+                : '0.0%'
+              }
             </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <span>
-                Industry avg: 15.2%
-              </span>
+              <span>Based on current period</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Report */}
+      {/* Main Report Table */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl">{reportData.companyName}</CardTitle>
-              <div className="text-lg font-semibold">{reportData.reportTitle}</div>
+              <CardTitle className="text-xl">
+                {reportData.company_name || currentCompany?.name || 'Company'}
+              </CardTitle>
+              <div className="text-lg font-semibold">Profit & Loss Report</div>
               <div className="text-sm text-gray-600">
-                {reportData.period} • {reportData.reportBasis}
+                {reportData.period || 'Current Period'}
+                {reportData.report_basis && ` • ${reportData.report_basis} Basis`}
               </div>
             </div>
             <div className="text-right text-sm text-gray-500">
-              <div>Generated: {reportData.generatedDate}</div>
+              <div>Generated: {new Date().toLocaleDateString()}</div>
             </div>
           </div>
         </CardHeader>
@@ -438,7 +452,7 @@ const ProfitLossReport = () => {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-2/3">Account</TableHead>
-                <TableHead className="text-right">Current Period</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
                 {comparisonPeriod !== 'none' && (
                   <>
                     <TableHead className="text-right">
@@ -452,92 +466,22 @@ const ProfitLossReport = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* Income Section */}
+              {/* Revenue Section */}
               <TableRow className="bg-blue-50">
-                <TableCell className="font-bold text-blue-800">{reportData.income.title}</TableCell>
-                <TableCell></TableCell>
-                {comparisonPeriod !== 'none' && (
+                <TableCell className="font-bold text-blue-800">Revenue</TableCell>
+                <TableCell className="text-right font-bold text-blue-800">
+                  {formatCurrency(reportData.total_revenue || 0)}
+                </TableCell>
+                {comparisonPeriod !== 'none' && reportData.previous_total_revenue && (
                   <>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                  </>
-                )}
-              </TableRow>
-              
-              {reportData.income.accounts.map((account, index) => (
-                <React.Fragment key={index}>
-                  <TableRow>
-                    <TableCell className="font-medium pl-4">{account.name}</TableCell>
-                    <TableCell className="text-right font-medium">{formatCurrency(account.current)}</TableCell>
-                    {comparisonPeriod !== 'none' && (
-                      <>
-                        <TableCell className="text-right">
-                          {formatCurrency(comparisonPeriod === 'budget' ? account.budgeted : account.previous)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {formatCurrency(account.current - (comparisonPeriod === 'budget' ? account.budgeted : account.previous))}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <span className={getVarianceColor(account.current, comparisonPeriod === 'budget' ? account.budgeted : account.previous)}>
-                            {calculatePercentage(account.current, comparisonPeriod === 'budget' ? account.budgeted : account.previous)}%
-                          </span>
-                        </TableCell>
-                      </>
-                    )}
-                  </TableRow>
-                  
-                  {showDetail !== 'summary' && account.subcategories.map((sub, subIndex) => (
-                    <TableRow key={`${index}-${subIndex}`} className="text-sm">
-                      <TableCell className="pl-8 text-gray-600">{sub.name}</TableCell>
-                      <TableCell className="text-right text-gray-600">{formatCurrency(sub.current)}</TableCell>
-                      {comparisonPeriod !== 'none' && (
-                        <>
-                          <TableCell className="text-right text-gray-600">{formatCurrency(sub.previous)}</TableCell>
-                          <TableCell className="text-right text-gray-600">{formatCurrency(sub.current - sub.previous)}</TableCell>
-                          <TableCell className="text-right text-gray-600">{calculatePercentage(sub.current, sub.previous)}%</TableCell>
-                        </>
-                      )}
-                    </TableRow>
-                  ))}
-                </React.Fragment>
-              ))}
-              
-              {/* Total Income */}
-              <TableRow className="border-t-2 border-gray-300">
-                <TableCell className="font-bold">Total {reportData.income.title}</TableCell>
-                <TableCell className="text-right font-bold">{formatCurrency(reportData.income.total)}</TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell className="text-right font-bold">
-                      {formatCurrency(comparisonPeriod === 'budget' ? reportData.income.budgetedTotal : reportData.income.previousTotal)}
+                    <TableCell className="text-right font-bold text-blue-800">
+                      {formatCurrency(reportData.previous_total_revenue)}
                     </TableCell>
-                    <TableCell className="text-right font-bold">
-                      {formatCurrency(reportData.income.total - (comparisonPeriod === 'budget' ? reportData.income.budgetedTotal : reportData.income.previousTotal))}
+                    <TableCell className="text-right font-bold text-blue-800">
+                      {formatCurrency((reportData.total_revenue || 0) - reportData.previous_total_revenue)}
                     </TableCell>
-                    <TableCell className="text-right font-bold">
-                      <span className={getVarianceColor(reportData.income.total, comparisonPeriod === 'budget' ? reportData.income.budgetedTotal : reportData.income.previousTotal)}>
-                        {calculatePercentage(reportData.income.total, comparisonPeriod === 'budget' ? reportData.income.budgetedTotal : reportData.income.previousTotal)}%
-                      </span>
-                    </TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {/* Gross Profit */}
-              <TableRow className="bg-green-50">
-                <TableCell className="font-bold text-green-800">{reportData.grossProfit.title}</TableCell>
-                <TableCell className="text-right font-bold text-green-800">{formatCurrency(reportData.grossProfit.current)}</TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell className="text-right font-bold text-green-800">
-                      {formatCurrency(comparisonPeriod === 'budget' ? reportData.grossProfit.budgeted : reportData.grossProfit.previous)}
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-green-800">
-                      {formatCurrency(reportData.grossProfit.current - (comparisonPeriod === 'budget' ? reportData.grossProfit.budgeted : reportData.grossProfit.previous))}
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-green-800">
-                      {calculatePercentage(reportData.grossProfit.current, comparisonPeriod === 'budget' ? reportData.grossProfit.budgeted : reportData.grossProfit.previous)}%
+                    <TableCell className="text-right font-bold text-blue-800">
+                      {calculatePercentage(reportData.total_revenue, reportData.previous_total_revenue)}%
                     </TableCell>
                   </>
                 )}
@@ -545,121 +489,47 @@ const ProfitLossReport = () => {
 
               {/* Expenses Section */}
               <TableRow className="bg-red-50">
-                <TableCell className="font-bold text-red-800">{reportData.expenses.title}</TableCell>
-                <TableCell></TableCell>
-                {comparisonPeriod !== 'none' && (
+                <TableCell className="font-bold text-red-800">Expenses</TableCell>
+                <TableCell className="text-right font-bold text-red-800">
+                  {formatCurrency(reportData.total_expenses || 0)}
+                </TableCell>
+                {comparisonPeriod !== 'none' && reportData.previous_total_expenses && (
                   <>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                  </>
-                )}
-              </TableRow>
-              
-              {reportData.expenses.accounts.map((account, index) => (
-                <React.Fragment key={index}>
-                  <TableRow>
-                    <TableCell className="font-medium pl-4">{account.name}</TableCell>
-                    <TableCell className="text-right font-medium">{formatCurrency(account.current)}</TableCell>
-                    {comparisonPeriod !== 'none' && (
-                      <>
-                        <TableCell className="text-right">
-                          {formatCurrency(comparisonPeriod === 'budget' ? account.budgeted : account.previous)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {formatCurrency(account.current - (comparisonPeriod === 'budget' ? account.budgeted : account.previous))}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <span className={getVarianceColor(account.current, comparisonPeriod === 'budget' ? account.budgeted : account.previous)}>
-                            {calculatePercentage(account.current, comparisonPeriod === 'budget' ? account.budgeted : account.previous)}%
-                          </span>
-                        </TableCell>
-                      </>
-                    )}
-                  </TableRow>
-                  
-                  {showDetail !== 'summary' && account.subcategories.map((sub, subIndex) => (
-                    <TableRow key={`${index}-${subIndex}`} className="text-sm">
-                      <TableCell className="pl-8 text-gray-600">{sub.name}</TableCell>
-                      <TableCell className="text-right text-gray-600">{formatCurrency(sub.current)}</TableCell>
-                      {comparisonPeriod !== 'none' && (
-                        <>
-                          <TableCell className="text-right text-gray-600">{formatCurrency(sub.previous)}</TableCell>
-                          <TableCell className="text-right text-gray-600">{formatCurrency(sub.current - sub.previous)}</TableCell>
-                          <TableCell className="text-right text-gray-600">{calculatePercentage(sub.current, sub.previous)}%</TableCell>
-                        </>
-                      )}
-                    </TableRow>
-                  ))}
-                </React.Fragment>
-              ))}
-              
-              {/* Total Expenses */}
-              <TableRow className="border-t-2 border-gray-300">
-                <TableCell className="font-bold">Total {reportData.expenses.title}</TableCell>
-                <TableCell className="text-right font-bold">{formatCurrency(reportData.expenses.total)}</TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell className="text-right font-bold">
-                      {formatCurrency(comparisonPeriod === 'budget' ? reportData.expenses.budgetedTotal : reportData.expenses.previousTotal)}
+                    <TableCell className="text-right font-bold text-red-800">
+                      {formatCurrency(reportData.previous_total_expenses)}
                     </TableCell>
-                    <TableCell className="text-right font-bold">
-                      {formatCurrency(reportData.expenses.total - (comparisonPeriod === 'budget' ? reportData.expenses.budgetedTotal : reportData.expenses.previousTotal))}
+                    <TableCell className="text-right font-bold text-red-800">
+                      {formatCurrency((reportData.total_expenses || 0) - reportData.previous_total_expenses)}
                     </TableCell>
-                    <TableCell className="text-right font-bold">
-                      <span className={getVarianceColor(reportData.expenses.total, comparisonPeriod === 'budget' ? reportData.expenses.budgetedTotal : reportData.expenses.previousTotal)}>
-                        {calculatePercentage(reportData.expenses.total, comparisonPeriod === 'budget' ? reportData.expenses.budgetedTotal : reportData.expenses.previousTotal)}%
-                      </span>
+                    <TableCell className="text-right font-bold text-red-800">
+                      {calculatePercentage(reportData.total_expenses, reportData.previous_total_expenses)}%
                     </TableCell>
                   </>
                 )}
               </TableRow>
 
               {/* Net Income */}
-              <TableRow className="bg-blue-50 border-t-4 border-blue-600">
-                <TableCell className="font-bold text-blue-800 text-lg">{reportData.netIncome.title}</TableCell>
-                <TableCell className="text-right font-bold text-blue-800 text-lg">{formatCurrency(reportData.netIncome.current)}</TableCell>
-                {comparisonPeriod !== 'none' && (
+              <TableRow className="bg-green-50 border-t-4 border-green-600">
+                <TableCell className="font-bold text-green-800">Net Income</TableCell>
+                <TableCell className="text-right font-bold text-green-800">
+                  {formatCurrency(reportData.net_income || 0)}
+                </TableCell>
+                {comparisonPeriod !== 'none' && reportData.previous_net_income && (
                   <>
-                    <TableCell className="text-right font-bold text-blue-800 text-lg">
-                      {formatCurrency(comparisonPeriod === 'budget' ? reportData.netIncome.budgeted : reportData.netIncome.previous)}
+                    <TableCell className="text-right font-bold text-green-800">
+                      {formatCurrency(reportData.previous_net_income)}
                     </TableCell>
-                    <TableCell className="text-right font-bold text-blue-800 text-lg">
-                      {formatCurrency(reportData.netIncome.current - (comparisonPeriod === 'budget' ? reportData.netIncome.budgeted : reportData.netIncome.previous))}
+                    <TableCell className="text-right font-bold text-green-800">
+                      {formatCurrency((reportData.net_income || 0) - reportData.previous_net_income)}
                     </TableCell>
-                    <TableCell className="text-right font-bold text-blue-800 text-lg">
-                      {calculatePercentage(reportData.netIncome.current, comparisonPeriod === 'budget' ? reportData.netIncome.budgeted : reportData.netIncome.previous)}%
+                    <TableCell className="text-right font-bold text-green-800">
+                      {calculatePercentage(reportData.net_income, reportData.previous_net_income)}%
                     </TableCell>
                   </>
                 )}
               </TableRow>
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-
-      {/* Additional Actions */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={handleSchedule}>
-                <Clock className="w-4 h-4 mr-2" />
-                Schedule Report
-              </Button>
-              <Button variant="outline" onClick={() => handleExport('excel')}>
-                <FileText className="w-4 h-4 mr-2" />
-                Export to Excel
-              </Button>
-              <Button variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Customize
-              </Button>
-            </div>
-            <div className="text-sm text-gray-500">
-              Last updated: {new Date().toLocaleString()}
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
