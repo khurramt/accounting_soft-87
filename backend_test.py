@@ -1975,6 +1975,214 @@ def test_transaction_error_handling():
         return False
     except Exception as e:
         print(f"❌ Transaction error handling test failed: {str(e)}")
+def test_dashboard_api():
+    """Test the dashboard API with different date ranges"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Dashboard API test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing dashboard API with different date ranges...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        date_ranges = ["today", "this-week", "this-month", "this-quarter", "this-year"]
+        
+        for date_range in date_ranges:
+            print(f"\n  Testing date range: {date_range}...")
+            start_time = time.time()
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/reports/dashboard?date_range={date_range}", 
+                headers=headers, 
+                timeout=TIMEOUT
+            )
+            
+            end_time = time.time()
+            response_time = end_time - start_time
+            print(f"  Response time: {response_time:.2f} seconds")
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                if "stats" in data and "recent_transactions" in data and "accounts_receivable" in data:
+                    print(f"  ✅ Dashboard API test for {date_range} passed")
+                    
+                    # Print some key stats
+                    print(f"  Total Income: {data['stats']['total_income']['value']}")
+                    print(f"  Total Expenses: {data['stats']['total_expenses']['value']}")
+                    print(f"  Net Income: {data['stats']['net_income']['value']}")
+                    print(f"  Outstanding Invoices: {data['stats']['outstanding_invoices']['value']}")
+                    print(f"  Recent Transactions Count: {len(data['recent_transactions'])}")
+                else:
+                    print(f"  ❌ Dashboard API test for {date_range} failed: Missing expected data structure")
+                    return False
+                
+                # Verify response time is under 5 seconds
+                if response_time > 5:
+                    print(f"  ⚠️ Dashboard API response time for {date_range} is over 5 seconds: {response_time:.2f} seconds")
+                else:
+                    print(f"  ✅ Dashboard API response time for {date_range} is under 5 seconds: {response_time:.2f} seconds")
+            else:
+                print(f"  ❌ Dashboard API test for {date_range} failed: Status code {response.status_code}")
+                try:
+                    data = response.json()
+                    print(f"  Error: {pretty_print_json(data)}")
+                except:
+                    print(f"  Response: {response.text}")
+                return False
+        
+        print("✅ Dashboard API test with different date ranges passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Dashboard API test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Dashboard API test failed: {str(e)}")
+        return False
+
+def test_invoices_api_with_status_filter():
+    """Test the invoices API with status filter"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Invoices API test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing invoices API with status filter...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        status_filters = ["paid", "outstanding", "overdue"]
+        
+        for status in status_filters:
+            print(f"\n  Testing status filter: {status}...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/invoices?status={status}", 
+                headers=headers, 
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"  Found {data.get('total', 0)} invoices with status '{status}'")
+                
+                # Verify invoices have correct status
+                if status == "paid":
+                    # Check if all invoices have balance_due == 0
+                    all_paid = all(invoice.get("balance_due", 1) == 0 for invoice in data.get("items", []))
+                    if all_paid:
+                        print(f"  ✅ All invoices with status '{status}' have balance_due = 0")
+                    else:
+                        print(f"  ❌ Some invoices with status '{status}' have balance_due > 0")
+                        return False
+                elif status == "outstanding":
+                    # Check if all invoices have balance_due > 0
+                    all_outstanding = all(invoice.get("balance_due", 0) > 0 for invoice in data.get("items", []))
+                    if all_outstanding:
+                        print(f"  ✅ All invoices with status '{status}' have balance_due > 0")
+                    else:
+                        print(f"  ❌ Some invoices with status '{status}' have balance_due = 0")
+                        return False
+                elif status == "overdue":
+                    # Check if all invoices have balance_due > 0 and due_date < today
+                    today = date.today().isoformat()
+                    all_overdue = all(
+                        invoice.get("balance_due", 0) > 0 and 
+                        invoice.get("due_date", today) < today 
+                        for invoice in data.get("items", [])
+                    )
+                    if all_overdue:
+                        print(f"  ✅ All invoices with status '{status}' are overdue")
+                    else:
+                        print(f"  ❌ Some invoices with status '{status}' are not overdue")
+                        return False
+                
+                print(f"  ✅ Invoices API test for status '{status}' passed")
+            else:
+                print(f"  ❌ Invoices API test for status '{status}' failed: Status code {response.status_code}")
+                try:
+                    data = response.json()
+                    print(f"  Error: {pretty_print_json(data)}")
+                except:
+                    print(f"  Response: {response.text}")
+                return False
+        
+        print("✅ Invoices API test with status filter passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Invoices API test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Invoices API test failed: {str(e)}")
+        return False
+
+def test_transactions_api_with_recent_filter():
+    """Test the transactions API with recent filter"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Transactions API test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing transactions API with recent filter...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/transactions/?recent=true", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            transactions = data.get("items", [])
+            total = data.get("total", 0)
+            
+            print(f"Found {len(transactions)} recent transactions (total: {total})")
+            
+            # Verify that no more than 10 transactions are returned
+            if len(transactions) <= 10:
+                print("✅ Recent transactions are limited to 10 or fewer")
+            else:
+                print(f"❌ Recent transactions returned more than 10 items: {len(transactions)}")
+                return False
+            
+            # Verify transactions are sorted by created_at in descending order
+            if len(transactions) >= 2:
+                # Check if the first transaction is more recent than the last
+                first_created_at = transactions[0].get("created_at", "")
+                last_created_at = transactions[-1].get("created_at", "")
+                
+                if first_created_at > last_created_at:
+                    print("✅ Recent transactions are sorted by created_at in descending order")
+                else:
+                    print("❌ Recent transactions are not sorted correctly")
+                    return False
+            
+            print("✅ Transactions API test with recent filter passed")
+            return True
+        else:
+            print(f"❌ Transactions API test with recent filter failed: Status code {response.status_code}")
+            try:
+                data = response.json()
+                print(f"Error: {pretty_print_json(data)}")
+            except:
+                print(f"Response: {response.text}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Transactions API test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Transactions API test failed: {str(e)}")
+        return False
         return False
 
 if __name__ == "__main__":
