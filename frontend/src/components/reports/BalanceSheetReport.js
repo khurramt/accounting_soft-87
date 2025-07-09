@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useCompany } from "../../contexts/CompanyContext";
+import reportService from "../../services/reportService";
+import { formatCurrency, calculatePercentage, getVarianceColor } from "../../utils/formatCurrency";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -21,139 +24,92 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   BarChart3,
-  PieChart
+  PieChart,
+  Loader2
 } from "lucide-react";
 
 const BalanceSheetReport = () => {
   const [searchParams] = useSearchParams();
   const reportName = searchParams.get('report') || 'Balance Sheet';
   const category = searchParams.get('category') || 'Company & Financial';
+  const { currentCompany } = useCompany();
   
-  const [asOfDate, setAsOfDate] = useState("2024-01-31");
+  const [asOfDate, setAsOfDate] = useState(new Date().toISOString().split('T')[0]);
   const [reportBasis, setReportBasis] = useState("accrual");
   const [reportFormat, setReportFormat] = useState("standard");
   const [comparisonPeriod, setComparisonPeriod] = useState("none");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [reportData, setReportData] = useState(null);
 
-  // Mock Balance Sheet data
-  const [reportData] = useState({
-    companyName: "Your Company Name",
-    reportTitle: "Balance Sheet",
-    asOfDate: "January 31, 2024",
-    reportBasis: "Accrual Basis",
-    generatedDate: "February 1, 2024",
-    assets: {
-      title: "ASSETS",
-      currentAssets: {
-        title: "Current Assets",
-        accounts: [
-          { name: "Checking Account", current: 45000.00, previous: 38000.00 },
-          { name: "Savings Account", current: 25000.00, previous: 22000.00 },
-          { name: "Accounts Receivable", current: 18500.00, previous: 22000.00 },
-          { name: "Inventory", current: 32000.00, previous: 28000.00 },
-          { name: "Prepaid Expenses", current: 4500.00, previous: 3800.00 },
-          { name: "Other Current Assets", current: 2000.00, previous: 1500.00 }
-        ],
-        total: 127000.00,
-        previousTotal: 115300.00
-      },
-      fixedAssets: {
-        title: "Fixed Assets",
-        accounts: [
-          { name: "Equipment", current: 85000.00, previous: 85000.00 },
-          { name: "Less: Accumulated Depreciation", current: -22000.00, previous: -18000.00 },
-          { name: "Furniture & Fixtures", current: 15000.00, previous: 15000.00 },
-          { name: "Less: Accumulated Depreciation", current: -4500.00, previous: -3000.00 },
-          { name: "Vehicles", current: 45000.00, previous: 45000.00 },
-          { name: "Less: Accumulated Depreciation", current: -12000.00, previous: -8000.00 }
-        ],
-        total: 106500.00,
-        previousTotal: 116000.00
-      },
-      otherAssets: {
-        title: "Other Assets",
-        accounts: [
-          { name: "Security Deposits", current: 3500.00, previous: 3500.00 },
-          { name: "Investments", current: 15000.00, previous: 12000.00 }
-        ],
-        total: 18500.00,
-        previousTotal: 15500.00
-      },
-      totalAssets: 252000.00,
-      previousTotalAssets: 246800.00
-    },
-    liabilities: {
-      title: "LIABILITIES & EQUITY",
-      currentLiabilities: {
-        title: "Current Liabilities",
-        accounts: [
-          { name: "Accounts Payable", current: 12500.00, previous: 15000.00 },
-          { name: "Credit Card", current: 3200.00, previous: 2800.00 },
-          { name: "Accrued Expenses", current: 8500.00, previous: 7200.00 },
-          { name: "Payroll Liabilities", current: 4200.00, previous: 3800.00 },
-          { name: "Sales Tax Payable", current: 2800.00, previous: 2400.00 },
-          { name: "Current Portion of Long-term Debt", current: 6000.00, previous: 6000.00 }
-        ],
-        total: 37200.00,
-        previousTotal: 37200.00
-      },
-      longTermLiabilities: {
-        title: "Long-term Liabilities",
-        accounts: [
-          { name: "Equipment Loan", current: 28000.00, previous: 34000.00 },
-          { name: "Building Loan", current: 125000.00, previous: 130000.00 }
-        ],
-        total: 153000.00,
-        previousTotal: 164000.00
-      },
-      totalLiabilities: 190200.00,
-      previousTotalLiabilities: 201200.00
-    },
-    equity: {
-      title: "Equity",
-      accounts: [
-        { name: "Owner's Equity", current: 30000.00, previous: 30000.00 },
-        { name: "Retained Earnings", current: 15400.00, previous: 14800.00 },
-        { name: "Current Year Earnings", current: 16400.00, previous: 800.00 }
-      ],
-      total: 61800.00,
-      previousTotal: 45600.00
-    },
-    totalLiabilitiesAndEquity: 252000.00,
-    previousTotalLiabilitiesAndEquity: 246800.00
-  });
+  // Load report data from backend
+  useEffect(() => {
+    const loadReportData = async () => {
+      if (!currentCompany) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Prepare report parameters
+        const params = {
+          as_of_date: asOfDate,
+          comparison_date: comparisonPeriod === 'previous-year' ? getPreviousYearDate(asOfDate) : undefined,
+          include_subtotals: reportFormat === 'detail',
+          show_cents: true
+        };
+        
+        console.log('Loading Balance Sheet report with params:', params);
+        const data = await reportService.getBalanceSheetReport(currentCompany.id, params);
+        setReportData(data);
+      } catch (err) {
+        console.error('Error loading Balance Sheet report:', err);
+        setError(err.message || 'Failed to load report');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadReportData();
+  }, [currentCompany, asOfDate, reportBasis, comparisonPeriod, reportFormat]);
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(Math.abs(amount));
+  // Helper function to get previous year date
+  const getPreviousYearDate = (date) => {
+    const d = new Date(date);
+    d.setFullYear(d.getFullYear() - 1);
+    return d.toISOString().split('T')[0];
   };
 
-  const formatAmount = (amount) => {
-    if (amount < 0) {
-      return `(${formatCurrency(amount)})`;
-    }
-    return formatCurrency(amount);
+  // Handle refresh report
+  const handleRefreshReport = () => {
+    if (!currentCompany) return;
+    
+    const loadReportData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const params = {
+          as_of_date: asOfDate,
+          comparison_date: comparisonPeriod === 'previous-year' ? getPreviousYearDate(asOfDate) : undefined,
+          include_subtotals: reportFormat === 'detail',
+          show_cents: true
+        };
+        
+        const data = await reportService.getBalanceSheetReport(currentCompany.id, params);
+        setReportData(data);
+      } catch (err) {
+        console.error('Error refreshing Balance Sheet report:', err);
+        setError(err.message || 'Failed to refresh report');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadReportData();
   };
 
-  const calculatePercentage = (current, previous) => {
-    if (previous === 0) return 0;
-    return ((current - previous) / previous * 100).toFixed(1);
-  };
-
-  const getVarianceColor = (current, previous) => {
-    if (current > previous) return 'text-green-600';
-    if (current < previous) return 'text-red-600';
-    return 'text-gray-600';
-  };
-
-  const getVarianceIcon = (current, previous) => {
-    if (current > previous) return <ArrowUpRight className="w-4 h-4 text-green-600" />;
-    if (current < previous) return <ArrowDownRight className="w-4 h-4 text-red-600" />;
-    return null;
-  };
-
+  // Handle various actions
   const handleExport = (format) => {
     console.log(`Exporting report as ${format}`);
   };
@@ -170,13 +126,67 @@ const BalanceSheetReport = () => {
     console.log("Memorizing report settings");
   };
 
+  const handleSchedule = () => {
+    console.log("Opening schedule dialog");
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <span className="text-lg">Loading Balance Sheet Report...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="text-red-600 text-lg font-medium mb-2">Error Loading Report</div>
+            <div className="text-gray-600 mb-4">{error}</div>
+            <Button onClick={handleRefreshReport}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (!reportData) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="text-gray-600 text-lg font-medium mb-2">No Report Data Available</div>
+            <div className="text-gray-500 mb-4">Please check your date range and filters</div>
+            <Button onClick={handleRefreshReport}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh Report
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{reportName}</h1>
-          <p className="text-gray-600">Assets, liabilities, and equity statement</p>
+          <p className="text-gray-600">Assets, liabilities, and equity snapshot</p>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" onClick={() => handleExport('pdf')}>
@@ -203,13 +213,13 @@ const BalanceSheetReport = () => {
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-              <Label htmlFor="asOfDate">As Of Date</Label>
+              <Label htmlFor="asOfDate">As of Date</Label>
               <input
                 type="date"
                 id="asOfDate"
                 value={asOfDate}
                 onChange={(e) => setAsOfDate(e.target.value)}
-                className="w-full p-2 border rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -236,7 +246,6 @@ const BalanceSheetReport = () => {
                   <SelectItem value="standard">Standard</SelectItem>
                   <SelectItem value="detail">Detail</SelectItem>
                   <SelectItem value="summary">Summary</SelectItem>
-                  <SelectItem value="comparative">Comparative</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -249,14 +258,13 @@ const BalanceSheetReport = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="previous-period">Previous Period</SelectItem>
                   <SelectItem value="previous-year">Previous Year</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="flex items-end">
-              <Button className="w-full">
+              <Button className="w-full" onClick={handleRefreshReport}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Update Report
               </Button>
@@ -265,20 +273,23 @@ const BalanceSheetReport = () => {
         </CardContent>
       </Card>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Assets</CardTitle>
             <Building className="w-4 h-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(reportData.assets.totalAssets)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(reportData.total_assets || 0)}
+            </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              {getVarianceIcon(reportData.assets.totalAssets, reportData.assets.previousTotalAssets)}
-              <span className={getVarianceColor(reportData.assets.totalAssets, reportData.assets.previousTotalAssets)}>
-                {calculatePercentage(reportData.assets.totalAssets, reportData.assets.previousTotalAssets)}% vs last period
-              </span>
+              {reportData.previous_total_assets && (
+                <span className={getVarianceColor(reportData.total_assets, reportData.previous_total_assets)}>
+                  {calculatePercentage(reportData.total_assets, reportData.previous_total_assets)}% vs previous
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -286,15 +297,18 @@ const BalanceSheetReport = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Liabilities</CardTitle>
-            <FileText className="w-4 h-4 text-red-600" />
+            <TrendingUp className="w-4 h-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(reportData.liabilities.totalLiabilities)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(reportData.total_liabilities || 0)}
+            </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              {getVarianceIcon(reportData.liabilities.totalLiabilities, reportData.liabilities.previousTotalLiabilities)}
-              <span className={getVarianceColor(reportData.liabilities.totalLiabilities, reportData.liabilities.previousTotalLiabilities)}>
-                {calculatePercentage(reportData.liabilities.totalLiabilities, reportData.liabilities.previousTotalLiabilities)}% vs last period
-              </span>
+              {reportData.previous_total_liabilities && (
+                <span className={getVarianceColor(reportData.total_liabilities, reportData.previous_total_liabilities)}>
+                  {calculatePercentage(reportData.total_liabilities, reportData.previous_total_liabilities)}% vs previous
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -302,48 +316,39 @@ const BalanceSheetReport = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Equity</CardTitle>
-            <TrendingUp className="w-4 h-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(reportData.equity.total)}</div>
-            <div className="flex items-center text-xs text-muted-foreground">
-              {getVarianceIcon(reportData.equity.total, reportData.equity.previousTotal)}
-              <span className={getVarianceColor(reportData.equity.total, reportData.equity.previousTotal)}>
-                {calculatePercentage(reportData.equity.total, reportData.equity.previousTotal)}% vs last period
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Debt to Equity</CardTitle>
-            <BarChart3 className="w-4 h-4 text-purple-600" />
+            <DollarSign className="w-4 h-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(reportData.liabilities.totalLiabilities / reportData.equity.total).toFixed(2)}
+              {formatCurrency(reportData.total_equity || 0)}
             </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <span>Industry avg: 1.25</span>
+              {reportData.previous_total_equity && (
+                <span className={getVarianceColor(reportData.total_equity, reportData.previous_total_equity)}>
+                  {calculatePercentage(reportData.total_equity, reportData.previous_total_equity)}% vs previous
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Report */}
+      {/* Main Report Table */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl">{reportData.companyName}</CardTitle>
-              <div className="text-lg font-semibold">{reportData.reportTitle}</div>
+              <CardTitle className="text-xl">
+                {reportData.company_name || currentCompany?.name || 'Company'}
+              </CardTitle>
+              <div className="text-lg font-semibold">Balance Sheet</div>
               <div className="text-sm text-gray-600">
-                As of {reportData.asOfDate} • {reportData.reportBasis}
+                As of {reportData.as_of_date || asOfDate}
+                {reportData.report_basis && ` • ${reportData.report_basis} Basis`}
               </div>
             </div>
             <div className="text-right text-sm text-gray-500">
-              <div>Generated: {reportData.generatedDate}</div>
+              <div>Generated: {new Date().toLocaleDateString()}</div>
             </div>
           </div>
         </CardHeader>
@@ -355,7 +360,7 @@ const BalanceSheetReport = () => {
                 <TableHead className="text-right">Amount</TableHead>
                 {comparisonPeriod !== 'none' && (
                   <>
-                    <TableHead className="text-right">Previous</TableHead>
+                    <TableHead className="text-right">Previous Year</TableHead>
                     <TableHead className="text-right">Change</TableHead>
                     <TableHead className="text-right">% Change</TableHead>
                   </>
@@ -363,392 +368,97 @@ const BalanceSheetReport = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* ASSETS */}
+              {/* Assets Section */}
               <TableRow className="bg-blue-50">
-                <TableCell className="font-bold text-blue-800 text-lg">{reportData.assets.title}</TableCell>
-                <TableCell></TableCell>
-                {comparisonPeriod !== 'none' && (
+                <TableCell className="font-bold text-blue-800">ASSETS</TableCell>
+                <TableCell className="text-right font-bold text-blue-800">
+                  {formatCurrency(reportData.total_assets || 0)}
+                </TableCell>
+                {comparisonPeriod !== 'none' && reportData.previous_total_assets && (
                   <>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {/* Current Assets */}
-              <TableRow>
-                <TableCell className="font-semibold pl-4">{reportData.assets.currentAssets.title}</TableCell>
-                <TableCell></TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {reportData.assets.currentAssets.accounts.map((account, index) => (
-                <TableRow key={index}>
-                  <TableCell className="pl-8">{account.name}</TableCell>
-                  <TableCell className="text-right">{formatAmount(account.current)}</TableCell>
-                  {comparisonPeriod !== 'none' && (
-                    <>
-                      <TableCell className="text-right">{formatAmount(account.previous)}</TableCell>
-                      <TableCell className="text-right">{formatAmount(account.current - account.previous)}</TableCell>
-                      <TableCell className="text-right">
-                        <span className={getVarianceColor(account.current, account.previous)}>
-                          {calculatePercentage(account.current, account.previous)}%
-                        </span>
-                      </TableCell>
-                    </>
-                  )}
-                </TableRow>
-              ))}
-
-              <TableRow className="border-t">
-                <TableCell className="font-semibold pl-6">Total Current Assets</TableCell>
-                <TableCell className="text-right font-semibold">{formatCurrency(reportData.assets.currentAssets.total)}</TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell className="text-right font-semibold">{formatCurrency(reportData.assets.currentAssets.previousTotal)}</TableCell>
-                    <TableCell className="text-right font-semibold">{formatAmount(reportData.assets.currentAssets.total - reportData.assets.currentAssets.previousTotal)}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      <span className={getVarianceColor(reportData.assets.currentAssets.total, reportData.assets.currentAssets.previousTotal)}>
-                        {calculatePercentage(reportData.assets.currentAssets.total, reportData.assets.currentAssets.previousTotal)}%
-                      </span>
+                    <TableCell className="text-right font-bold text-blue-800">
+                      {formatCurrency(reportData.previous_total_assets)}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-blue-800">
+                      {formatCurrency((reportData.total_assets || 0) - reportData.previous_total_assets)}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-blue-800">
+                      {calculatePercentage(reportData.total_assets, reportData.previous_total_assets)}%
                     </TableCell>
                   </>
                 )}
               </TableRow>
 
-              {/* Fixed Assets */}
-              <TableRow>
-                <TableCell className="font-semibold pl-4">{reportData.assets.fixedAssets.title}</TableCell>
-                <TableCell></TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {reportData.assets.fixedAssets.accounts.map((account, index) => (
-                <TableRow key={index}>
-                  <TableCell className="pl-8">{account.name}</TableCell>
-                  <TableCell className="text-right">{formatAmount(account.current)}</TableCell>
-                  {comparisonPeriod !== 'none' && (
-                    <>
-                      <TableCell className="text-right">{formatAmount(account.previous)}</TableCell>
-                      <TableCell className="text-right">{formatAmount(account.current - account.previous)}</TableCell>
-                      <TableCell className="text-right">
-                        <span className={getVarianceColor(account.current, account.previous)}>
-                          {calculatePercentage(account.current, account.previous)}%
-                        </span>
-                      </TableCell>
-                    </>
-                  )}
-                </TableRow>
-              ))}
-
-              <TableRow className="border-t">
-                <TableCell className="font-semibold pl-6">Total Fixed Assets</TableCell>
-                <TableCell className="text-right font-semibold">{formatCurrency(reportData.assets.fixedAssets.total)}</TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell className="text-right font-semibold">{formatCurrency(reportData.assets.fixedAssets.previousTotal)}</TableCell>
-                    <TableCell className="text-right font-semibold">{formatAmount(reportData.assets.fixedAssets.total - reportData.assets.fixedAssets.previousTotal)}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      <span className={getVarianceColor(reportData.assets.fixedAssets.total, reportData.assets.fixedAssets.previousTotal)}>
-                        {calculatePercentage(reportData.assets.fixedAssets.total, reportData.assets.fixedAssets.previousTotal)}%
-                      </span>
-                    </TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {/* Other Assets */}
-              <TableRow>
-                <TableCell className="font-semibold pl-4">{reportData.assets.otherAssets.title}</TableCell>
-                <TableCell></TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {reportData.assets.otherAssets.accounts.map((account, index) => (
-                <TableRow key={index}>
-                  <TableCell className="pl-8">{account.name}</TableCell>
-                  <TableCell className="text-right">{formatAmount(account.current)}</TableCell>
-                  {comparisonPeriod !== 'none' && (
-                    <>
-                      <TableCell className="text-right">{formatAmount(account.previous)}</TableCell>
-                      <TableCell className="text-right">{formatAmount(account.current - account.previous)}</TableCell>
-                      <TableCell className="text-right">
-                        <span className={getVarianceColor(account.current, account.previous)}>
-                          {calculatePercentage(account.current, account.previous)}%
-                        </span>
-                      </TableCell>
-                    </>
-                  )}
-                </TableRow>
-              ))}
-
-              <TableRow className="border-t">
-                <TableCell className="font-semibold pl-6">Total Other Assets</TableCell>
-                <TableCell className="text-right font-semibold">{formatCurrency(reportData.assets.otherAssets.total)}</TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell className="text-right font-semibold">{formatCurrency(reportData.assets.otherAssets.previousTotal)}</TableCell>
-                    <TableCell className="text-right font-semibold">{formatAmount(reportData.assets.otherAssets.total - reportData.assets.otherAssets.previousTotal)}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      <span className={getVarianceColor(reportData.assets.otherAssets.total, reportData.assets.otherAssets.previousTotal)}>
-                        {calculatePercentage(reportData.assets.otherAssets.total, reportData.assets.otherAssets.previousTotal)}%
-                      </span>
-                    </TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {/* Total Assets */}
-              <TableRow className="bg-blue-50 border-t-2 border-blue-600">
-                <TableCell className="font-bold text-blue-800 text-lg">TOTAL ASSETS</TableCell>
-                <TableCell className="text-right font-bold text-blue-800 text-lg">{formatCurrency(reportData.assets.totalAssets)}</TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell className="text-right font-bold text-blue-800 text-lg">{formatCurrency(reportData.assets.previousTotalAssets)}</TableCell>
-                    <TableCell className="text-right font-bold text-blue-800 text-lg">{formatAmount(reportData.assets.totalAssets - reportData.assets.previousTotalAssets)}</TableCell>
-                    <TableCell className="text-right font-bold text-blue-800 text-lg">
-                      {calculatePercentage(reportData.assets.totalAssets, reportData.assets.previousTotalAssets)}%
-                    </TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {/* Spacer */}
-              <TableRow>
-                <TableCell colSpan={comparisonPeriod !== 'none' ? 5 : 2} className="py-2"></TableCell>
-              </TableRow>
-
-              {/* LIABILITIES & EQUITY */}
+              {/* Liabilities Section */}
               <TableRow className="bg-red-50">
-                <TableCell className="font-bold text-red-800 text-lg">{reportData.liabilities.title}</TableCell>
-                <TableCell></TableCell>
-                {comparisonPeriod !== 'none' && (
+                <TableCell className="font-bold text-red-800">LIABILITIES</TableCell>
+                <TableCell className="text-right font-bold text-red-800">
+                  {formatCurrency(reportData.total_liabilities || 0)}
+                </TableCell>
+                {comparisonPeriod !== 'none' && reportData.previous_total_liabilities && (
                   <>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {/* Current Liabilities */}
-              <TableRow>
-                <TableCell className="font-semibold pl-4">{reportData.liabilities.currentLiabilities.title}</TableCell>
-                <TableCell></TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {reportData.liabilities.currentLiabilities.accounts.map((account, index) => (
-                <TableRow key={index}>
-                  <TableCell className="pl-8">{account.name}</TableCell>
-                  <TableCell className="text-right">{formatAmount(account.current)}</TableCell>
-                  {comparisonPeriod !== 'none' && (
-                    <>
-                      <TableCell className="text-right">{formatAmount(account.previous)}</TableCell>
-                      <TableCell className="text-right">{formatAmount(account.current - account.previous)}</TableCell>
-                      <TableCell className="text-right">
-                        <span className={getVarianceColor(account.current, account.previous)}>
-                          {calculatePercentage(account.current, account.previous)}%
-                        </span>
-                      </TableCell>
-                    </>
-                  )}
-                </TableRow>
-              ))}
-
-              <TableRow className="border-t">
-                <TableCell className="font-semibold pl-6">Total Current Liabilities</TableCell>
-                <TableCell className="text-right font-semibold">{formatCurrency(reportData.liabilities.currentLiabilities.total)}</TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell className="text-right font-semibold">{formatCurrency(reportData.liabilities.currentLiabilities.previousTotal)}</TableCell>
-                    <TableCell className="text-right font-semibold">{formatAmount(reportData.liabilities.currentLiabilities.total - reportData.liabilities.currentLiabilities.previousTotal)}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      <span className={getVarianceColor(reportData.liabilities.currentLiabilities.total, reportData.liabilities.currentLiabilities.previousTotal)}>
-                        {calculatePercentage(reportData.liabilities.currentLiabilities.total, reportData.liabilities.currentLiabilities.previousTotal)}%
-                      </span>
+                    <TableCell className="text-right font-bold text-red-800">
+                      {formatCurrency(reportData.previous_total_liabilities)}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-red-800">
+                      {formatCurrency((reportData.total_liabilities || 0) - reportData.previous_total_liabilities)}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-red-800">
+                      {calculatePercentage(reportData.total_liabilities, reportData.previous_total_liabilities)}%
                     </TableCell>
                   </>
                 )}
               </TableRow>
 
-              {/* Long-term Liabilities */}
-              <TableRow>
-                <TableCell className="font-semibold pl-4">{reportData.liabilities.longTermLiabilities.title}</TableCell>
-                <TableCell></TableCell>
-                {comparisonPeriod !== 'none' && (
+              {/* Equity Section */}
+              <TableRow className="bg-green-50">
+                <TableCell className="font-bold text-green-800">EQUITY</TableCell>
+                <TableCell className="text-right font-bold text-green-800">
+                  {formatCurrency(reportData.total_equity || 0)}
+                </TableCell>
+                {comparisonPeriod !== 'none' && reportData.previous_total_equity && (
                   <>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {reportData.liabilities.longTermLiabilities.accounts.map((account, index) => (
-                <TableRow key={index}>
-                  <TableCell className="pl-8">{account.name}</TableCell>
-                  <TableCell className="text-right">{formatAmount(account.current)}</TableCell>
-                  {comparisonPeriod !== 'none' && (
-                    <>
-                      <TableCell className="text-right">{formatAmount(account.previous)}</TableCell>
-                      <TableCell className="text-right">{formatAmount(account.current - account.previous)}</TableCell>
-                      <TableCell className="text-right">
-                        <span className={getVarianceColor(account.current, account.previous)}>
-                          {calculatePercentage(account.current, account.previous)}%
-                        </span>
-                      </TableCell>
-                    </>
-                  )}
-                </TableRow>
-              ))}
-
-              <TableRow className="border-t">
-                <TableCell className="font-semibold pl-6">Total Long-term Liabilities</TableCell>
-                <TableCell className="text-right font-semibold">{formatCurrency(reportData.liabilities.longTermLiabilities.total)}</TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell className="text-right font-semibold">{formatCurrency(reportData.liabilities.longTermLiabilities.previousTotal)}</TableCell>
-                    <TableCell className="text-right font-semibold">{formatAmount(reportData.liabilities.longTermLiabilities.total - reportData.liabilities.longTermLiabilities.previousTotal)}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      <span className={getVarianceColor(reportData.liabilities.longTermLiabilities.total, reportData.liabilities.longTermLiabilities.previousTotal)}>
-                        {calculatePercentage(reportData.liabilities.longTermLiabilities.total, reportData.liabilities.longTermLiabilities.previousTotal)}%
-                      </span>
+                    <TableCell className="text-right font-bold text-green-800">
+                      {formatCurrency(reportData.previous_total_equity)}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-green-800">
+                      {formatCurrency((reportData.total_equity || 0) - reportData.previous_total_equity)}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-green-800">
+                      {calculatePercentage(reportData.total_equity, reportData.previous_total_equity)}%
                     </TableCell>
                   </>
                 )}
               </TableRow>
 
-              {/* Total Liabilities */}
-              <TableRow className="border-t-2 border-gray-300">
-                <TableCell className="font-bold">Total Liabilities</TableCell>
-                <TableCell className="text-right font-bold">{formatCurrency(reportData.liabilities.totalLiabilities)}</TableCell>
-                {comparisonPeriod !== 'none' && (
+              {/* Balance Check */}
+              <TableRow className="border-t-4 border-gray-600 bg-gray-50">
+                <TableCell className="font-bold text-gray-800">TOTAL LIABILITIES + EQUITY</TableCell>
+                <TableCell className="text-right font-bold text-gray-800">
+                  {formatCurrency((reportData.total_liabilities || 0) + (reportData.total_equity || 0))}
+                </TableCell>
+                {comparisonPeriod !== 'none' && reportData.previous_total_liabilities && reportData.previous_total_equity && (
                   <>
-                    <TableCell className="text-right font-bold">{formatCurrency(reportData.liabilities.previousTotalLiabilities)}</TableCell>
-                    <TableCell className="text-right font-bold">{formatAmount(reportData.liabilities.totalLiabilities - reportData.liabilities.previousTotalLiabilities)}</TableCell>
-                    <TableCell className="text-right font-bold">
-                      <span className={getVarianceColor(reportData.liabilities.totalLiabilities, reportData.liabilities.previousTotalLiabilities)}>
-                        {calculatePercentage(reportData.liabilities.totalLiabilities, reportData.liabilities.previousTotalLiabilities)}%
-                      </span>
+                    <TableCell className="text-right font-bold text-gray-800">
+                      {formatCurrency(reportData.previous_total_liabilities + reportData.previous_total_equity)}
                     </TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {/* Equity */}
-              <TableRow>
-                <TableCell className="font-semibold pl-4">{reportData.equity.title}</TableCell>
-                <TableCell></TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {reportData.equity.accounts.map((account, index) => (
-                <TableRow key={index}>
-                  <TableCell className="pl-8">{account.name}</TableCell>
-                  <TableCell className="text-right">{formatAmount(account.current)}</TableCell>
-                  {comparisonPeriod !== 'none' && (
-                    <>
-                      <TableCell className="text-right">{formatAmount(account.previous)}</TableCell>
-                      <TableCell className="text-right">{formatAmount(account.current - account.previous)}</TableCell>
-                      <TableCell className="text-right">
-                        <span className={getVarianceColor(account.current, account.previous)}>
-                          {calculatePercentage(account.current, account.previous)}%
-                        </span>
-                      </TableCell>
-                    </>
-                  )}
-                </TableRow>
-              ))}
-
-              <TableRow className="border-t">
-                <TableCell className="font-semibold pl-6">Total Equity</TableCell>
-                <TableCell className="text-right font-semibold">{formatCurrency(reportData.equity.total)}</TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell className="text-right font-semibold">{formatCurrency(reportData.equity.previousTotal)}</TableCell>
-                    <TableCell className="text-right font-semibold">{formatAmount(reportData.equity.total - reportData.equity.previousTotal)}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      <span className={getVarianceColor(reportData.equity.total, reportData.equity.previousTotal)}>
-                        {calculatePercentage(reportData.equity.total, reportData.equity.previousTotal)}%
-                      </span>
+                    <TableCell className="text-right font-bold text-gray-800">
+                      {formatCurrency(
+                        ((reportData.total_liabilities || 0) + (reportData.total_equity || 0)) -
+                        (reportData.previous_total_liabilities + reportData.previous_total_equity)
+                      )}
                     </TableCell>
-                  </>
-                )}
-              </TableRow>
-
-              {/* Total Liabilities and Equity */}
-              <TableRow className="bg-red-50 border-t-4 border-red-600">
-                <TableCell className="font-bold text-red-800 text-lg">TOTAL LIABILITIES & EQUITY</TableCell>
-                <TableCell className="text-right font-bold text-red-800 text-lg">{formatCurrency(reportData.totalLiabilitiesAndEquity)}</TableCell>
-                {comparisonPeriod !== 'none' && (
-                  <>
-                    <TableCell className="text-right font-bold text-red-800 text-lg">{formatCurrency(reportData.previousTotalLiabilitiesAndEquity)}</TableCell>
-                    <TableCell className="text-right font-bold text-red-800 text-lg">{formatAmount(reportData.totalLiabilitiesAndEquity - reportData.previousTotalLiabilitiesAndEquity)}</TableCell>
-                    <TableCell className="text-right font-bold text-red-800 text-lg">
-                      {calculatePercentage(reportData.totalLiabilitiesAndEquity, reportData.previousTotalLiabilitiesAndEquity)}%
+                    <TableCell className="text-right font-bold text-gray-800">
+                      {calculatePercentage(
+                        (reportData.total_liabilities || 0) + (reportData.total_equity || 0),
+                        reportData.previous_total_liabilities + reportData.previous_total_equity
+                      )}%
                     </TableCell>
                   </>
                 )}
               </TableRow>
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-
-      {/* Additional Actions */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button variant="outline">
-                <Clock className="w-4 h-4 mr-2" />
-                Schedule Report
-              </Button>
-              <Button variant="outline" onClick={() => handleExport('excel')}>
-                <FileText className="w-4 h-4 mr-2" />
-                Export to Excel
-              </Button>
-              <Button variant="outline">
-                <PieChart className="w-4 h-4 mr-2" />
-                View Charts
-              </Button>
-            </div>
-            <div className="text-sm text-gray-500">
-              Last updated: {new Date().toLocaleString()}
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
