@@ -22,6 +22,26 @@ export const CompanyProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
+      
+      // Wait for token to be available
+      const waitForToken = async () => {
+        let attempts = 0;
+        while (!localStorage.getItem("qb_access_token") && attempts < 10) {
+          console.log("Waiting for token to be available...");
+          await new Promise(resolve => setTimeout(resolve, 500));
+          attempts++;
+        }
+        return localStorage.getItem("qb_access_token");
+      };
+      
+      const token = await waitForToken();
+      if (!token) {
+        console.error("Token not available after waiting");
+        setError("Authentication token not available");
+        return;
+      }
+      
+      console.log("Token available, loading companies...");
       const companiesData = await companyService.getCompanies();
       setCompanies(companiesData);
       
