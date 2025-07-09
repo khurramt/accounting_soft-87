@@ -23,6 +23,9 @@ import {
 } from "lucide-react";
 
 const EnterBills = () => {
+  const navigate = useNavigate();
+  const { currentCompany } = useCompany();
+  
   const [billData, setBillData] = useState({
     vendor: "",
     date: new Date().toISOString().split('T')[0],
@@ -42,7 +45,48 @@ const EnterBills = () => {
     items: []
   });
 
-  const navigate = useNavigate();
+  const [vendors, setVendors] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Load vendors and accounts on component mount
+  useEffect(() => {
+    if (currentCompany) {
+      loadVendors();
+      loadAccounts();
+    }
+  }, [currentCompany]);
+
+  const loadVendors = async () => {
+    try {
+      setLoading(true);
+      const response = await vendorService.getVendors(currentCompany.company_id);
+      setVendors(response.items || []);
+    } catch (err) {
+      setError('Failed to load vendors');
+      console.error('Error loading vendors:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAccounts = async () => {
+    try {
+      // Mock accounts for now - would integrate with accounts service when available
+      const mockAccounts = [
+        { id: '1', name: 'Office Supplies', type: 'Expense' },
+        { id: '2', name: 'Travel & Entertainment', type: 'Expense' },
+        { id: '3', name: 'Professional Services', type: 'Expense' },
+        { id: '4', name: 'Utilities', type: 'Expense' },
+        { id: '5', name: 'Rent', type: 'Expense' }
+      ];
+      setAccounts(mockAccounts);
+    } catch (err) {
+      console.error('Error loading accounts:', err);
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setBillData(prev => ({
