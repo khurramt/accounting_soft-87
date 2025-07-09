@@ -1382,7 +1382,7 @@ def test_update_bill():
         print(f"\n🔍 Testing update bill: {BILL_ID}...")
         headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
         
-        # Updated bill data
+        # Updated bill data with line_number field
         payload = {
             "memo": f"Updated Bill Memo {datetime.now().strftime('%Y%m%d%H%M%S')}",
             "lines": [
@@ -1423,7 +1423,7 @@ def test_update_bill():
         else:
             print(f"❌ Update bill test failed: Status code {response.status_code}")
             if response.status_code == 500:
-                print("⚠️ Known issue: Update operations return 500 errors")
+                print("⚠️ Known issue: Update operations still return 500 errors after fix")
             return False
     except requests.exceptions.Timeout:
         print(f"❌ Update bill test failed: Request timed out after {TIMEOUT} seconds")
