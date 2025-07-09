@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { mockVendors, mockAccounts } from "../../data/mockData";
+import { useCompany } from "../../contexts/CompanyContext";
+import billService from "../../services/billService";
+import vendorService from "../../services/vendorService";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -15,7 +17,9 @@ import {
   Save, 
   Calculator,
   FileText,
-  Receipt
+  Receipt,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 
 const EnterBills = () => {
