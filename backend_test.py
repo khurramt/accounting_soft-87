@@ -1522,13 +1522,13 @@ def test_create_payment():
         return False
     
     try:
-        print("\n🔍 Testing create payment...")
+        print("\n🔍 Testing create payment with applications field...")
         headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
         
         # Generate a unique payment
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         
-        # Simplified payload to avoid validation errors
+        # Payment payload with applications field
         payload = {
             "payment_date": date.today().isoformat(),
             "payment_type": "check",
@@ -1536,8 +1536,13 @@ def test_create_payment():
             "customer_id": CUSTOMER_ID,
             "amount_received": 100.00,
             "deposit_to_account_id": ACCOUNT_ID,
-            "memo": f"Test Payment {timestamp}"
-            # Removed applications field which was causing validation errors
+            "memo": f"Test Payment {timestamp}",
+            "applications": [
+                {
+                    "transaction_id": INVOICE_ID,
+                    "amount_applied": 100.00
+                }
+            ]
         }
         
         response = requests.post(
@@ -1558,21 +1563,21 @@ def test_create_payment():
         if response.status_code == 201:
             if "payment_id" in data:
                 PAYMENT_ID = data["payment_id"]
-                print(f"✅ Create payment test passed (ID: {PAYMENT_ID})")
+                print(f"✅ Create payment with applications test passed (ID: {PAYMENT_ID})")
                 return True
             else:
-                print(f"❌ Create payment test failed: Unexpected response")
+                print(f"❌ Create payment with applications test failed: Unexpected response")
                 return False
         else:
-            print(f"❌ Create payment test failed: Status code {response.status_code}")
+            print(f"❌ Create payment with applications test failed: Status code {response.status_code}")
             if response.status_code == 400:
-                print("⚠️ Known issue: Payment creation has validation errors related to the applications field")
+                print("⚠️ Known issue: Payment creation still has validation errors related to the applications field after fix")
             return False
     except requests.exceptions.Timeout:
-        print(f"❌ Create payment test failed: Request timed out after {TIMEOUT} seconds")
+        print(f"❌ Create payment with applications test failed: Request timed out after {TIMEOUT} seconds")
         return False
     except Exception as e:
-        print(f"❌ Create payment test failed: {str(e)}")
+        print(f"❌ Create payment with applications test failed: {str(e)}")
         return False
 
 def test_get_payments():
