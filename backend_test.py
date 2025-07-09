@@ -977,7 +977,7 @@ def test_update_invoice():
         print(f"\n🔍 Testing update invoice: {INVOICE_ID}...")
         headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
         
-        # Updated invoice data
+        # Updated invoice data with line_number field
         payload = {
             "memo": f"Updated Invoice Memo {datetime.now().strftime('%Y%m%d%H%M%S')}",
             "lines": [
@@ -1018,7 +1018,7 @@ def test_update_invoice():
         else:
             print(f"❌ Update invoice test failed: Status code {response.status_code}")
             if response.status_code == 500:
-                print("⚠️ Known issue: Update operations return 500 errors")
+                print("⚠️ Known issue: Update operations still return 500 errors after fix")
             return False
     except requests.exceptions.Timeout:
         print(f"❌ Update invoice test failed: Request timed out after {TIMEOUT} seconds")
