@@ -578,7 +578,7 @@
     file: "/app/frontend/src/services/reportService.js, /app/frontend/src/components/reports/ProfitLossReport.js, /app/frontend/src/components/reports/BalanceSheetReport.js, /app/frontend/src/components/reports/CashFlowReport.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "main"
@@ -589,6 +589,9 @@
         - working: true
           agent: "main"
           comment: "✅ PHASE 2.2 REPORTS INTEGRATION COMPONENTS UPDATED: Successfully updated all three main report components to use real backend APIs instead of mock data. ✅ COMPLETED: 1) Updated ProfitLossReport.js to use reportService.getProfitLossReport() with proper company context, loading states, error handling, and data formatting 2) Updated BalanceSheetReport.js to use reportService.getBalanceSheetReport() with comprehensive balance sheet display and comparison features 3) Updated CashFlowReport.js to use reportService.getCashFlowReport() with cash flow analysis and statement formatting 4) Created formatCurrency utility function with proper null/undefined handling for API response data 5) All components now include useCompany hook, useEffect for data loading, loading spinners, error states, and proper API parameter handling 6) Components handle date range calculation, report refresh functionality, and proper data structure display. All report components are now fully integrated with backend APIs and ready for comprehensive testing."
+        - working: false
+          agent: "testing"
+          comment: "Comprehensive testing of the Reports Integration revealed critical issues with API integration. While the UI components for all three reports (Profit & Loss, Balance Sheet, and Cash Flow) are properly implemented with loading states, error handling, and user controls, the API calls are failing with 403 Forbidden errors. The issue appears to be that the company ID is undefined when making API calls (e.g., '/companies/undefined/reports/profit-loss'). This suggests a problem with the company context not being properly passed to the report components. The Report Center navigation works correctly and shows all report categories and report options, but when attempting to view any of the three main reports, they all display error messages. The error handling in the components works correctly, showing appropriate error messages and retry buttons. The formatCurrency utility function is properly implemented to handle various data formats. The issue is specifically with the company context integration in the report components."
     implemented: true
     working: true
     file: "/app/frontend/src/components/dashboard/Dashboard.js, /app/frontend/src/services/dashboardService.js"
