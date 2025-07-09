@@ -49,10 +49,10 @@
 ##
 ## test_plan:
   current_focus:
-    - "Update Phase 2.2 Reports Integration components to use real backend APIs instead of mock data"
-    - "Integrate ProfitLossReport.js, BalanceSheetReport.js, and CashFlowReport.js with reportService.js"
-    - "Test Phase 2.2 Reports Integration with backend API connectivity after components are updated"
-    - "Verify all report components load data correctly and handle data format properly"
+    - "Reports Integration - Profit and Loss Report API"
+    - "Reports Integration - Balance Sheet Report API"
+    - "Reports Integration - Cash Flow Report API"
+    - "Reports Integration - Error Handling"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
