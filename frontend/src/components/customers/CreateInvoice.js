@@ -332,8 +332,10 @@ const CreateInvoice = () => {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h4 className="font-semibold mb-2">Bill To:</h4>
                 <div className="text-sm space-y-1">
-                  <p className="font-medium">{selectedCustomer.name}</p>
-                  <p>{selectedCustomer.address}</p>
+                  <p className="font-medium">{selectedCustomer.display_name}</p>
+                  <p>{selectedCustomer.address?.line1 || ''}</p>
+                  <p>{selectedCustomer.address?.line2 || ''}</p>
+                  <p>{selectedCustomer.address?.city || ''}, {selectedCustomer.address?.state || ''} {selectedCustomer.address?.zip_code || ''}</p>
                   <p>{selectedCustomer.email}</p>
                   <p>{selectedCustomer.phone}</p>
                 </div>
