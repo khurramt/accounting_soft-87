@@ -49,13 +49,11 @@
 ##
 ## test_plan:
   current_focus:
-    - "Fix Dashboard Integration - JavaScript error: transaction.total_amount.toFixed is not a function"
-    - "Resolve data format mismatch between backend API responses and frontend component expectations"
-    - "Update Dashboard component to handle actual API response format"
-    - "Complete Reports Integration after Dashboard issues are resolved"
-  stuck_tasks:
-    - "Dashboard Integration - Phase 2.1"
-    - "Reports Integration - Phase 2.2"
+    - "Test Dashboard Integration - Fixed JavaScript error with formatCurrency() utility function"
+    - "Test Phase 2.1 Dashboard with real backend API integration after data format fixes"
+    - "Test Phase 2.2 Reports Integration with backend API connectivity"
+    - "Verify all currency formatting and data type handling works correctly"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 ##
