@@ -32,6 +32,18 @@ const Dashboard = () => {
   const { currentCompany } = useCompany();
   const navigate = useNavigate();
 
+  // Utility function to safely format currency
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined || value === '') {
+      return '0.00';
+    }
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) {
+      return '0.00';
+    }
+    return numValue.toFixed(2);
+  };
+
   // Load dashboard data
   const loadDashboardData = async () => {
     if (!currentCompany?.company_id) return;
