@@ -689,7 +689,7 @@ async def get_dashboard_summary(
     income_query = select(
         func.sum(TransactionLine.line_total).label('total_income')
     ).select_from(
-        TransactionLine.join(Transaction).join(Account)
+        TransactionLine.__table__.join(Transaction.__table__).join(Account.__table__)
     ).where(
         and_(
             Transaction.company_id == company_id,
@@ -707,7 +707,7 @@ async def get_dashboard_summary(
     expenses_query = select(
         func.sum(TransactionLine.line_total).label('total_expenses')
     ).select_from(
-        TransactionLine.join(Transaction).join(Account)
+        TransactionLine.__table__.join(Transaction.__table__).join(Account.__table__)
     ).where(
         and_(
             Transaction.company_id == company_id,
