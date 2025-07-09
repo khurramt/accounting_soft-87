@@ -48,6 +48,7 @@ class TransactionLineCreate(TransactionLineBase):
     pass
 
 class TransactionLineUpdate(BaseModel):
+    line_number: Optional[int] = None
     line_type: Optional[LineType] = None
     item_id: Optional[str] = None
     account_id: Optional[str] = None
