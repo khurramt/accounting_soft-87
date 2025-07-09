@@ -23,19 +23,23 @@ class BaseListService:
     @staticmethod
     async def verify_company_access(db: AsyncSession, user_id: str, company_id: str) -> bool:
         """Verify user has access to company"""
-        from models.user import CompanyMembership
-        
-        result = await db.execute(
-            select(CompanyMembership).where(
-                and_(
-                    CompanyMembership.user_id == user_id,
-                    CompanyMembership.company_id == company_id,
-                    CompanyMembership.is_active == True
+        try:
+            from models.user import CompanyMembership
+            
+            result = await db.execute(
+                select(CompanyMembership).where(
+                    and_(
+                        CompanyMembership.user_id == user_id,
+                        CompanyMembership.company_id == company_id,
+                        CompanyMembership.is_active == True
+                    )
                 )
             )
-        )
-        membership = result.scalar_one_or_none()
-        return membership is not None
+            membership = result.scalar_one_or_none()
+            return membership is not None
+        except Exception as e:
+            logger.error("Error verifying company access", error=str(e), user_id=user_id, company_id=company_id)
+            return False
 
     @staticmethod
     async def get_company(db: AsyncSession, company_id: str) -> Optional[Company]:
