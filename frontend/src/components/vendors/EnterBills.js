@@ -226,9 +226,9 @@ const EnterBills = () => {
                     <SelectValue placeholder="Select vendor" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockVendors.map((vendor) => (
-                      <SelectItem key={vendor.id} value={vendor.id}>
-                        {vendor.name}
+                    {vendors.map((vendor) => (
+                      <SelectItem key={vendor.vendor_id} value={vendor.vendor_id}>
+                        {vendor.display_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
