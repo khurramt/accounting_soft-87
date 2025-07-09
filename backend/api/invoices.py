@@ -80,7 +80,7 @@ async def get_invoices(
         filters = TransactionSearchFilters(
             search=search,
             transaction_type=TransactionType.INVOICE,
-            status=status,
+            status=transaction_status,
             customer_id=customer_id,
             start_date=start_date,
             end_date=end_date,
