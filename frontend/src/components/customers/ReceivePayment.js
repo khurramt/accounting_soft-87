@@ -198,9 +198,9 @@ const ReceivePayment = () => {
                     <SelectValue placeholder="Select customer" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockCustomers.map((customer) => (
-                      <SelectItem key={customer.id} value={customer.id}>
-                        {customer.name}
+                    {customers.map((customer) => (
+                      <SelectItem key={customer.customer_id} value={customer.customer_id}>
+                        {customer.display_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
