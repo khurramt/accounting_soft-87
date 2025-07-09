@@ -35,7 +35,38 @@ async def create_payment(
         payment = await PaymentService.create_payment(
             db, company_id, str(user.user_id), payment_data
         )
-        return PaymentResponse.from_orm(payment)
+        
+        # Convert the payment model to a dictionary for the response
+        payment_dict = {
+            "payment_id": payment.payment_id,
+            "company_id": payment.company_id,
+            "payment_number": payment.payment_number,
+            "payment_date": payment.payment_date,
+            "payment_type": payment.payment_type,
+            "payment_method": payment.payment_method,
+            "reference_number": payment.reference_number,
+            "customer_id": payment.customer_id,
+            "vendor_id": payment.vendor_id,
+            "amount_received": payment.amount_received,
+            "deposit_to_account_id": payment.deposit_to_account_id,
+            "memo": payment.memo,
+            "created_by": payment.created_by,
+            "created_at": payment.created_at,
+            "applications": []
+        }
+        
+        # Convert applications if they exist
+        if hasattr(payment, 'applications') and payment.applications:
+            payment_dict["applications"] = [
+                {
+                    "transaction_id": app.transaction_id,
+                    "amount_applied": app.amount_applied,
+                    "discount_taken": app.discount_taken
+                }
+                for app in payment.applications
+            ]
+        
+        return PaymentResponse.model_validate(payment_dict)
         
     except ValueError as e:
         raise HTTPException(
