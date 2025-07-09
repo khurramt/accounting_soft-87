@@ -629,8 +629,15 @@ class PaymentService(BaseListService):
         await db.commit()
         await db.refresh(payment)
         
+        # Load applications with the payment
+        result = await db.execute(
+            select(Payment).where(Payment.payment_id == payment.payment_id)
+            .options(selectinload(Payment.applications))
+        )
+        payment_with_apps = result.scalar_one()
+        
         logger.info("Payment created", payment_id=payment.payment_id, company_id=company_id)
-        return payment
+        return payment_with_apps
     
     @staticmethod
     async def _generate_payment_number(db: AsyncSession, company_id: str) -> str:
