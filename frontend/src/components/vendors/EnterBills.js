@@ -131,12 +131,46 @@ const EnterBills = () => {
     return billData.expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
   };
 
-  const handleSave = () => {
-    console.log("Saving bill:", billData);
-    navigate("/vendors");
+  const handleSave = async () => {
+    if (!currentCompany) {
+      setError('No company selected');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      // Validate required fields
+      if (!billData.vendor) {
+        setError('Please select a vendor');
+        return;
+      }
+
+      if (billData.expenses.length === 0 || !billData.expenses.some(exp => exp.account && exp.amount > 0)) {
+        setError('Please add at least one expense with an account and amount');
+        return;
+      }
+
+      // Create bill via API
+      const response = await billService.createBill(currentCompany.company_id, billData);
+      
+      console.log('Bill created successfully:', response);
+      navigate("/vendors", { 
+        state: { 
+          message: 'Bill created successfully',
+          type: 'success' 
+        }
+      });
+    } catch (err) {
+      console.error('Error creating bill:', err);
+      setError(err.response?.data?.detail || 'Failed to create bill');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const selectedVendor = mockVendors.find(v => v.id === billData.vendor);
+  const selectedVendor = vendors.find(v => v.vendor_id === billData.vendor);
 
   return (
     <div className="p-6 space-y-6">
