@@ -104,7 +104,10 @@ const BalanceSheetReport = () => {
 
   // Handle refresh report
   const handleRefreshReport = () => {
-    if (!currentCompany) return;
+    if (!currentCompany || !currentCompany.id) {
+      setError('No company selected. Please select a company first.');
+      return;
+    }
     
     const loadReportData = async () => {
       try {
