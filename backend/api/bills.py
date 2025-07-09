@@ -55,7 +55,7 @@ async def get_bills(
     company_id: str,
     search: Optional[str] = Query(None),
     vendor_id: Optional[str] = Query(None),
-    status: Optional[str] = Query(None),
+    transaction_status: Optional[str] = Query(None),
     start_date: Optional[date] = Query(None),
     end_date: Optional[date] = Query(None),
     min_amount: Optional[float] = Query(None),
