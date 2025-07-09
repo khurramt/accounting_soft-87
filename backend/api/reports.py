@@ -685,36 +685,32 @@ async def get_dashboard_summary(
         start_date = today.replace(day=1)
         end_date = today
     
-    # Get income (revenue accounts)
+    # Get total income from posted transactions
     income_query = select(
-        func.sum(TransactionLine.line_total).label('total_income')
-    ).select_from(
-        TransactionLine.__table__.join(Transaction.__table__).join(Account.__table__)
+        func.sum(Transaction.total_amount).label('total_income')
     ).where(
         and_(
             Transaction.company_id == company_id,
             Transaction.transaction_date >= start_date,
             Transaction.transaction_date <= end_date,
             Transaction.status == TransactionStatus.POSTED,
-            Account.account_type == AccountType.REVENUE
+            Transaction.transaction_type == TransactionType.INVOICE
         )
     )
     
     income_result = await db.execute(income_query)
     total_income = income_result.scalar() or Decimal('0.0')
     
-    # Get expenses
+    # Get total expenses from posted bills
     expenses_query = select(
-        func.sum(TransactionLine.line_total).label('total_expenses')
-    ).select_from(
-        TransactionLine.__table__.join(Transaction.__table__).join(Account.__table__)
+        func.sum(Transaction.total_amount).label('total_expenses')
     ).where(
         and_(
             Transaction.company_id == company_id,
             Transaction.transaction_date >= start_date,
             Transaction.transaction_date <= end_date,
             Transaction.status == TransactionStatus.POSTED,
-            Account.account_type == AccountType.EXPENSES
+            Transaction.transaction_type == TransactionType.BILL
         )
     )
     
@@ -754,13 +750,13 @@ async def get_dashboard_summary(
     recent_transactions_data = []
     for tx in recent_transactions:
         recent_transactions_data.append({
-            "id": tx.transaction_id,
-            "type": tx.transaction_type.value.title(),
+            "transaction_id": tx.transaction_id,
+            "transaction_type": tx.transaction_type.value.title(),
             "transaction_number": tx.transaction_number,
-            "customer_name": tx.customer.customer_name if tx.customer else None,
-            "vendor_name": tx.vendor.vendor_name if tx.vendor else None,
-            "date": tx.transaction_date.isoformat(),
-            "amount": float(tx.total_amount),
+            "customer_name": None,  # Will be populated when relationships are loaded
+            "vendor_name": None,
+            "transaction_date": tx.transaction_date.isoformat(),
+            "total_amount": float(tx.total_amount),
             "status": tx.status.value.title()
         })
     
