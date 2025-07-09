@@ -5,8 +5,6 @@ from sqlalchemy import select, func, desc, and_
 from typing import List, Optional, Dict, Any
 from datetime import datetime, date, timedelta
 from decimal import Decimal
-from models.transactions import Transaction, TransactionLine, TransactionType, TransactionStatus
-from models.accounts import Account, AccountType
 
 from database.connection import get_db
 from services.auth_service import auth_service
@@ -16,6 +14,8 @@ from services.financial_report_service import FinancialReportService
 from services.report_export_service import ReportExportService
 from models.reports import ReportDefinition, MemorizedReport, MemorizedReportGroup, ReportExecution
 from models.user import User
+from models.transactions import Transaction, TransactionLine, TransactionType, TransactionStatus
+from models.list_management import Account, AccountType
 from schemas.report_schemas import (
     # Report Definition schemas
     ReportDefinitionCreate, ReportDefinitionUpdate, ReportDefinitionResponse,
