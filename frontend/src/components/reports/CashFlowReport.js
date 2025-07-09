@@ -1,458 +1,554 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Badge } from '../ui/badge';
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useCompany } from "../../contexts/CompanyContext";
+import reportService from "../../services/reportService";
+import { formatCurrency, calculatePercentage, getVarianceColor } from "../../utils/formatCurrency";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Badge } from "../ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Label } from "../ui/label";
 import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from '../ui/tabs';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog';
-import { 
+  Download, 
+  Printer, 
+  Mail, 
   Calendar,
-  Download,
-  Printer,
-  Share,
+  Activity,
   TrendingUp,
   TrendingDown,
   DollarSign,
-  BarChart3,
-  PieChart,
+  ArrowUpRight,
+  ArrowDownRight,
+  RefreshCw,
+  Star,
+  Clock,
   LineChart,
-  Settings,
-  Filter,
-  Eye,
-  EyeOff
-} from 'lucide-react';
+  Loader2
+} from "lucide-react";
 
 const CashFlowReport = () => {
-  const [reportType, setReportType] = useState('statement'); // 'statement' or 'forecast'
-  const [dateRange, setDateRange] = useState('current-month');
-  const [showCustomDate, setShowCustomDate] = useState(false);
-  const [comparisonPeriod, setComparisonPeriod] = useState('none');
+  const [searchParams] = useSearchParams();
+  const reportName = searchParams.get('report') || 'Cash Flow';
+  const category = searchParams.get('category') || 'Company & Financial';
+  const { currentCompany } = useCompany();
+  
+  const [dateRange, setDateRange] = useState("current-month");
+  const [reportBasis, setReportBasis] = useState("accrual");
+  const [reportFormat, setReportFormat] = useState("standard");
+  const [method, setMethod] = useState("indirect");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [reportData, setReportData] = useState(null);
 
-  const cashFlowData = {
-    statement: {
-      operatingActivities: [
-        { description: 'Net Income', amount: 12500.00 },
-        { description: 'Depreciation', amount: 1200.00 },
-        { description: 'Accounts Receivable Decrease', amount: 2300.00 },
-        { description: 'Accounts Payable Increase', amount: 1800.00 },
-        { description: 'Inventory Increase', amount: -1500.00 },
-        { description: 'Prepaid Expenses Increase', amount: -800.00 }
-      ],
-      investingActivities: [
-        { description: 'Equipment Purchase', amount: -5000.00 },
-        { description: 'Computer System Upgrade', amount: -2500.00 },
-        { description: 'Office Furniture', amount: -1200.00 }
-      ],
-      financingActivities: [
-        { description: 'Bank Loan Proceeds', amount: 10000.00 },
-        { description: 'Loan Payment', amount: -1500.00 },
-        { description: 'Owner Draws', amount: -3000.00 }
-      ]
-    },
-    forecast: {
-      projectedInflows: [
-        { description: 'Expected Customer Payments', amount: 25000.00, date: '2024-02-15' },
-        { description: 'Service Revenue', amount: 8500.00, date: '2024-02-28' },
-        { description: 'Product Sales', amount: 12000.00, date: '2024-03-15' },
-        { description: 'Consulting Income', amount: 6000.00, date: '2024-03-30' }
-      ],
-      projectedOutflows: [
-        { description: 'Rent Payment', amount: -2500.00, date: '2024-02-01' },
-        { description: 'Payroll', amount: -8000.00, date: '2024-02-15' },
-        { description: 'Utilities', amount: -450.00, date: '2024-02-20' },
-        { description: 'Supplier Payments', amount: -3200.00, date: '2024-02-25' },
-        { description: 'Loan Payment', amount: -1500.00, date: '2024-02-28' }
-      ]
+  // Load report data from backend
+  useEffect(() => {
+    const loadReportData = async () => {
+      if (!currentCompany) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Calculate date range
+        const { startDate, endDate } = getDateRange(dateRange);
+        
+        // Prepare report parameters
+        const params = {
+          start_date: startDate,
+          end_date: endDate,
+          method: method,
+          include_subtotals: reportFormat === 'detail',
+          show_cents: true
+        };
+        
+        console.log('Loading Cash Flow report with params:', params);
+        const data = await reportService.getCashFlowReport(currentCompany.id, params);
+        setReportData(data);
+      } catch (err) {
+        console.error('Error loading Cash Flow report:', err);
+        setError(err.message || 'Failed to load report');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadReportData();
+  }, [currentCompany, dateRange, reportBasis, method, reportFormat]);
+
+  // Helper function to get date range
+  const getDateRange = (range) => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    
+    switch (range) {
+      case 'current-month':
+        return {
+          startDate: new Date(currentYear, currentMonth, 1).toISOString().split('T')[0],
+          endDate: new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0]
+        };
+      case 'last-month':
+        return {
+          startDate: new Date(currentYear, currentMonth - 1, 1).toISOString().split('T')[0],
+          endDate: new Date(currentYear, currentMonth, 0).toISOString().split('T')[0]
+        };
+      case 'current-quarter':
+        const quarterStart = Math.floor(currentMonth / 3) * 3;
+        return {
+          startDate: new Date(currentYear, quarterStart, 1).toISOString().split('T')[0],
+          endDate: new Date(currentYear, quarterStart + 3, 0).toISOString().split('T')[0]
+        };
+      case 'current-year':
+        return {
+          startDate: new Date(currentYear, 0, 1).toISOString().split('T')[0],
+          endDate: new Date(currentYear, 11, 31).toISOString().split('T')[0]
+        };
+      default:
+        return {
+          startDate: new Date(currentYear, currentMonth, 1).toISOString().split('T')[0],
+          endDate: new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0]
+        };
     }
   };
 
-  const calculateTotal = (activities) => {
-    return activities.reduce((total, activity) => total + activity.amount, 0);
+  // Handle refresh report
+  const handleRefreshReport = () => {
+    if (!currentCompany) return;
+    
+    const loadReportData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const { startDate, endDate } = getDateRange(dateRange);
+        const params = {
+          start_date: startDate,
+          end_date: endDate,
+          method: method,
+          include_subtotals: reportFormat === 'detail',
+          show_cents: true
+        };
+        
+        const data = await reportService.getCashFlowReport(currentCompany.id, params);
+        setReportData(data);
+      } catch (err) {
+        console.error('Error refreshing Cash Flow report:', err);
+        setError(err.message || 'Failed to refresh report');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadReportData();
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
+  // Handle various actions
+  const handleExport = (format) => {
+    console.log(`Exporting report as ${format}`);
   };
 
-  const operatingTotal = calculateTotal(cashFlowData.statement.operatingActivities);
-  const investingTotal = calculateTotal(cashFlowData.statement.investingActivities);
-  const financingTotal = calculateTotal(cashFlowData.statement.financingActivities);
-  const netCashFlow = operatingTotal + investingTotal + financingTotal;
+  const handlePrint = () => {
+    window.print();
+  };
 
-  const forecastInflows = calculateTotal(cashFlowData.forecast.projectedInflows);
-  const forecastOutflows = calculateTotal(cashFlowData.forecast.projectedOutflows);
-  const forecastNet = forecastInflows + forecastOutflows;
+  const handleEmail = () => {
+    console.log("Opening email dialog");
+  };
+
+  const handleMemorize = () => {
+    console.log("Memorizing report settings");
+  };
+
+  const handleSchedule = () => {
+    console.log("Opening schedule dialog");
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <span className="text-lg">Loading Cash Flow Report...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="text-red-600 text-lg font-medium mb-2">Error Loading Report</div>
+            <div className="text-gray-600 mb-4">{error}</div>
+            <Button onClick={handleRefreshReport}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (!reportData) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="text-gray-600 text-lg font-medium mb-2">No Report Data Available</div>
+            <div className="text-gray-500 mb-4">Please check your date range and filters</div>
+            <Button onClick={handleRefreshReport}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh Report
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Cash Flow Reports</h1>
-          <p className="text-gray-600">Analyze your cash flow and forecast future liquidity</p>
+          <h1 className="text-3xl font-bold text-gray-900">{reportName}</h1>
+          <p className="text-gray-600">Cash receipts and payments analysis</p>
         </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm">
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" onClick={() => handleExport('pdf')}>
             <Download className="w-4 h-4 mr-2" />
-            Export
+            Export PDF
           </Button>
-          <Button variant="outline" size="sm">
-            <Print className="w-4 h-4 mr-2" />
+          <Button variant="outline" onClick={handlePrint}>
+            <Printer className="w-4 h-4 mr-2" />
             Print
           </Button>
-          <Button variant="outline" size="sm">
-            <Share className="w-4 h-4 mr-2" />
-            Share
+          <Button variant="outline" onClick={handleEmail}>
+            <Mail className="w-4 h-4 mr-2" />
+            Email
+          </Button>
+          <Button variant="outline" onClick={handleMemorize}>
+            <Star className="w-4 h-4 mr-2" />
+            Memorize
           </Button>
         </div>
       </div>
 
       {/* Report Controls */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Report Settings</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <Card>
+        <CardContent className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Report Type</label>
-              <select 
-                value={reportType} 
-                onChange={(e) => setReportType(e.target.value)}
-                className="w-full border rounded px-3 py-2"
-              >
-                <option value="statement">Statement of Cash Flows</option>
-                <option value="forecast">Cash Flow Forecast</option>
-              </select>
+              <Label htmlFor="dateRange">Date Range</Label>
+              <Select value={dateRange} onValueChange={setDateRange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="current-month">Current Month</SelectItem>
+                  <SelectItem value="last-month">Last Month</SelectItem>
+                  <SelectItem value="current-quarter">Current Quarter</SelectItem>
+                  <SelectItem value="current-year">Current Year</SelectItem>
+                  <SelectItem value="custom">Custom Range</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
             <div>
-              <label className="block text-sm font-medium mb-2">Date Range</label>
-              <select 
-                value={dateRange} 
-                onChange={(e) => setDateRange(e.target.value)}
-                className="w-full border rounded px-3 py-2"
-              >
-                <option value="current-month">Current Month</option>
-                <option value="last-month">Last Month</option>
-                <option value="quarter">Current Quarter</option>
-                <option value="year">Current Year</option>
-                <option value="custom">Custom Range</option>
-              </select>
+              <Label htmlFor="method">Method</Label>
+              <Select value={method} onValueChange={setMethod}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="indirect">Indirect</SelectItem>
+                  <SelectItem value="direct">Direct</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
             <div>
-              <label className="block text-sm font-medium mb-2">Comparison</label>
-              <select 
-                value={comparisonPeriod} 
-                onChange={(e) => setComparisonPeriod(e.target.value)}
-                className="w-full border rounded px-3 py-2"
-              >
-                <option value="none">None</option>
-                <option value="previous-period">Previous Period</option>
-                <option value="previous-year">Previous Year</option>
-                <option value="budget">Budget</option>
-              </select>
+              <Label htmlFor="reportBasis">Report Basis</Label>
+              <Select value={reportBasis} onValueChange={setReportBasis}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="accrual">Accrual</SelectItem>
+                  <SelectItem value="cash">Cash</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
+            <div>
+              <Label htmlFor="reportFormat">Format</Label>
+              <Select value={reportFormat} onValueChange={setReportFormat}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="detail">Detail</SelectItem>
+                  <SelectItem value="summary">Summary</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="flex items-end">
-              <Button className="w-full">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Generate Report
+              <Button className="w-full" onClick={handleRefreshReport}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Update Report
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Tabs value={reportType} onValueChange={setReportType} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="statement">Statement of Cash Flows</TabsTrigger>
-          <TabsTrigger value="forecast">Cash Flow Forecast</TabsTrigger>
-        </TabsList>
-
-        {/* Statement of Cash Flows */}
-        <TabsContent value="statement">
-          <div className="space-y-6">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Operating Activities</p>
-                      <p className={`text-2xl font-bold ${operatingTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatCurrency(operatingTotal)}
-                      </p>
-                    </div>
-                    <TrendingUp className="w-8 h-8 text-green-600" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Investing Activities</p>
-                      <p className={`text-2xl font-bold ${investingTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatCurrency(investingTotal)}
-                      </p>
-                    </div>
-                    <TrendingDown className="w-8 h-8 text-red-600" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Financing Activities</p>
-                      <p className={`text-2xl font-bold ${financingTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatCurrency(financingTotal)}
-                      </p>
-                    </div>
-                    <DollarSign className="w-8 h-8 text-blue-600" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Net Cash Flow</p>
-                      <p className={`text-2xl font-bold ${netCashFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatCurrency(netCashFlow)}
-                      </p>
-                    </div>
-                    <BarChart3 className="w-8 h-8 text-purple-600" />
-                  </div>
-                </CardContent>
-              </Card>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Operating Cash Flow</CardTitle>
+            <Activity className="w-4 h-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(reportData.operating_cash_flow || 0)}
             </div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <span>From operations</span>
+            </div>
+          </CardContent>
+        </Card>
 
-            {/* Detailed Cash Flow Statement */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Statement of Cash Flows</CardTitle>
-                <p className="text-sm text-gray-600">For the period January 1, 2024 - January 31, 2024</p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {/* Operating Activities */}
-                  <div>
-                    <h3 className="font-bold text-lg mb-3">Cash Flows from Operating Activities</h3>
-                    <div className="space-y-2">
-                      {cashFlowData.statement.operatingActivities.map((activity, index) => (
-                        <div key={index} className="flex justify-between items-center py-2 border-b">
-                          <span className="text-gray-700">{activity.description}</span>
-                          <span className={`font-medium ${activity.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency(activity.amount)}
-                          </span>
-                        </div>
-                      ))}
-                      <div className="flex justify-between items-center py-2 font-bold border-t-2">
-                        <span>Net Cash from Operating Activities</span>
-                        <span className={operatingTotal >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {formatCurrency(operatingTotal)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Investing Cash Flow</CardTitle>
+            <TrendingUp className="w-4 h-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(reportData.investing_cash_flow || 0)}
+            </div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <span>From investments</span>
+            </div>
+          </CardContent>
+        </Card>
 
-                  {/* Investing Activities */}
-                  <div>
-                    <h3 className="font-bold text-lg mb-3">Cash Flows from Investing Activities</h3>
-                    <div className="space-y-2">
-                      {cashFlowData.statement.investingActivities.map((activity, index) => (
-                        <div key={index} className="flex justify-between items-center py-2 border-b">
-                          <span className="text-gray-700">{activity.description}</span>
-                          <span className={`font-medium ${activity.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency(activity.amount)}
-                          </span>
-                        </div>
-                      ))}
-                      <div className="flex justify-between items-center py-2 font-bold border-t-2">
-                        <span>Net Cash from Investing Activities</span>
-                        <span className={investingTotal >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {formatCurrency(investingTotal)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Financing Cash Flow</CardTitle>
+            <TrendingDown className="w-4 h-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(reportData.financing_cash_flow || 0)}
+            </div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <span>From financing</span>
+            </div>
+          </CardContent>
+        </Card>
 
-                  {/* Financing Activities */}
-                  <div>
-                    <h3 className="font-bold text-lg mb-3">Cash Flows from Financing Activities</h3>
-                    <div className="space-y-2">
-                      {cashFlowData.statement.financingActivities.map((activity, index) => (
-                        <div key={index} className="flex justify-between items-center py-2 border-b">
-                          <span className="text-gray-700">{activity.description}</span>
-                          <span className={`font-medium ${activity.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency(activity.amount)}
-                          </span>
-                        </div>
-                      ))}
-                      <div className="flex justify-between items-center py-2 font-bold border-t-2">
-                        <span>Net Cash from Financing Activities</span>
-                        <span className={financingTotal >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {formatCurrency(financingTotal)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Net Cash Flow</CardTitle>
+            <DollarSign className="w-4 h-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(reportData.net_cash_flow || 0)}
+            </div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <span>Total net change</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-                  {/* Net Change in Cash */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex justify-between items-center font-bold text-lg">
-                      <span>Net Change in Cash and Cash Equivalents</span>
-                      <span className={netCashFlow >= 0 ? 'text-green-600' : 'text-red-600'}>
-                        {formatCurrency(netCashFlow)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Main Report Table */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl">
+                {reportData.company_name || currentCompany?.name || 'Company'}
+              </CardTitle>
+              <div className="text-lg font-semibold">Statement of Cash Flows</div>
+              <div className="text-sm text-gray-600">
+                {reportData.period || 'Current Period'} • {method.charAt(0).toUpperCase() + method.slice(1)} Method
+                {reportData.report_basis && ` • ${reportData.report_basis} Basis`}
+              </div>
+            </div>
+            <div className="text-right text-sm text-gray-500">
+              <div>Generated: {new Date().toLocaleDateString()}</div>
+            </div>
           </div>
-        </TabsContent>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-2/3">Cash Flow Activity</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {/* Operating Activities */}
+              <TableRow className="bg-blue-50">
+                <TableCell className="font-bold text-blue-800">CASH FLOWS FROM OPERATING ACTIVITIES</TableCell>
+                <TableCell></TableCell>
+              </TableRow>
+              
+              <TableRow>
+                <TableCell className="pl-4">Net Income</TableCell>
+                <TableCell className="text-right">
+                  {formatCurrency(reportData.net_income || 0)}
+                </TableCell>
+              </TableRow>
+              
+              <TableRow>
+                <TableCell className="pl-4">Adjustments to reconcile net income</TableCell>
+                <TableCell className="text-right">
+                  {formatCurrency(reportData.adjustments || 0)}
+                </TableCell>
+              </TableRow>
+              
+              <TableRow className="border-t">
+                <TableCell className="font-medium">Net Cash from Operating Activities</TableCell>
+                <TableCell className="text-right font-medium">
+                  {formatCurrency(reportData.operating_cash_flow || 0)}
+                </TableCell>
+              </TableRow>
 
-        {/* Cash Flow Forecast */}
-        <TabsContent value="forecast">
-          <div className="space-y-6">
-            {/* Forecast Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Projected Inflows</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {formatCurrency(forecastInflows)}
-                      </p>
-                    </div>
-                    <TrendingUp className="w-8 h-8 text-green-600" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Projected Outflows</p>
-                      <p className="text-2xl font-bold text-red-600">
-                        {formatCurrency(Math.abs(forecastOutflows))}
-                      </p>
-                    </div>
-                    <TrendingDown className="w-8 h-8 text-red-600" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Net Forecast</p>
-                      <p className={`text-2xl font-bold ${forecastNet >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatCurrency(forecastNet)}
-                      </p>
-                    </div>
-                    <BarChart3 className="w-8 h-8 text-purple-600" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+              {/* Investing Activities */}
+              <TableRow className="bg-green-50">
+                <TableCell className="font-bold text-green-800">CASH FLOWS FROM INVESTING ACTIVITIES</TableCell>
+                <TableCell></TableCell>
+              </TableRow>
+              
+              <TableRow>
+                <TableCell className="pl-4">Capital expenditures</TableCell>
+                <TableCell className="text-right">
+                  {formatCurrency(reportData.capital_expenditures || 0)}
+                </TableCell>
+              </TableRow>
+              
+              <TableRow>
+                <TableCell className="pl-4">Investment activities</TableCell>
+                <TableCell className="text-right">
+                  {formatCurrency(reportData.investment_activities || 0)}
+                </TableCell>
+              </TableRow>
+              
+              <TableRow className="border-t">
+                <TableCell className="font-medium">Net Cash from Investing Activities</TableCell>
+                <TableCell className="text-right font-medium">
+                  {formatCurrency(reportData.investing_cash_flow || 0)}
+                </TableCell>
+              </TableRow>
 
-            {/* Projected Cash Flows */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-green-600">Projected Cash Inflows</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {cashFlowData.forecast.projectedInflows.map((flow, index) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                        <div>
-                          <div className="font-medium">{flow.description}</div>
-                          <div className="text-sm text-gray-600">{flow.date}</div>
-                        </div>
-                        <div className="font-bold text-green-600">
-                          {formatCurrency(flow.amount)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Financing Activities */}
+              <TableRow className="bg-purple-50">
+                <TableCell className="font-bold text-purple-800">CASH FLOWS FROM FINANCING ACTIVITIES</TableCell>
+                <TableCell></TableCell>
+              </TableRow>
+              
+              <TableRow>
+                <TableCell className="pl-4">Loan proceeds</TableCell>
+                <TableCell className="text-right">
+                  {formatCurrency(reportData.loan_proceeds || 0)}
+                </TableCell>
+              </TableRow>
+              
+              <TableRow>
+                <TableCell className="pl-4">Loan repayments</TableCell>
+                <TableCell className="text-right">
+                  {formatCurrency(reportData.loan_repayments || 0)}
+                </TableCell>
+              </TableRow>
+              
+              <TableRow className="border-t">
+                <TableCell className="font-medium">Net Cash from Financing Activities</TableCell>
+                <TableCell className="text-right font-medium">
+                  {formatCurrency(reportData.financing_cash_flow || 0)}
+                </TableCell>
+              </TableRow>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-red-600">Projected Cash Outflows</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {cashFlowData.forecast.projectedOutflows.map((flow, index) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                        <div>
-                          <div className="font-medium">{flow.description}</div>
-                          <div className="text-sm text-gray-600">{flow.date}</div>
-                        </div>
-                        <div className="font-bold text-red-600">
-                          {formatCurrency(Math.abs(flow.amount))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+              {/* Net Change in Cash */}
+              <TableRow className="bg-orange-50 border-t-4 border-orange-600">
+                <TableCell className="font-bold text-orange-800">NET CHANGE IN CASH</TableCell>
+                <TableCell className="text-right font-bold text-orange-800">
+                  {formatCurrency(reportData.net_cash_flow || 0)}
+                </TableCell>
+              </TableRow>
+              
+              <TableRow>
+                <TableCell className="font-medium">Cash at beginning of period</TableCell>
+                <TableCell className="text-right font-medium">
+                  {formatCurrency(reportData.beginning_cash || 0)}
+                </TableCell>
+              </TableRow>
+              
+              <TableRow className="border-t-2 border-gray-600">
+                <TableCell className="font-bold">Cash at end of period</TableCell>
+                <TableCell className="text-right font-bold">
+                  {formatCurrency((reportData.beginning_cash || 0) + (reportData.net_cash_flow || 0))}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-            {/* Cash Flow Timeline */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Cash Flow Timeline</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="text-center text-gray-600">
-                    <LineChart className="w-12 h-12 mx-auto mb-2" />
-                    <p>Interactive cash flow timeline will be displayed here</p>
-                    <p className="text-sm">Showing projected cash position over time</p>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <div className="font-bold">Week 1</div>
-                      <div className="text-green-600">+$12,450</div>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <div className="font-bold">Week 2</div>
-                      <div className="text-red-600">-$8,200</div>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <div className="font-bold">Week 3</div>
-                      <div className="text-green-600">+$15,750</div>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <div className="font-bold">Week 4</div>
-                      <div className="text-red-600">-$5,100</div>
-                    </div>
-                  </div>
+      {/* Additional Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Cash Flow Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-medium mb-2">Key Metrics</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Operating Cash Flow Margin:</span>
+                  <span className="font-medium">
+                    {reportData.total_revenue && reportData.total_revenue > 0 
+                      ? ((reportData.operating_cash_flow / reportData.total_revenue) * 100).toFixed(1) + '%'
+                      : '0.0%'
+                    }
+                  </span>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex justify-between">
+                  <span>Free Cash Flow:</span>
+                  <span className="font-medium">
+                    {formatCurrency((reportData.operating_cash_flow || 0) - (reportData.capital_expenditures || 0))}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-medium mb-2">Cash Flow Trends</h4>
+              <div className="text-center text-gray-600">
+                <LineChart className="w-12 h-12 mx-auto mb-2" />
+                <p>Interactive cash flow chart will be displayed here</p>
+              </div>
+            </div>
           </div>
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };
