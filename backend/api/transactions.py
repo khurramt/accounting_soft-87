@@ -64,6 +64,7 @@ async def get_transactions(
     max_amount: Optional[float] = Query(None),
     is_posted: Optional[bool] = Query(None),
     is_void: Optional[bool] = Query(None),
+    recent: Optional[bool] = Query(None, description="Get recent transactions only"),
     sort_by: str = Query("transaction_date"),
     sort_order: str = Query("desc"),
     page: int = Query(1, ge=1),
@@ -79,6 +80,12 @@ async def get_transactions(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to this company"
             )
+        
+        # If recent=true, limit to 10 most recent transactions
+        if recent:
+            page_size = min(page_size, 10)
+            sort_by = "created_at"
+            sort_order = "desc"
         
         filters = TransactionSearchFilters(
             search=search,
