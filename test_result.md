@@ -555,15 +555,18 @@
 
   - task: "Dashboard Integration - Phase 2.1"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/components/dashboard/Dashboard.js, /app/frontend/src/services/dashboardService.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "main"
           comment: "🎯 PHASE 2.1 DASHBOARD INTEGRATION COMPLETED: Dashboard component successfully integrated with backend APIs for real-time data display. ✅ COMPLETED: 1) Dashboard.js uses dashboardService.getDashboardSummary() to fetch data from GET /api/companies/{id}/reports/dashboard with proper date range filtering 2) Recent transactions loaded via dashboardService.getRecentTransactions() using GET /api/companies/{id}/transactions?recent=true 3) Outstanding invoices loaded via dashboardService.getOutstandingInvoices() using GET /api/companies/{id}/invoices?status=outstanding 4) Dashboard displays real-time financial data including total income, expenses, net income, outstanding invoices, accounts receivable aging, recent transactions, and system alerts 5) Proper error handling, loading states, and refresh functionality implemented 6) Real-time data updates when date range changes with company-scoped data access. Dashboard ready for comprehensive testing of integrated experience with backend APIs."
+        - working: false
+          agent: "testing"
+          comment: "Testing revealed that the Dashboard integration is not working correctly. The login and company selection processes work, but the dashboard data fails to load. Console logs show API calls are being made to the correct endpoints (/companies/{id}/reports/dashboard, /companies/{id}/transactions/, /companies/{id}/invoices/), but there's a JavaScript error: 'transaction.total_amount.toFixed is not a function'. This suggests that the data returned from the API is not in the expected format. The dashboard shows a loading spinner but never displays the actual data. The Quick Actions section is visible, but the stats cards, recent transactions, and other dashboard components don't render properly."
 
   - task: "Reports Integration - Phase 2.2"
     implemented: true
