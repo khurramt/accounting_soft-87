@@ -30,6 +30,10 @@ apiClient.interceptors.request.use(
     const token = localStorage.getItem('qb_access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      // Log token for debugging
+      console.log('Using token for request:', config.url);
+    } else {
+      console.warn('No token found for request:', config.url);
     }
     return config;
   },
