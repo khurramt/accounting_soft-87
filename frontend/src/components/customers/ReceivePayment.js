@@ -103,12 +103,45 @@ const ReceivePayment = () => {
     return paymentData.selectedInvoices.reduce((sum, inv) => sum + inv.amount, 0);
   };
 
-  const selectedCustomer = mockCustomers.find(c => c.id === paymentData.customer);
-  const customerInvoices = mockInvoices.filter(inv => inv.customer === selectedCustomer?.name);
+  const selectedCustomer = customers.find(c => c.customer_id === paymentData.customer);
 
-  const handleSave = () => {
-    console.log("Saving payment:", paymentData);
-    navigate("/customers");
+  const handleSave = async () => {
+    if (!currentCompany) {
+      setError('No company selected');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      // Validate required fields
+      if (!paymentData.customer) {
+        setError('Please select a customer');
+        return;
+      }
+
+      if (paymentData.selectedInvoices.length === 0) {
+        setError('Please select at least one invoice to apply payment to');
+        return;
+      }
+
+      // Create payment via API
+      const response = await paymentService.createPayment(currentCompany.company_id, paymentData);
+      
+      console.log('Payment created successfully:', response);
+      navigate("/customers", { 
+        state: { 
+          message: 'Payment recorded successfully',
+          type: 'success' 
+        }
+      });
+    } catch (err) {
+      console.error('Error creating payment:', err);
+      setError(err.response?.data?.detail || 'Failed to record payment');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
