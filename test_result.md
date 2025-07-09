@@ -570,15 +570,18 @@
 
   - task: "Reports Integration - Phase 2.2"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/services/reportService.js, /app/frontend/src/components/reports/ProfitLossReport.js, /app/frontend/src/components/reports/BalanceSheetReport.js, /app/frontend/src/components/reports/CashFlowReport.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "main"
           comment: "🎯 PHASE 2.2 REPORTS INTEGRATION COMPLETED: Created comprehensive report service layer and identified existing reports components ready for backend API integration. ✅ COMPLETED: 1) Created reportService.js with all report API operations (profit-loss, balance-sheet, cash-flow, trial-balance, AR/AP aging reports) 2) Backend APIs available at /companies/{id}/reports/ endpoints with comprehensive financial reporting capabilities 3) Frontend components (ProfitLossReport.js, BalanceSheetReport.js, CashFlowReport.js) exist with mock data and professional UI design 4) Need to integrate existing report components with new reportService to use real backend APIs instead of mock data 5) All report components have advanced filtering, export functionality, and responsive design ready for API integration. Reports backend APIs confirmed working with dashboard endpoints. Ready for comprehensive testing of Reports Integration to replace mock data with real backend API calls."
+        - working: false
+          agent: "testing"
+          comment: "Unable to test the Reports Integration due to issues with the Dashboard Integration. The testing process successfully logged in and reached the company selection screen, but encountered errors when trying to navigate to the dashboard. Since the dashboard is not loading properly due to a JavaScript error ('transaction.total_amount.toFixed is not a function'), we couldn't proceed to test the Reports functionality. The API calls to the backend endpoints are being made correctly, but the data format appears to be incompatible with what the frontend components expect. This suggests that either the backend API response format needs to be adjusted or the frontend components need to be updated to handle the actual data format returned by the API."
     implemented: true
     working: true
     file: "/app/frontend/src/components/dashboard/Dashboard.js, /app/frontend/src/services/dashboardService.js"
