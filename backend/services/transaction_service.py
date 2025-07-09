@@ -659,6 +659,9 @@ class PaymentService(BaseListService):
                 transaction.status = TransactionStatus.PAID
             elif transaction.balance_due < transaction.total_amount:
                 transaction.status = TransactionStatus.PARTIALLY_PAID
+            
+            # Flush the changes to database
+            await db.flush()
 
 class RecurringTransactionService(BaseListService):
     """Service for recurring transaction management"""
