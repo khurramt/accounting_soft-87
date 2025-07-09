@@ -578,7 +578,7 @@
     file: "/app/frontend/src/services/reportService.js, /app/frontend/src/components/reports/ProfitLossReport.js, /app/frontend/src/components/reports/BalanceSheetReport.js, /app/frontend/src/components/reports/CashFlowReport.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
@@ -586,6 +586,9 @@
         - working: false
           agent: "testing"
           comment: "Unable to test the Reports Integration due to issues with the Dashboard Integration. The testing process successfully logged in and reached the company selection screen, but encountered errors when trying to navigate to the dashboard. Since the dashboard is not loading properly due to a JavaScript error ('transaction.total_amount.toFixed is not a function'), we couldn't proceed to test the Reports functionality. The API calls to the backend endpoints are being made correctly, but the data format appears to be incompatible with what the frontend components expect. This suggests that either the backend API response format needs to be adjusted or the frontend components need to be updated to handle the actual data format returned by the API."
+        - working: false
+          agent: "main"
+          comment: "🔧 PHASE 2.2 REPORTS INTEGRATION ISSUE IDENTIFIED: Analysis confirms that while reportService.js is fully implemented with comprehensive API methods for all report types, the report components (ProfitLossReport.js, BalanceSheetReport.js, CashFlowReport.js) are still using mock data instead of actual backend API integration. Components need to be updated to: 1) Import and use reportService.js, 2) Add useCompany hook for company context, 3) Implement useEffect for data loading, 4) Replace mock data with real API calls, 5) Add proper loading states and error handling. This is the missing piece that prevents Reports Integration from working. Ready to update components to use real backend APIs."
     implemented: true
     working: true
     file: "/app/frontend/src/components/dashboard/Dashboard.js, /app/frontend/src/services/dashboardService.js"
