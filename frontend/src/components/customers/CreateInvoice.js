@@ -147,19 +147,88 @@ const CreateInvoice = () => {
     return calculateSubtotal() + calculateTax();
   };
 
-  const handleSave = () => {
-    console.log("Saving invoice:", invoiceData);
-    // Here you would typically save to backend
-    navigate("/customers");
+  const handleSave = async () => {
+    if (!currentCompany) {
+      setError('No company selected');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      // Validate required fields
+      if (!invoiceData.customer) {
+        setError('Please select a customer');
+        return;
+      }
+
+      if (invoiceData.items.length === 0 || !invoiceData.items.some(item => item.item)) {
+        setError('Please add at least one item');
+        return;
+      }
+
+      // Create invoice via API
+      const response = await invoiceService.createInvoice(currentCompany.company_id, invoiceData);
+      
+      console.log('Invoice created successfully:', response);
+      navigate("/customers", { 
+        state: { 
+          message: 'Invoice created successfully',
+          type: 'success' 
+        }
+      });
+    } catch (err) {
+      console.error('Error creating invoice:', err);
+      setError(err.response?.data?.detail || 'Failed to create invoice');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleSend = () => {
-    console.log("Sending invoice:", invoiceData);
-    // Here you would typically send the invoice
-    navigate("/customers");
+  const handleSend = async () => {
+    if (!currentCompany) {
+      setError('No company selected');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      // Validate required fields
+      if (!invoiceData.customer) {
+        setError('Please select a customer');
+        return;
+      }
+
+      if (invoiceData.items.length === 0 || !invoiceData.items.some(item => item.item)) {
+        setError('Please add at least one item');
+        return;
+      }
+
+      // Create invoice via API
+      const response = await invoiceService.createInvoice(currentCompany.company_id, invoiceData);
+      
+      // Send invoice email
+      await invoiceService.sendInvoiceEmail(currentCompany.company_id, response.transaction_id);
+      
+      console.log('Invoice created and sent successfully:', response);
+      navigate("/customers", { 
+        state: { 
+          message: 'Invoice created and sent successfully',
+          type: 'success' 
+        }
+      });
+    } catch (err) {
+      console.error('Error creating/sending invoice:', err);
+      setError(err.response?.data?.detail || 'Failed to create and send invoice');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const selectedCustomer = mockCustomers.find(c => c.id === invoiceData.customer);
+  const selectedCustomer = customers.find(c => c.customer_id === invoiceData.customer);
 
   return (
     <div className="p-6 space-y-6">
