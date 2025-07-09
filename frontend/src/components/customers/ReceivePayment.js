@@ -274,27 +274,27 @@ const ReceivePayment = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {customerInvoices.map((invoice) => (
-                        <TableRow key={invoice.id}>
+                      {invoices.map((invoice) => (
+                        <TableRow key={invoice.transaction_id}>
                           <TableCell>
                             <input
                               type="checkbox"
-                              checked={paymentData.selectedInvoices.some(inv => inv.id === invoice.id)}
-                              onChange={() => handleInvoiceSelection(invoice.id, invoice.amount)}
+                              checked={paymentData.selectedInvoices.some(inv => inv.id === invoice.transaction_id)}
+                              onChange={() => handleInvoiceSelection(invoice.transaction_id, invoice.total_amount)}
                               className="rounded"
                             />
                           </TableCell>
-                          <TableCell>{invoice.date}</TableCell>
-                          <TableCell>{invoice.number}</TableCell>
-                          <TableCell>${invoice.amount.toFixed(2)}</TableCell>
-                          <TableCell>${invoice.amount.toFixed(2)}</TableCell>
+                          <TableCell>{invoice.transaction_date}</TableCell>
+                          <TableCell>{invoice.transaction_number}</TableCell>
+                          <TableCell>${invoice.total_amount.toFixed(2)}</TableCell>
+                          <TableCell>${invoice.balance_due?.toFixed(2) || invoice.total_amount.toFixed(2)}</TableCell>
                           <TableCell>
                             <Input
                               type="number"
                               step="0.01"
                               placeholder="0.00"
                               className="w-24"
-                              disabled={!paymentData.selectedInvoices.some(inv => inv.id === invoice.id)}
+                              disabled={!paymentData.selectedInvoices.some(inv => inv.id === invoice.transaction_id)}
                             />
                           </TableCell>
                         </TableRow>
