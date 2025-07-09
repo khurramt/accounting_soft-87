@@ -12,6 +12,7 @@ from models.transactions import TransactionType
 from typing import List, Optional
 import structlog
 from datetime import date
+from decimal import Decimal
 
 logger = structlog.get_logger()
 
