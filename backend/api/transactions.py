@@ -108,8 +108,15 @@ async def get_transactions(
             total_pages=(total + page_size - 1) // page_size
         )
         
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
     except Exception as e:
-        logger.error("Failed to get transactions", error=str(e))
+        logger.error("Failed to get transactions", error=str(e), company_id=company_id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get transactions"
