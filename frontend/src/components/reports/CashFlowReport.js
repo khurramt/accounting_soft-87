@@ -97,7 +97,7 @@ const CashFlowReport = () => {
     };
     
     loadReportData();
-  }, [currentCompany, dateRange, reportBasis, method, reportFormat]);
+  }, [currentCompany, companyLoading, companyError, dateRange, reportBasis, method, reportFormat]);
 
   // Helper function to get date range
   const getDateRange = (range) => {
