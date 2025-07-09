@@ -322,7 +322,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium">${transaction.total_amount.toFixed(2)}</div>
+                        <div className="font-medium">${formatCurrency(transaction.total_amount)}</div>
                         <div className="text-sm text-gray-600">{transaction.transaction_date}</div>
                       </div>
                       <Badge 
