@@ -376,9 +376,9 @@ const CreateInvoice = () => {
                               <SelectValue placeholder="Select item" />
                             </SelectTrigger>
                             <SelectContent>
-                              {mockItems.map((mockItem) => (
-                                <SelectItem key={mockItem.id} value={mockItem.name}>
-                                  {mockItem.name}
+                              {items.map((item) => (
+                                <SelectItem key={item.id} value={item.name}>
+                                  {item.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>
