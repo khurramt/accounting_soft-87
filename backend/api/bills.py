@@ -80,7 +80,7 @@ async def get_bills(
         filters = TransactionSearchFilters(
             search=search,
             transaction_type=TransactionType.BILL,
-            status=status,
+            status=transaction_status,
             vendor_id=vendor_id,
             start_date=start_date,
             end_date=end_date,
