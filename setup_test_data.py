@@ -180,100 +180,100 @@ def create_accounts():
     print("\n🔍 Creating test accounts...")
     headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
     
-    # Create income account
-    income_payload = {
-        "account_name": "Test Income Account",
-        "account_type": "income",
+    # Create revenue account
+    revenue_payload = {
+        "account_name": "Test Revenue Account",
+        "account_type": "revenue",
         "account_number": "4000",
-        "description": "Test income account for API testing",
+        "description": "Test revenue account for API testing",
         "is_active": True
     }
     
-    income_response = requests.post(
+    revenue_response = requests.post(
         f"{API_URL}/companies/{COMPANY_ID}/accounts/", 
         headers=headers, 
-        json=income_payload, 
+        json=revenue_payload, 
         timeout=TIMEOUT
     )
     
-    income_account_id = None
-    if income_response.status_code == 201:
-        income_data = income_response.json()
-        income_account_id = income_data["account_id"]
-        print(f"✅ Created income account with ID: {income_account_id}")
+    revenue_account_id = None
+    if revenue_response.status_code == 201:
+        revenue_data = revenue_response.json()
+        revenue_account_id = revenue_data["account_id"]
+        print(f"✅ Created revenue account with ID: {revenue_account_id}")
     else:
-        print(f"❌ Failed to create income account: Status code {income_response.status_code}")
+        print(f"❌ Failed to create revenue account: Status code {revenue_response.status_code}")
         try:
-            print(f"Response: {income_response.json()}")
+            print(f"Response: {revenue_response.json()}")
         except:
-            print(f"Response: {income_response.text}")
+            print(f"Response: {revenue_response.text}")
     
-    # Create expense account
-    expense_payload = {
-        "account_name": "Test Expense Account",
-        "account_type": "expense",
+    # Create expenses account
+    expenses_payload = {
+        "account_name": "Test Expenses Account",
+        "account_type": "expenses",
         "account_number": "5000",
-        "description": "Test expense account for API testing",
+        "description": "Test expenses account for API testing",
         "is_active": True
     }
     
-    expense_response = requests.post(
+    expenses_response = requests.post(
         f"{API_URL}/companies/{COMPANY_ID}/accounts/", 
         headers=headers, 
-        json=expense_payload, 
+        json=expenses_payload, 
         timeout=TIMEOUT
     )
     
-    expense_account_id = None
-    if expense_response.status_code == 201:
-        expense_data = expense_response.json()
-        expense_account_id = expense_data["account_id"]
-        print(f"✅ Created expense account with ID: {expense_account_id}")
+    expenses_account_id = None
+    if expenses_response.status_code == 201:
+        expenses_data = expenses_response.json()
+        expenses_account_id = expenses_data["account_id"]
+        print(f"✅ Created expenses account with ID: {expenses_account_id}")
     else:
-        print(f"❌ Failed to create expense account: Status code {expense_response.status_code}")
+        print(f"❌ Failed to create expenses account: Status code {expenses_response.status_code}")
         try:
-            print(f"Response: {expense_response.json()}")
+            print(f"Response: {expenses_response.json()}")
         except:
-            print(f"Response: {expense_response.text}")
+            print(f"Response: {expenses_response.text}")
     
-    # Create bank account
-    bank_payload = {
-        "account_name": "Test Bank Account",
-        "account_type": "bank",
+    # Create assets account
+    assets_payload = {
+        "account_name": "Test Assets Account",
+        "account_type": "assets",
         "account_number": "1000",
-        "description": "Test bank account for API testing",
+        "description": "Test assets account for API testing",
         "is_active": True
     }
     
-    bank_response = requests.post(
+    assets_response = requests.post(
         f"{API_URL}/companies/{COMPANY_ID}/accounts/", 
         headers=headers, 
-        json=bank_payload, 
+        json=assets_payload, 
         timeout=TIMEOUT
     )
     
-    bank_account_id = None
-    if bank_response.status_code == 201:
-        bank_data = bank_response.json()
-        bank_account_id = bank_data["account_id"]
-        print(f"✅ Created bank account with ID: {bank_account_id}")
+    assets_account_id = None
+    if assets_response.status_code == 201:
+        assets_data = assets_response.json()
+        assets_account_id = assets_data["account_id"]
+        print(f"✅ Created assets account with ID: {assets_account_id}")
     else:
-        print(f"❌ Failed to create bank account: Status code {bank_response.status_code}")
+        print(f"❌ Failed to create assets account: Status code {assets_response.status_code}")
         try:
-            print(f"Response: {bank_response.json()}")
+            print(f"Response: {assets_response.json()}")
         except:
-            print(f"Response: {bank_response.text}")
+            print(f"Response: {assets_response.text}")
     
-    return income_account_id, expense_account_id, bank_account_id
+    return revenue_account_id, expenses_account_id, assets_account_id
 
-def save_test_data(customer_id, vendor_id, income_account_id, expense_account_id, bank_account_id):
+def save_test_data(customer_id, vendor_id, revenue_account_id, expenses_account_id, assets_account_id):
     """Save test data to a file for use in backend_test.py"""
     test_data = {
         "customer_id": customer_id,
         "vendor_id": vendor_id,
-        "income_account_id": income_account_id,
-        "expense_account_id": expense_account_id,
-        "bank_account_id": bank_account_id
+        "revenue_account_id": revenue_account_id,
+        "expenses_account_id": expenses_account_id,
+        "assets_account_id": assets_account_id
     }
     
     with open('/app/test_data.json', 'w') as f:
@@ -287,10 +287,10 @@ if __name__ == "__main__":
     if login() and get_company_id():
         customer_id = create_customer()
         vendor_id = create_vendor()
-        income_account_id, expense_account_id, bank_account_id = create_accounts()
+        revenue_account_id, expenses_account_id, assets_account_id = create_accounts()
         
-        if customer_id and vendor_id and income_account_id and expense_account_id and bank_account_id:
-            save_test_data(customer_id, vendor_id, income_account_id, expense_account_id, bank_account_id)
+        if customer_id and vendor_id and revenue_account_id and expenses_account_id and assets_account_id:
+            save_test_data(customer_id, vendor_id, revenue_account_id, expenses_account_id, assets_account_id)
             print("\n✅ Test data setup completed successfully.")
         else:
             print("\n❌ Test data setup failed. Some entities could not be created.")
