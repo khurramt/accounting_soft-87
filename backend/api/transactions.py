@@ -83,7 +83,7 @@ async def get_transactions(
         filters = TransactionSearchFilters(
             search=search,
             transaction_type=transaction_type,
-            status=status,
+            status=transaction_status,
             customer_id=customer_id,
             vendor_id=vendor_id,
             start_date=start_date,
