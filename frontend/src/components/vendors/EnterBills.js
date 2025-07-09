@@ -298,8 +298,10 @@ const EnterBills = () => {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h4 className="font-semibold mb-2">Vendor:</h4>
                 <div className="text-sm space-y-1">
-                  <p className="font-medium">{selectedVendor.name}</p>
-                  <p>{selectedVendor.address}</p>
+                  <p className="font-medium">{selectedVendor.display_name}</p>
+                  <p>{selectedVendor.address?.line1 || ''}</p>
+                  <p>{selectedVendor.address?.line2 || ''}</p>
+                  <p>{selectedVendor.address?.city || ''}, {selectedVendor.address?.state || ''} {selectedVendor.address?.zip_code || ''}</p>
                   <p>{selectedVendor.email}</p>
                   <p>{selectedVendor.phone}</p>
                 </div>
