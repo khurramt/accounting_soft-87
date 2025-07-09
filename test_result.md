@@ -49,10 +49,10 @@
 ##
 ## test_plan:
   current_focus:
-    - "Test Dashboard Integration - Fixed JavaScript error with formatCurrency() utility function"
-    - "Test Phase 2.1 Dashboard with real backend API integration after data format fixes"
-    - "Test Phase 2.2 Reports Integration with backend API connectivity"
-    - "Verify all currency formatting and data type handling works correctly"
+    - "Update Phase 2.2 Reports Integration components to use real backend APIs instead of mock data"
+    - "Integrate ProfitLossReport.js, BalanceSheetReport.js, and CashFlowReport.js with reportService.js"
+    - "Test Phase 2.2 Reports Integration with backend API connectivity after components are updated"
+    - "Verify all report components load data correctly and handle data format properly"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
