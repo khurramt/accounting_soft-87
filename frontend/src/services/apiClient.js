@@ -42,10 +42,24 @@ const apiClient = axios.create({
 
 // Global axios default to force HTTPS
 if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-  axios.defaults.transformRequest = [function (data, headers) {
-    // Force HTTPS on any axios request
-    return data;
-  }];
+  // Global axios interceptor to catch ALL axios requests (even ones not using our configured instances)
+  axios.interceptors.request.use(
+    (config) => {
+      // Force HTTPS for any axios request anywhere in the app
+      if (config.url && config.url.startsWith('http:')) {
+        config.url = config.url.replace('http:', 'https:');
+        console.log('Global interceptor fixed HTTP URL:', config.url);
+      }
+      
+      if (config.baseURL && config.baseURL.startsWith('http:')) {
+        config.baseURL = config.baseURL.replace('http:', 'https:');
+        console.log('Global interceptor fixed HTTP baseURL:', config.baseURL);
+      }
+      
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
 }
 
 // Comprehensive request interceptor to add auth token and force HTTPS
