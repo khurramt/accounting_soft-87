@@ -2527,11 +2527,25 @@ if __name__ == "__main__":
         invoices_result = test_invoices_api_with_status_filter()
         transactions_result = test_transactions_api_with_recent_filter()
         
+        # Reports Integration API tests (focus of this testing session)
+        print("\n===== REPORTS INTEGRATION API TESTS =====")
+        profit_loss_result = test_profit_loss_report()
+        balance_sheet_result = test_balance_sheet_report()
+        cash_flow_result = test_cash_flow_report()
+        reports_error_result = test_reports_error_handling()
+        
         # Print summary of fixed API tests
         print("\n📋 Fixed API Test Summary:")
         print(f"Dashboard API: {'✅ PASSED' if dashboard_result else '❌ FAILED'}")
         print(f"Invoices API with status filter: {'✅ PASSED' if invoices_result else '❌ FAILED'}")
         print(f"Transactions API with recent filter: {'✅ PASSED' if transactions_result else '❌ FAILED'}")
+        
+        # Print summary of Reports Integration tests
+        print("\n📋 Reports Integration Test Summary:")
+        print(f"Profit & Loss Report API: {'✅ PASSED' if profit_loss_result else '❌ FAILED'}")
+        print(f"Balance Sheet Report API: {'✅ PASSED' if balance_sheet_result else '❌ FAILED'}")
+        print(f"Cash Flow Report API: {'✅ PASSED' if cash_flow_result else '❌ FAILED'}")
+        print(f"Reports Error Handling: {'✅ PASSED' if reports_error_result else '❌ FAILED'}")
         
         # Transaction Management API tests
         print("\n===== TRANSACTION MANAGEMENT API TESTS =====")
