@@ -53,7 +53,8 @@
     - "HTTPS Mixed Content Error Resolution Verification"
     - "Company Selection and Authentication Flow"
     - "Reports API Integration Verification"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Reports Integration - Phase 2.2"
   test_all: false
   test_priority: "high_first"
 ##
