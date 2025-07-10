@@ -1750,11 +1750,7 @@ def test_profit_loss_report():
         # Test with different parameters
         test_cases = [
             {
-                "name": "Basic P&L report",
-                "params": {}
-            },
-            {
-                "name": "P&L with date range",
+                "name": "Basic P&L report with required dates",
                 "params": {
                     "start_date": (date.today() - timedelta(days=90)).isoformat(),
                     "end_date": date.today().isoformat()
@@ -1765,8 +1761,18 @@ def test_profit_loss_report():
                 "params": {
                     "start_date": (date.today() - timedelta(days=90)).isoformat(),
                     "end_date": date.today().isoformat(),
+                    "comparison_type": "previous_period",
                     "comparison_start_date": (date.today() - timedelta(days=180)).isoformat(),
                     "comparison_end_date": (date.today() - timedelta(days=91)).isoformat()
+                }
+            },
+            {
+                "name": "P&L with custom formatting",
+                "params": {
+                    "start_date": (date.today() - timedelta(days=30)).isoformat(),
+                    "end_date": date.today().isoformat(),
+                    "include_subtotals": "true",
+                    "show_cents": "false"
                 }
             }
         ]
@@ -1833,11 +1839,7 @@ def test_balance_sheet_report():
         # Test with different parameters
         test_cases = [
             {
-                "name": "Basic Balance Sheet report",
-                "params": {}
-            },
-            {
-                "name": "Balance Sheet as of specific date",
+                "name": "Basic Balance Sheet report with required as_of_date",
                 "params": {
                     "as_of_date": date.today().isoformat()
                 }
@@ -1847,6 +1849,14 @@ def test_balance_sheet_report():
                 "params": {
                     "as_of_date": date.today().isoformat(),
                     "comparison_date": (date.today() - timedelta(days=90)).isoformat()
+                }
+            },
+            {
+                "name": "Balance Sheet with custom formatting",
+                "params": {
+                    "as_of_date": date.today().isoformat(),
+                    "include_subtotals": "true",
+                    "show_cents": "false"
                 }
             }
         ]
@@ -1913,11 +1923,7 @@ def test_cash_flow_report():
         # Test with different parameters
         test_cases = [
             {
-                "name": "Basic Cash Flow report",
-                "params": {}
-            },
-            {
-                "name": "Cash Flow with date range",
+                "name": "Basic Cash Flow report with required dates",
                 "params": {
                     "start_date": (date.today() - timedelta(days=90)).isoformat(),
                     "end_date": date.today().isoformat()
@@ -1937,6 +1943,15 @@ def test_cash_flow_report():
                     "start_date": (date.today() - timedelta(days=90)).isoformat(),
                     "end_date": date.today().isoformat(),
                     "method": "direct"
+                }
+            },
+            {
+                "name": "Cash Flow with custom formatting",
+                "params": {
+                    "start_date": (date.today() - timedelta(days=30)).isoformat(),
+                    "end_date": date.today().isoformat(),
+                    "include_subtotals": "true",
+                    "show_cents": "false"
                 }
             }
         ]
