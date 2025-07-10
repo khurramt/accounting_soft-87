@@ -3,17 +3,20 @@ import axios from 'axios';
 // Get backend URL from environment - force HTTPS for production
 let API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-// Debug logging to understand the environment
-console.log('Initial API_BASE_URL:', API_BASE_URL);
-console.log('Window location protocol:', typeof window !== 'undefined' ? window.location.protocol : 'N/A');
+// Comprehensive HTTPS enforcement
+const enforceHttps = (url) => {
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    return url.replace(/^http:/, 'https:');
+  }
+  return url;
+};
 
 // Force HTTPS if we're on a production domain or if environment variable is HTTPS
 const isProductionOrHTTPS = typeof window !== 'undefined' && 
   (window.location.protocol === 'https:' || API_BASE_URL.startsWith('https:'));
 
 if (isProductionOrHTTPS) {
-  // Ensure the URL uses HTTPS
-  API_BASE_URL = API_BASE_URL.replace('http:', 'https:');
+  API_BASE_URL = enforceHttps(API_BASE_URL);
   
   // Additional safety check - if the URL somehow doesn't start with https, force it
   if (!API_BASE_URL.startsWith('https:')) {
@@ -23,7 +26,9 @@ if (isProductionOrHTTPS) {
 
 const SECURE_API_BASE_URL = API_BASE_URL;
 
-// Final debug logging
+// Debug logging to understand the environment
+console.log('Initial API_BASE_URL:', process.env.REACT_APP_BACKEND_URL);
+console.log('Window location protocol:', typeof window !== 'undefined' ? window.location.protocol : 'N/A');
 console.log('Final SECURE_API_BASE_URL:', SECURE_API_BASE_URL);
 
 // Create axios instance with base configuration
@@ -34,6 +39,14 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Global axios default to force HTTPS
+if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+  axios.defaults.transformRequest = [function (data, headers) {
+    // Force HTTPS on any axios request
+    return data;
+  }];
+}
 
 // Request interceptor to add auth token and force HTTPS
 apiClient.interceptors.request.use(
