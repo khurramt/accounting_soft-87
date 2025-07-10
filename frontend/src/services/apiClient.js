@@ -1,24 +1,19 @@
 import axios from 'axios';
 
-// Get backend URL from environment
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+// Get backend URL from environment - force HTTPS for production
+let API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-// Ensure URL uses HTTPS if the environment URL is HTTPS
-const ensureHttps = (url) => {
-  // If we're running on the preview domain with HTTPS, ensure API calls use HTTPS
-  if (window.location.protocol === 'https:' && url.startsWith('http:')) {
-    return url.replace('http:', 'https:');
-  }
-  return url;
-};
-
-// Apply HTTPS if needed - force HTTPS for production environment
-let SECURE_API_BASE_URL = ensureHttps(API_BASE_URL);
-
-// Additional check: if the current page is HTTPS, force API calls to HTTPS
+// Force HTTPS if we're on a production domain
 if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-  SECURE_API_BASE_URL = SECURE_API_BASE_URL.replace('http:', 'https:');
+  API_BASE_URL = API_BASE_URL.replace('http:', 'https:');
 }
+
+// Additional safety check - if the URL doesn't start with https and we're on https, force it
+if (typeof window !== 'undefined' && window.location.protocol === 'https:' && !API_BASE_URL.startsWith('https:')) {
+  API_BASE_URL = 'https://fc2dec04-acbe-4f21-9232-88b3471a0632.preview.emergentagent.com';
+}
+
+const SECURE_API_BASE_URL = API_BASE_URL;
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
