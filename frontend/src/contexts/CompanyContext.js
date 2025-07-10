@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useAuth } from "./AuthContext";
 import companyService from "../services/companyService";
 
 const CompanyContext = createContext();
@@ -16,6 +17,7 @@ export const CompanyProvider = ({ children }) => {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user, isLoading: authLoading } = useAuth();
 
   // Load companies from backend API
   const loadCompanies = async () => {
@@ -23,25 +25,23 @@ export const CompanyProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      // Wait for token to be available
-      const waitForToken = async () => {
-        let attempts = 0;
-        while (!localStorage.getItem("qb_access_token") && attempts < 10) {
-          console.log("Waiting for token to be available...");
-          await new Promise(resolve => setTimeout(resolve, 500));
-          attempts++;
-        }
-        return localStorage.getItem("qb_access_token");
-      };
-      
-      const token = await waitForToken();
-      if (!token) {
-        console.error("Token not available after waiting");
-        setError("Authentication token not available");
+      // Check if user is authenticated
+      if (!user) {
+        console.log("User not authenticated, skipping company load");
+        setLoading(false);
         return;
       }
       
-      console.log("Token available, loading companies...");
+      // Check if token is available
+      const token = localStorage.getItem("qb_access_token");
+      if (!token) {
+        console.error("No authentication token available");
+        setError("Authentication required");
+        setLoading(false);
+        return;
+      }
+      
+      console.log("Loading companies for authenticated user...");
       const companiesData = await companyService.getCompanies();
       setCompanies(companiesData);
       
@@ -62,15 +62,24 @@ export const CompanyProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Load companies from API on mount
-    loadCompanies();
-
-    // Load current company from localStorage
-    const storedCurrentCompany = localStorage.getItem("qb_current_company");
-    if (storedCurrentCompany) {
-      setCurrentCompany(JSON.parse(storedCurrentCompany));
+    // Only load companies when auth loading is complete and user is authenticated
+    if (!authLoading && user) {
+      loadCompanies();
+    } else if (!authLoading && !user) {
+      // User is not authenticated, clear state
+      setCompanies([]);
+      setCurrentCompany(null);
+      setLoading(false);
     }
-  }, []);
+
+    // Load current company from localStorage only if user is authenticated
+    if (user) {
+      const storedCurrentCompany = localStorage.getItem("qb_current_company");
+      if (storedCurrentCompany) {
+        setCurrentCompany(JSON.parse(storedCurrentCompany));
+      }
+    }
+  }, [user, authLoading]);
 
   const selectCompany = (company) => {
     setCurrentCompany(company);
