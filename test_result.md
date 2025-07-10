@@ -659,11 +659,11 @@
 
   - task: "Reports Integration - Phase 2.2"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/services/reportService.js, /app/frontend/src/components/reports/ProfitLossReport.js, /app/frontend/src/components/reports/BalanceSheetReport.js, /app/frontend/src/components/reports/CashFlowReport.js"
-    stuck_count: 0
+    stuck_count: 5
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "main"
