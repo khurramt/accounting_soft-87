@@ -644,7 +644,7 @@
     implemented: true
     working: false
     file: "/app/frontend/src/services/reportService.js, /app/frontend/src/components/reports/ProfitLossReport.js, /app/frontend/src/components/reports/BalanceSheetReport.js, /app/frontend/src/components/reports/CashFlowReport.js"
-    stuck_count: 3
+    stuck_count: 4
     priority: "high"
     needs_retesting: false
     status_history:
@@ -675,6 +675,9 @@
         - working: false
           agent: "testing"
           comment: "❌ REPORTS INTEGRATION TESTING FAILED - HTTPS MIXED CONTENT ERROR PERSISTS: Comprehensive testing confirms that the HTTPS Mixed Content Error has NOT been resolved despite previous attempts. ✅ AUTHENTICATION WORKS: Login with demo credentials (demo@quickbooks.com / Password123!) succeeds and user reaches company selection page. ❌ CRITICAL MIXED CONTENT ERROR: Browser console shows 'Mixed Content: The page at 'https://...' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint 'http://...'. This request has been blocked.' ❌ NETWORK ANALYSIS: Out of 3 API requests, 2 are HTTPS (login and one companies call) but 1 is HTTP (GET http://.../api/companies/) which gets blocked by browser security. ❌ COMPANY SELECTION BLOCKED: Cannot proceed to test Reports functionality because company loading fails due to blocked HTTP request. ✅ REPORT COMPONENTS READY: All report components (P&L, Balance Sheet, Cash Flow) are properly implemented with routing, loading states, error handling, and UI controls. 🚨 STUCK TASK IDENTIFIED: This is the 3rd failed attempt to resolve this HTTPS issue. Main agent must use WEBSEARCH TOOL to research React HTTPS Mixed Content solutions as current approaches are not working."
+        - working: false
+          agent: "testing"
+          comment: "❌ REPORTS INTEGRATION TESTING FAILED - HTTPS MIXED CONTENT ERROR STILL NOT RESOLVED (4TH ATTEMPT): Comprehensive testing confirms the HTTPS Mixed Content Error PERSISTS despite multiple previous attempts to fix it. ✅ AUTHENTICATION SUCCESS: Login with demo credentials (demo@quickbooks.com / Password123!) works correctly. ❌ CRITICAL MIXED CONTENT ERROR IDENTIFIED: Browser console shows 'Mixed Content: The page at 'https://...' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint 'http://...'. This request has been blocked.' ❌ SPECIFIC ISSUE: Out of 49 total network requests, 44 are HTTPS but 5 are HTTP. The problematic request is 'GET http://.../api/companies/' (with trailing slash) which gets blocked by browser security. ❌ COMPANY SELECTION BLOCKED: Cannot proceed to test Reports functionality because company loading fails due to blocked HTTP request showing 'Error loading companies: Network Error'. ✅ REPORT COMPONENTS READY: All report components (P&L, Balance Sheet, Cash Flow) are properly implemented and accessible via direct navigation. ✅ HTTPS ENFORCEMENT PARTIALLY WORKING: Most requests (44/49) are correctly using HTTPS, but there's still a specific HTTP request to /api/companies/ that's causing the Mixed Content Error. 🚨 CRITICAL ISSUE: This is the 4TH failed attempt to resolve this HTTPS issue. The axios interceptors in both apiClient.js and AuthContext.js are not catching all HTTP requests. Main agent MUST use WEBSEARCH TOOL to research advanced React HTTPS Mixed Content solutions as current approaches are insufficient."
     implemented: true
     working: true
     file: "/app/frontend/src/components/dashboard/Dashboard.js, /app/frontend/src/services/dashboardService.js"
