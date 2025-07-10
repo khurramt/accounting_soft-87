@@ -635,11 +635,11 @@
 
   - task: "Reports Integration - Phase 2.2"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/services/reportService.js, /app/frontend/src/components/reports/ProfitLossReport.js, /app/frontend/src/components/reports/BalanceSheetReport.js, /app/frontend/src/components/reports/CashFlowReport.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
@@ -656,6 +656,9 @@
         - working: true
           agent: "main"
           comment: "🔧 COMPANY CONTEXT INTEGRATION FIXED: Successfully resolved the company context integration issues in all three report components that were causing 403 Forbidden errors. ✅ FIXES APPLIED: 1) Updated ProfitLossReport.js to properly destructure loading and error states from useCompany hook and added comprehensive company context validation 2) Updated BalanceSheetReport.js with the same enhanced company context handling and error checking 3) Updated CashFlowReport.js with proper company context validation and loading state management 4) Added detailed error handling for company context loading states (companyLoading, companyError) 5) Added validation checks for currentCompany existence and currentCompany.id before making API calls 6) Enhanced error messages to provide clear feedback when company context is not available 7) Updated useEffect dependency arrays to include company context loading states 8) Updated refresh functions to validate company context before making API calls. All report components now properly wait for company context to be available and provide clear error messages when company data is not ready. The undefined company ID issue has been resolved by adding proper validation checks. Ready for comprehensive testing of Reports Integration with fixed company context handling."
+        - working: false
+          agent: "testing"
+          comment: "❌ REPORTS INTEGRATION TESTING FAILED: Comprehensive testing revealed critical authentication and token management issues that prevent proper testing of the Reports Integration. While login API calls return 200 (successful), there are persistent 'Token not available after waiting' errors and 'Authentication token not available' messages during company selection. The authentication flow does not complete properly, preventing access to the reports functionality. Key issues identified: 1) Token storage/retrieval inconsistency between frontend and backend, 2) Company context loading failures due to authentication issues, 3) React key prop warnings in CompanySelection component, 4) Authentication flow not completing despite successful login API response. Backend APIs are responding correctly (200 status codes for /auth/login, /auth/me, /companies), but frontend token management is failing. This blocks testing of all report components (P&L, Balance Sheet, Cash Flow) as they require proper company context which depends on authentication. The issue appears to be in the frontend authentication service layer rather than the report components themselves."
     implemented: true
     working: true
     file: "/app/frontend/src/components/dashboard/Dashboard.js, /app/frontend/src/services/dashboardService.js"
