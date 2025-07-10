@@ -82,7 +82,13 @@ apiClient.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('qb_refresh_token');
         if (refreshToken) {
-          const response = await axios.post(`${SECURE_API_BASE_URL}/api/auth/refresh-token`, {
+          // Force HTTPS for refresh token call
+          let refreshUrl = `${SECURE_API_BASE_URL}/api/auth/refresh-token`;
+          if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+            refreshUrl = refreshUrl.replace('http:', 'https:');
+          }
+          
+          const response = await axios.post(refreshUrl, {
             refresh_token: refreshToken,
           });
 
