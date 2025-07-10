@@ -49,12 +49,11 @@
 ##
 ## test_plan:
   current_focus:
-    - "Reports Integration - Profit and Loss Report API"
-    - "Reports Integration - Balance Sheet Report API"
-    - "Reports Integration - Cash Flow Report API"
-    - "Reports Integration - Error Handling"
-  stuck_tasks: 
-    - "Reports Integration - Phase 2.2"
+    - "Reports Integration - Phase 2.2 Frontend Testing"
+    - "HTTPS Mixed Content Error Resolution Verification"
+    - "Company Selection and Authentication Flow"
+    - "Reports API Integration Verification"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 ##
