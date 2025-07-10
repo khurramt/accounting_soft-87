@@ -3,17 +3,28 @@ import axios from 'axios';
 // Get backend URL from environment - force HTTPS for production
 let API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-// Force HTTPS if we're on a production domain
-if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-  API_BASE_URL = API_BASE_URL.replace('http:', 'https:');
-}
+// Debug logging to understand the environment
+console.log('Initial API_BASE_URL:', API_BASE_URL);
+console.log('Window location protocol:', typeof window !== 'undefined' ? window.location.protocol : 'N/A');
 
-// Additional safety check - if the URL doesn't start with https and we're on https, force it
-if (typeof window !== 'undefined' && window.location.protocol === 'https:' && !API_BASE_URL.startsWith('https:')) {
-  API_BASE_URL = 'https://43a39531-f0d7-40d4-b9e6-1c680de1710e.preview.emergentagent.com';
+// Force HTTPS if we're on a production domain or if environment variable is HTTPS
+const isProductionOrHTTPS = typeof window !== 'undefined' && 
+  (window.location.protocol === 'https:' || API_BASE_URL.startsWith('https:'));
+
+if (isProductionOrHTTPS) {
+  // Ensure the URL uses HTTPS
+  API_BASE_URL = API_BASE_URL.replace('http:', 'https:');
+  
+  // Additional safety check - if the URL somehow doesn't start with https, force it
+  if (!API_BASE_URL.startsWith('https:')) {
+    API_BASE_URL = 'https://43a39531-f0d7-40d4-b9e6-1c680de1710e.preview.emergentagent.com';
+  }
 }
 
 const SECURE_API_BASE_URL = API_BASE_URL;
+
+// Final debug logging
+console.log('Final SECURE_API_BASE_URL:', SECURE_API_BASE_URL);
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
