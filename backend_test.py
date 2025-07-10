@@ -1733,6 +1733,323 @@ def test_update_payment():
         print(f"❌ Update payment test failed: {str(e)}")
         return False
 
+# ===== REPORTS API TESTS =====
+
+def test_profit_loss_report():
+    """Test the Profit and Loss report API"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Profit and Loss report test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing Profit and Loss report API...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with different parameters
+        test_cases = [
+            {
+                "name": "Basic P&L report",
+                "params": {}
+            },
+            {
+                "name": "P&L with date range",
+                "params": {
+                    "start_date": (date.today() - timedelta(days=90)).isoformat(),
+                    "end_date": date.today().isoformat()
+                }
+            },
+            {
+                "name": "P&L with comparison period",
+                "params": {
+                    "start_date": (date.today() - timedelta(days=90)).isoformat(),
+                    "end_date": date.today().isoformat(),
+                    "comparison_start_date": (date.today() - timedelta(days=180)).isoformat(),
+                    "comparison_end_date": (date.today() - timedelta(days=91)).isoformat()
+                }
+            }
+        ]
+        
+        for test_case in test_cases:
+            print(f"\n  Testing {test_case['name']}...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/reports/profit-loss",
+                headers=headers,
+                params=test_case["params"],
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            try:
+                data = response.json()
+                print(f"  Response structure: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
+            except:
+                print(f"  Response: {response.text}")
+                return False
+            
+            if response.status_code == 200:
+                # Verify expected structure for P&L report
+                if isinstance(data, dict) and "sections" in data:
+                    sections = data["sections"]
+                    expected_sections = ["Income", "Gross Profit", "Expenses"]
+                    
+                    # Check if we have the expected sections
+                    section_names = [section.get("name", "") for section in sections]
+                    has_expected_sections = any(expected in section_names for expected in expected_sections)
+                    
+                    if has_expected_sections:
+                        print(f"  ✅ {test_case['name']} test passed - Found expected P&L sections")
+                    else:
+                        print(f"  ⚠️ {test_case['name']} test passed but sections may be different: {section_names}")
+                else:
+                    print(f"  ✅ {test_case['name']} test passed - Response received")
+            else:
+                print(f"  ❌ {test_case['name']} test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Profit and Loss report API test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Profit and Loss report test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Profit and Loss report test failed: {str(e)}")
+        return False
+
+def test_balance_sheet_report():
+    """Test the Balance Sheet report API"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Balance Sheet report test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing Balance Sheet report API...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with different parameters
+        test_cases = [
+            {
+                "name": "Basic Balance Sheet report",
+                "params": {}
+            },
+            {
+                "name": "Balance Sheet as of specific date",
+                "params": {
+                    "as_of_date": date.today().isoformat()
+                }
+            },
+            {
+                "name": "Balance Sheet with comparison date",
+                "params": {
+                    "as_of_date": date.today().isoformat(),
+                    "comparison_date": (date.today() - timedelta(days=90)).isoformat()
+                }
+            }
+        ]
+        
+        for test_case in test_cases:
+            print(f"\n  Testing {test_case['name']}...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/reports/balance-sheet",
+                headers=headers,
+                params=test_case["params"],
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            try:
+                data = response.json()
+                print(f"  Response structure: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
+            except:
+                print(f"  Response: {response.text}")
+                return False
+            
+            if response.status_code == 200:
+                # Verify expected structure for Balance Sheet report
+                if isinstance(data, dict) and "sections" in data:
+                    sections = data["sections"]
+                    expected_sections = ["Assets", "Liabilities", "Equity"]
+                    
+                    # Check if we have the expected sections
+                    section_names = [section.get("name", "") for section in sections]
+                    has_expected_sections = any(expected in section_names for expected in expected_sections)
+                    
+                    if has_expected_sections:
+                        print(f"  ✅ {test_case['name']} test passed - Found expected Balance Sheet sections")
+                    else:
+                        print(f"  ⚠️ {test_case['name']} test passed but sections may be different: {section_names}")
+                else:
+                    print(f"  ✅ {test_case['name']} test passed - Response received")
+            else:
+                print(f"  ❌ {test_case['name']} test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Balance Sheet report API test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Balance Sheet report test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Balance Sheet report test failed: {str(e)}")
+        return False
+
+def test_cash_flow_report():
+    """Test the Cash Flow report API"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Cash Flow report test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing Cash Flow report API...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with different parameters
+        test_cases = [
+            {
+                "name": "Basic Cash Flow report",
+                "params": {}
+            },
+            {
+                "name": "Cash Flow with date range",
+                "params": {
+                    "start_date": (date.today() - timedelta(days=90)).isoformat(),
+                    "end_date": date.today().isoformat()
+                }
+            },
+            {
+                "name": "Cash Flow with indirect method",
+                "params": {
+                    "start_date": (date.today() - timedelta(days=90)).isoformat(),
+                    "end_date": date.today().isoformat(),
+                    "method": "indirect"
+                }
+            },
+            {
+                "name": "Cash Flow with direct method",
+                "params": {
+                    "start_date": (date.today() - timedelta(days=90)).isoformat(),
+                    "end_date": date.today().isoformat(),
+                    "method": "direct"
+                }
+            }
+        ]
+        
+        for test_case in test_cases:
+            print(f"\n  Testing {test_case['name']}...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/reports/cash-flow",
+                headers=headers,
+                params=test_case["params"],
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            try:
+                data = response.json()
+                print(f"  Response structure: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
+            except:
+                print(f"  Response: {response.text}")
+                return False
+            
+            if response.status_code == 200:
+                # Verify expected structure for Cash Flow report
+                if isinstance(data, dict) and "sections" in data:
+                    sections = data["sections"]
+                    expected_sections = ["Operating", "Investing", "Financing"]
+                    
+                    # Check if we have the expected sections
+                    section_names = [section.get("name", "") for section in sections]
+                    has_expected_sections = any(expected in section_names for expected in expected_sections)
+                    
+                    if has_expected_sections:
+                        print(f"  ✅ {test_case['name']} test passed - Found expected Cash Flow sections")
+                    else:
+                        print(f"  ⚠️ {test_case['name']} test passed but sections may be different: {section_names}")
+                else:
+                    print(f"  ✅ {test_case['name']} test passed - Response received")
+            else:
+                print(f"  ❌ {test_case['name']} test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Cash Flow report API test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Cash Flow report test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Cash Flow report test failed: {str(e)}")
+        return False
+
+def test_reports_error_handling():
+    """Test error handling for reports APIs"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Reports error handling test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing Reports API error handling...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test cases for error handling
+        error_test_cases = [
+            {
+                "name": "Invalid company ID",
+                "url": f"{API_URL}/companies/invalid-company-id/reports/profit-loss",
+                "expected_status": [403, 404]
+            },
+            {
+                "name": "Missing required parameters",
+                "url": f"{API_URL}/companies/{COMPANY_ID}/reports/profit-loss",
+                "params": {"start_date": "invalid-date"},
+                "expected_status": [400, 422]
+            }
+        ]
+        
+        for test_case in error_test_cases:
+            print(f"\n  Testing {test_case['name']}...")
+            
+            response = requests.get(
+                test_case["url"],
+                headers=headers,
+                params=test_case.get("params", {}),
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code in test_case["expected_status"]:
+                print(f"  ✅ {test_case['name']} test passed - Got expected error status")
+                
+                try:
+                    data = response.json()
+                    if "error" in data or "detail" in data:
+                        print(f"  ✅ Error response includes proper error message")
+                    else:
+                        print(f"  ⚠️ Error response format may be different")
+                except:
+                    print(f"  ⚠️ Error response is not JSON")
+            else:
+                print(f"  ❌ {test_case['name']} test failed: Expected status {test_case['expected_status']}, got {response.status_code}")
+                return False
+        
+        print("✅ Reports API error handling test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Reports error handling test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Reports error handling test failed: {str(e)}")
+        return False
+
 def test_delete_payment():
     """Test deleting a payment"""
     global ACCESS_TOKEN, COMPANY_ID, PAYMENT_ID
