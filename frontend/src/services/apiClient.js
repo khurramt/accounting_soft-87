@@ -48,31 +48,41 @@ if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
   }];
 }
 
-// Request interceptor to add auth token and force HTTPS
+// Comprehensive request interceptor to add auth token and force HTTPS
 apiClient.interceptors.request.use(
   (config) => {
-    // Force HTTPS in production or when page is loaded via HTTPS
+    // Comprehensive HTTPS enforcement for ALL requests
     if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-      if (config.url && !config.url.startsWith('https:')) {
-        if (config.url.startsWith('http:')) {
-          config.url = config.url.replace('http:', 'https:');
-        } else if (config.baseURL && config.baseURL.startsWith('http:')) {
-          config.baseURL = config.baseURL.replace('http:', 'https:');
-        }
+      // Handle absolute URLs in config.url
+      if (config.url && config.url.startsWith('http:')) {
+        config.url = config.url.replace('http:', 'https:');
+        console.log('Fixed HTTP URL in config.url:', config.url);
       }
-      // Also fix any full URLs in the config
+      
+      // Handle baseURL
       if (config.baseURL && config.baseURL.startsWith('http:')) {
         config.baseURL = config.baseURL.replace('http:', 'https:');
+        console.log('Fixed HTTP baseURL:', config.baseURL);
+      }
+      
+      // Handle any constructed URLs - this is critical for catching edge cases
+      const fullUrl = config.baseURL && config.url ? new URL(config.url, config.baseURL).href : config.url;
+      if (fullUrl && fullUrl.startsWith('http:')) {
+        // If somehow the full URL is HTTP, reconstruct with HTTPS
+        const httpsUrl = fullUrl.replace('http:', 'https:');
+        const urlObj = new URL(httpsUrl);
+        config.baseURL = `${urlObj.protocol}//${urlObj.host}`;
+        config.url = urlObj.pathname + urlObj.search + urlObj.hash;
+        console.log('Reconstructed HTTPS URL:', config.baseURL, config.url);
       }
     }
     
     const token = localStorage.getItem('qb_access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      // Log token for debugging
-      console.log('Using token for request:', config.url);
+      console.log('Using token for request:', config.baseURL + config.url);
     } else {
-      console.warn('No token found for request:', config.url);
+      console.warn('No token found for request:', config.baseURL + config.url);
     }
     return config;
   },
