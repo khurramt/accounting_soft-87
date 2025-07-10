@@ -154,6 +154,9 @@
         - working: true
           agent: "testing"
           comment: "The Profit and Loss report API endpoint is working correctly. Successfully tested with various parameters including date ranges and comparison periods. Returns proper data structure with sections for Income, Gross Profit, and Expenses."
+        - working: true
+          agent: "testing"
+          comment: "✅ HTTPS FIXES VERIFIED: Comprehensive testing confirms the Profit & Loss Report API is working correctly after HTTPS Mixed Content fixes. Successfully tested with required parameters (start_date, end_date), comparison periods, and custom formatting options. All test cases returned 200 status codes with proper report structure including report_name, company_name, sections, grand_total, and currency fields. The API correctly requires mandatory date parameters and handles them properly. Authentication and company access validation working correctly."
 
   - task: "Reports Integration - Balance Sheet Report API"
     implemented: true
@@ -166,6 +169,9 @@
         - working: true
           agent: "testing"
           comment: "The Balance Sheet report API endpoint is working correctly. Successfully tested with as_of_date parameter and comparison date. Returns proper data structure with sections for Assets, Liabilities, and Equity."
+        - working: true
+          agent: "testing"
+          comment: "✅ HTTPS FIXES VERIFIED: Comprehensive testing confirms the Balance Sheet Report API is working correctly after HTTPS Mixed Content fixes. Successfully tested with required as_of_date parameter, comparison dates, and custom formatting options. All test cases returned 200 status codes with proper report structure including report_name, company_name, sections, grand_total, and currency fields. The API correctly requires mandatory as_of_date parameter and handles it properly. Authentication and company access validation working correctly."
 
   - task: "Reports Integration - Cash Flow Report API"
     implemented: true
@@ -178,6 +184,9 @@
         - working: true
           agent: "testing"
           comment: "The Cash Flow report API endpoint is working correctly. Successfully tested with both indirect and direct methods. Returns proper data structure with sections for Operating, Investing, and Financing activities."
+        - working: true
+          agent: "testing"
+          comment: "✅ HTTPS FIXES VERIFIED: Comprehensive testing confirms the Cash Flow Report API is working correctly after HTTPS Mixed Content fixes. Successfully tested with required parameters (start_date, end_date), both indirect and direct methods, and custom formatting options. All test cases returned 200 status codes with proper report structure including report_name, company_name, sections, grand_total, and currency fields. The API correctly requires mandatory date parameters and handles different cash flow methods properly. Authentication and company access validation working correctly."
 
   - task: "Reports Integration - Error Handling"
     implemented: true
@@ -190,6 +199,9 @@
         - working: true
           agent: "testing"
           comment: "Error handling for the report APIs is working correctly. Properly handles invalid company IDs (returns 403) and missing required parameters (returns 422 with detailed error messages)."
+        - working: true
+          agent: "testing"
+          comment: "✅ HTTPS FIXES VERIFIED: Error handling for the Reports APIs is working correctly after HTTPS Mixed Content fixes. Successfully tested invalid company ID scenarios (returns 403 Forbidden with proper error messages) and missing required parameters (returns 422 Unprocessable Entity with detailed validation errors). All error responses include proper error messages and status codes. Authentication and authorization error handling working correctly."
     status_history:
         - working: true
           agent: "main"
