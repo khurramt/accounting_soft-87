@@ -31,9 +31,24 @@ const api = axios.create({
   },
 });
 
-// Add interceptor to include auth token in requests
+// Add interceptor to force HTTPS in all requests
 api.interceptors.request.use(
   (config) => {
+    // Force HTTPS in production or when page is loaded via HTTPS
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+      if (config.url && !config.url.startsWith('https:')) {
+        if (config.url.startsWith('http:')) {
+          config.url = config.url.replace('http:', 'https:');
+        } else if (config.baseURL && config.baseURL.startsWith('http:')) {
+          config.baseURL = config.baseURL.replace('http:', 'https:');
+        }
+      }
+      // Also fix any full URLs in the config
+      if (config.baseURL && config.baseURL.startsWith('http:')) {
+        config.baseURL = config.baseURL.replace('http:', 'https:');
+      }
+    }
+    
     const token = localStorage.getItem("qb_access_token");
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
