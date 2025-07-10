@@ -10,7 +10,7 @@ if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
 
 // Additional safety check - if the URL doesn't start with https and we're on https, force it
 if (typeof window !== 'undefined' && window.location.protocol === 'https:' && !API_BASE_URL.startsWith('https:')) {
-  API_BASE_URL = 'https://fc2dec04-acbe-4f21-9232-88b3471a0632.preview.emergentagent.com';
+  API_BASE_URL = 'https://43a39531-f0d7-40d4-b9e6-1c680de1710e.preview.emergentagent.com';
 }
 
 const SECURE_API_BASE_URL = API_BASE_URL;
