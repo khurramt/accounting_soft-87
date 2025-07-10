@@ -53,7 +53,8 @@
     - "Reports Integration - Balance Sheet Report API"
     - "Reports Integration - Cash Flow Report API"
     - "Reports Integration - Error Handling"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Reports Integration - Phase 2.2"
   test_all: false
   test_priority: "high_first"
 ##
