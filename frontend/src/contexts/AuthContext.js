@@ -31,21 +31,32 @@ const api = axios.create({
   },
 });
 
-// Add interceptor to force HTTPS in all requests
+// Comprehensive interceptor to force HTTPS and add auth token
 api.interceptors.request.use(
   (config) => {
-    // Force HTTPS in production or when page is loaded via HTTPS
+    // Comprehensive HTTPS enforcement for ALL requests
     if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-      if (config.url && !config.url.startsWith('https:')) {
-        if (config.url.startsWith('http:')) {
-          config.url = config.url.replace('http:', 'https:');
-        } else if (config.baseURL && config.baseURL.startsWith('http:')) {
-          config.baseURL = config.baseURL.replace('http:', 'https:');
-        }
+      // Handle absolute URLs in config.url
+      if (config.url && config.url.startsWith('http:')) {
+        config.url = config.url.replace('http:', 'https:');
+        console.log('AuthContext fixed HTTP URL in config.url:', config.url);
       }
-      // Also fix any full URLs in the config
+      
+      // Handle baseURL
       if (config.baseURL && config.baseURL.startsWith('http:')) {
         config.baseURL = config.baseURL.replace('http:', 'https:');
+        console.log('AuthContext fixed HTTP baseURL:', config.baseURL);
+      }
+      
+      // Handle any constructed URLs - this is critical for catching edge cases
+      const fullUrl = config.baseURL && config.url ? new URL(config.url, config.baseURL).href : config.url;
+      if (fullUrl && fullUrl.startsWith('http:')) {
+        // If somehow the full URL is HTTP, reconstruct with HTTPS
+        const httpsUrl = fullUrl.replace('http:', 'https:');
+        const urlObj = new URL(httpsUrl);
+        config.baseURL = `${urlObj.protocol}//${urlObj.host}`;
+        config.url = urlObj.pathname + urlObj.search + urlObj.hash;
+        console.log('AuthContext reconstructed HTTPS URL:', config.baseURL, config.url);
       }
     }
     
