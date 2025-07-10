@@ -4,7 +4,7 @@ class CompanyService {
   // Get all companies for the authenticated user
   async getCompanies() {
     try {
-      const response = await apiClient.get('/companies/');
+      const response = await apiClient.get('/companies');
       return response.data;
     } catch (error) {
       console.error('Error fetching companies:', error);
@@ -15,7 +15,7 @@ class CompanyService {
   // Create a new company
   async createCompany(companyData) {
     try {
-      const response = await apiClient.post('/companies/', companyData);
+      const response = await apiClient.post('/companies', companyData);
       return response.data;
     } catch (error) {
       console.error('Error creating company:', error);
