@@ -20,7 +20,7 @@ if (isProductionOrHTTPS) {
   
   // Additional safety check - if the URL somehow doesn't start with https, force it
   if (!API_BASE_URL.startsWith('https:')) {
-    API_BASE_URL = 'https://43a39531-f0d7-40d4-b9e6-1c680de1710e.preview.emergentagent.com';
+    API_BASE_URL = 'https://c6ed7fbd-647a-4602-91ba-46f109a439da.preview.emergentagent.com';
   }
 }
 
