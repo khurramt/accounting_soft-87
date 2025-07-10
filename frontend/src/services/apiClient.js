@@ -12,8 +12,13 @@ const ensureHttps = (url) => {
   return url;
 };
 
-// Apply HTTPS if needed
-const SECURE_API_BASE_URL = ensureHttps(API_BASE_URL);
+// Apply HTTPS if needed - force HTTPS for production environment
+let SECURE_API_BASE_URL = ensureHttps(API_BASE_URL);
+
+// Additional check: if the current page is HTTPS, force API calls to HTTPS
+if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+  SECURE_API_BASE_URL = SECURE_API_BASE_URL.replace('http:', 'https:');
+}
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
