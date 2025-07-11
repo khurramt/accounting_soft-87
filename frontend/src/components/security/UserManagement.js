@@ -503,6 +503,7 @@ const UserManagement = () => {
             <EditUserForm 
               user={selectedUser} 
               onSubmit={handleUpdateUser} 
+              onCancel={() => setSelectedUser(null)}
               roles={roles} 
               departments={departments}
               availablePermissions={availablePermissions}
