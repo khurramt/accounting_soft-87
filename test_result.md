@@ -656,7 +656,7 @@
     file: "/app/backend/api/payroll.py, /app/frontend/src/services/payrollService.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
