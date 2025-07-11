@@ -238,6 +238,38 @@ class DashboardService {
     const response = await apiClient.put(`/companies/${companyId}/reports/dashboard/alerts/${alertId}/dismiss`);
     return response.data;
   }
+
+  /**
+   * Approve a dashboard alert
+   * @param {string} companyId - Company ID
+   * @param {string} alertId - Alert ID
+   * @returns {Promise<Object>} Response data
+   */
+  async approveAlert(companyId, alertId) {
+    try {
+      const response = await apiClient.put(`/companies/${companyId}/reports/dashboard/alerts/${alertId}/approve`);
+      return response.data;
+    } catch (error) {
+      console.error('Error approving alert:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Dismiss a dashboard alert
+   * @param {string} companyId - Company ID
+   * @param {string} alertId - Alert ID
+   * @returns {Promise<Object>} Response data
+   */
+  async dismissAlert(companyId, alertId) {
+    try {
+      const response = await apiClient.put(`/companies/${companyId}/reports/dashboard/alerts/${alertId}/dismiss`);
+      return response.data;
+    } catch (error) {
+      console.error('Error dismissing alert:', error);
+      throw error;
+    }
+  }
 }
 
 export default new DashboardService();
