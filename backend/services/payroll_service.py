@@ -544,13 +544,16 @@ class PayrollService:
         
         await self.db.commit()
     
-    def approve_payroll_run(self, payroll_run_id: str, company_id: str, approved_by: str) -> PayrollRun:
+    async def approve_payroll_run(self, payroll_run_id: str, company_id: str, approved_by: str) -> PayrollRun:
         """Approve a payroll run"""
         
-        payroll_run = self.db.query(PayrollRun).filter(
-            PayrollRun.payroll_run_id == payroll_run_id,
-            PayrollRun.company_id == company_id
-        ).first()
+        result = await self.db.execute(
+            select(PayrollRun).filter(
+                PayrollRun.payroll_run_id == payroll_run_id,
+                PayrollRun.company_id == company_id
+            )
+        )
+        payroll_run = result.scalars().first()
         
         if not payroll_run:
             raise ValueError("Payroll run not found")
@@ -562,8 +565,8 @@ class PayrollService:
         payroll_run.approved_by = approved_by
         payroll_run.approved_at = datetime.utcnow()
         
-        self.db.commit()
-        self.db.refresh(payroll_run)
+        await self.db.commit()
+        await self.db.refresh(payroll_run)
         
         return payroll_run
     
