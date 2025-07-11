@@ -344,9 +344,9 @@ const PayrollCenter = () => {
             <DollarSign className="w-4 h-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{payrollUtils.formatCurrency(payrollSummary.monthlyPayroll)}</div>
+            <div className="text-2xl font-bold">{payrollUtils.payrollUtils.formatCurrency(payrollSummary.monthlyPayroll)}</div>
             <p className="text-xs text-muted-foreground">
-              YTD: {payrollUtils.formatCurrency(payrollSummary.ytdPayroll)}
+              YTD: {payrollUtils.payrollUtils.formatCurrency(payrollSummary.ytdPayroll)}
             </p>
           </CardContent>
         </Card>
@@ -357,7 +357,7 @@ const PayrollCenter = () => {
             <Calculator className="w-4 h-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{payrollUtils.formatCurrency(payrollSummary.quarterlyPayrollTax)}</div>
+            <div className="text-2xl font-bold">{payrollUtils.payrollUtils.formatCurrency(payrollSummary.quarterlyPayrollTax)}</div>
             <p className="text-xs text-muted-foreground">
               {payrollSummary.overduePayrollTax === 0 ? 'No overdue taxes' : `${payrollSummary.overduePayrollTax} overdue`}
             </p>
@@ -428,7 +428,7 @@ const PayrollCenter = () => {
                         Pay Date: {payroll.payDate} • {payroll.employees} employees
                       </div>
                       <div className="text-sm text-gray-600">
-                        Estimated: {payrollUtils.formatCurrency(payroll.estimatedGross)}
+                        Estimated: {payrollUtils.payrollUtils.formatCurrency(payroll.estimatedGross)}
                       </div>
                     </div>
                     <div className="text-right">
@@ -462,7 +462,7 @@ const PayrollCenter = () => {
                     <div>
                       <div className="font-medium">{payroll.id} - {payroll.payPeriod}</div>
                       <div className="text-sm text-gray-600">
-                        {payroll.employees} employees • Gross: {formatCurrency(payroll.grossPay)} • Net: {formatCurrency(payroll.netPay)}
+                        {payroll.employees} employees • Gross: {payrollUtils.formatCurrency(payroll.grossPay)} • Net: {payrollUtils.formatCurrency(payroll.netPay)}
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -545,11 +545,11 @@ const PayrollCenter = () => {
                       </TableCell>
                       <TableCell>
                         {employee.payType === 'Salary' 
-                          ? formatCurrency(employee.rate)
+                          ? payrollUtils.formatCurrency(employee.rate)
                           : `$${employee.rate.toFixed(2)}/hr`
                         }
                       </TableCell>
-                      <TableCell>{formatCurrency(employee.ytdGross)}</TableCell>
+                      <TableCell>{payrollUtils.formatCurrency(employee.ytdGross)}</TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(employee.status)}>
                           {employee.status}
@@ -596,8 +596,8 @@ const PayrollCenter = () => {
                       <div className="text-sm text-gray-600 space-y-1">
                         <div>Pay Date: {payroll.payDate}</div>
                         <div>Employees: {payroll.employees}</div>
-                        <div>Estimated Gross: {formatCurrency(payroll.estimatedGross)}</div>
-                        <div>Estimated Net: {formatCurrency(payroll.estimatedNet)}</div>
+                        <div>Estimated Gross: {payrollUtils.formatCurrency(payroll.estimatedGross)}</div>
+                        <div>Estimated Net: {payrollUtils.formatCurrency(payroll.estimatedNet)}</div>
                       </div>
                       <div className="mt-3 flex space-x-2">
                         <Button size="sm" onClick={() => navigate(`/payroll/run/${payroll.id}`)}>
@@ -635,8 +635,8 @@ const PayrollCenter = () => {
                       <div className="text-sm text-gray-600 space-y-1">
                         <div>Period: {payroll.payPeriod}</div>
                         <div>Employees: {payroll.employees}</div>
-                        <div>Gross Pay: {formatCurrency(payroll.grossPay)}</div>
-                        <div>Net Pay: {formatCurrency(payroll.netPay)}</div>
+                        <div>Gross Pay: {payrollUtils.formatCurrency(payroll.grossPay)}</div>
+                        <div>Net Pay: {payrollUtils.formatCurrency(payroll.netPay)}</div>
                       </div>
                       <div className="mt-3 flex space-x-2">
                         <Button size="sm" variant="outline">
@@ -691,7 +691,7 @@ const PayrollCenter = () => {
                       <TableCell>{liability.description}</TableCell>
                       <TableCell>{liability.period}</TableCell>
                       <TableCell>{liability.dueDate}</TableCell>
-                      <TableCell>{formatCurrency(liability.amount)}</TableCell>
+                      <TableCell>{payrollUtils.formatCurrency(liability.amount)}</TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(liability.status)}>
                           {liability.status}
@@ -740,7 +740,7 @@ const PayrollCenter = () => {
                       <div className="text-sm text-gray-600">
                         {form.quarter && `Quarter: ${form.quarter}`}
                         {form.year && `Year: ${form.year}`}
-                        {form.amount && ` • Amount: ${formatCurrency(form.amount)}`}
+                        {form.amount && ` • Amount: ${payrollUtils.formatCurrency(form.amount)}`}
                         {form.employeeCount && ` • Employees: ${form.employeeCount}`}
                       </div>
                       <div className="text-sm text-gray-600">Due: {form.dueDate}</div>
