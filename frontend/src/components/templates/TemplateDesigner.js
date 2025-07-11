@@ -36,41 +36,10 @@ import {
 } from 'lucide-react';
 
 const TemplateDesigner = () => {
-  const [selectedTemplate, setSelectedTemplate] = useState('invoice');
-  const [templates, setTemplates] = useState([
-    {
-      id: 'invoice',
-      name: 'Standard Invoice',
-      type: 'Invoice',
-      preview: '/api/placeholder/300/400',
-      isDefault: true,
-      customizable: true
-    },
-    {
-      id: 'estimate',
-      name: 'Professional Estimate',
-      type: 'Estimate',
-      preview: '/api/placeholder/300/400',
-      isDefault: true,
-      customizable: true
-    },
-    {
-      id: 'statement',
-      name: 'Customer Statement',
-      type: 'Statement',
-      preview: '/api/placeholder/300/400',
-      isDefault: true,
-      customizable: true
-    },
-    {
-      id: 'receipt',
-      name: 'Sales Receipt',
-      type: 'Receipt',
-      preview: '/api/placeholder/300/400',
-      isDefault: false,
-      customizable: true
-    }
-  ]);
+  const { currentCompany } = useCompany();
+  const [loading, setLoading] = useState(false);
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState('invoice_modern');
 
   const [templateSettings, setTemplateSettings] = useState({
     companyLogo: null,
