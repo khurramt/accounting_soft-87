@@ -82,11 +82,7 @@ const Dashboard = () => {
   const handleRefresh = async () => {
     setIsLoading(true);
     try {
-      await Promise.all([
-        loadDashboardData(),
-        loadRecentTransactions(),
-        loadOutstandingInvoices()
-      ]);
+      await loadDashboardData();
     } catch (error) {
       console.error('Error refreshing dashboard:', error);
     } finally {
