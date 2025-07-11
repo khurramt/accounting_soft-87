@@ -135,15 +135,30 @@ const UserManagement = () => {
 
   const toggleUserStatus = async (userId) => {
     try {
-      // In a real implementation, this would update user status via API
-      setUsers(users.map(user =>
-        user.id === userId
-          ? { ...user, status: user.status === 'Active' ? 'Inactive' : 'Active' }
-          : user
-      ));
+      setLoading(true);
+      
+      // Find the user to get current status
+      const user = users.find(u => u.id === userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      
+      const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
+      
+      // Use the toggle user status API
+      const response = await securityService.toggleUserStatus(currentCompany.id, userId, newStatus);
+      
+      // Refresh the user list after updating
+      await loadUserManagementData();
+      
+      // Show success message
+      alert(`User status updated successfully! ${response.message}`);
+      
     } catch (err) {
       console.error('Error updating user status:', err);
-      alert('Failed to update user status. Please try again.');
+      alert(`Failed to update user status: ${err.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
     }
   };
 
