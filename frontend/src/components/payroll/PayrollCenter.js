@@ -344,9 +344,9 @@ const PayrollCenter = () => {
             <DollarSign className="w-4 h-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{payrollUtils.payrollUtils.formatCurrency(payrollSummary.monthlyPayroll)}</div>
+            <div className="text-2xl font-bold">{payrollUtils.formatCurrency(payrollSummary.monthlyPayroll)}</div>
             <p className="text-xs text-muted-foreground">
-              YTD: {payrollUtils.payrollUtils.formatCurrency(payrollSummary.ytdPayroll)}
+              YTD: {payrollUtils.formatCurrency(payrollSummary.ytdPayroll)}
             </p>
           </CardContent>
         </Card>
