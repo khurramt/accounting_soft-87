@@ -595,10 +595,7 @@ const InventoryCenter = () => {
                       <tr key={transaction.id} className="border-b hover:bg-gray-50">
                         <td className="p-3">{transaction.date}</td>
                         <td className="p-3">
-                          <Badge variant={
-                            transaction.type === 'Purchase' ? 'success' :
-                            transaction.type === 'Sale' ? 'default' : 'secondary'
-                          }>
+                          <Badge variant={inventoryUtils.getTransactionTypeColor(transaction.type)}>
                             {transaction.type}
                           </Badge>
                         </td>
@@ -607,7 +604,7 @@ const InventoryCenter = () => {
                           <span className={`font-medium ${
                             transaction.quantity > 0 ? 'text-green-600' : 'text-red-600'
                           }`}>
-                            {transaction.quantity > 0 ? '+' : ''}{transaction.quantity}
+                            {transaction.quantity > 0 ? '+' : ''}{inventoryUtils.formatQuantity(transaction.quantity)}
                           </span>
                         </td>
                         <td className="p-3 font-mono text-sm">{transaction.reference}</td>
@@ -615,7 +612,7 @@ const InventoryCenter = () => {
                           <span className={`font-medium ${
                             transaction.cost > 0 ? 'text-green-600' : 'text-red-600'
                           }`}>
-                            ${Math.abs(transaction.cost).toFixed(2)}
+                            {inventoryUtils.formatCurrency(Math.abs(transaction.cost))}
                           </span>
                         </td>
                       </tr>
