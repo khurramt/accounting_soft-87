@@ -41,22 +41,161 @@ import {
 
 const PayrollCenter = () => {
   const navigate = useNavigate();
+  const { currentCompany } = useCompany();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTab, setSelectedTab] = useState("overview");
-
-  // Enhanced payroll summary
-  const [payrollSummary] = useState({
-    totalEmployees: mockEmployees.length,
-    activeEmployees: mockEmployees.filter(emp => emp.status === 'Active').length,
-    nextPayDate: "2024-01-31",
-    lastPayDate: "2024-01-15",
-    monthlyPayroll: 12500.00,
-    ytdPayroll: 12500.00,
-    pendingTimeSheets: 2,
-    unprocessedPayroll: 1,
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  // API Data States
+  const [employees, setEmployees] = useState([]);
+  const [payrollRuns, setPayrollRuns] = useState([]);
+  const [payrollLiabilities, setPayrollLiabilities] = useState([]);
+  const [timeEntries, setTimeEntries] = useState([]);
+  const [payrollSummary, setPayrollSummary] = useState({
+    totalEmployees: 0,
+    activeEmployees: 0,
+    nextPayDate: null,
+    lastPayDate: null,
+    monthlyPayroll: 0,
+    ytdPayroll: 0,
+    pendingTimeSheets: 0,
+    unprocessedPayroll: 0,
     overduePayrollTax: 0,
-    quarterlyPayrollTax: 3250.00
+    quarterlyPayrollTax: 0
   });
+
+  // Load all payroll data
+  useEffect(() => {
+    if (currentCompany?.id) {
+      loadPayrollData();
+    }
+  }, [currentCompany?.id]);
+
+  const loadPayrollData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Load employees
+      const employeesData = await payrollService.getEmployees(currentCompany.id, {
+        limit: 1000,
+        is_active: true
+      });
+      setEmployees(employeesData.data || []);
+      
+      // Load payroll runs
+      const payrollRunsData = await payrollService.getPayrollRuns(currentCompany.id, {
+        limit: 50
+      });
+      setPayrollRuns(payrollRunsData.data || []);
+      
+      // Load payroll liabilities
+      const liabilitiesData = await payrollService.getPayrollLiabilities(currentCompany.id, {
+        limit: 50
+      });
+      setPayrollLiabilities(liabilitiesData.data || []);
+      
+      // Load time entries
+      const timeEntriesData = await payrollService.getTimeEntries(currentCompany.id, {
+        limit: 100
+      });
+      setTimeEntries(timeEntriesData.data || []);
+      
+      // Calculate payroll summary
+      calculatePayrollSummary(employeesData.data || [], payrollRunsData.data || [], liabilitiesData.data || []);
+      
+    } catch (err) {
+      setError(err.message || 'Failed to load payroll data');
+      console.error('Error loading payroll data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculatePayrollSummary = (employeesList, payrollRunsList, liabilitiesList) => {
+    const activeEmployees = employeesList.filter(emp => emp.is_active);
+    const recentPayrolls = payrollRunsList.filter(run => {
+      const runDate = new Date(run.pay_date);
+      const monthAgo = new Date();
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      return runDate >= monthAgo;
+    });
+    
+    const monthlyPayroll = recentPayrolls.reduce((sum, run) => sum + (run.total_gross || 0), 0);
+    const ytdPayroll = payrollRunsList.reduce((sum, run) => {
+      const runDate = new Date(run.pay_date);
+      const currentYear = new Date().getFullYear();
+      return runDate.getFullYear() === currentYear ? sum + (run.total_gross || 0) : sum;
+    }, 0);
+    
+    const pendingPayrolls = payrollRunsList.filter(run => run.status === 'draft' || run.status === 'calculated');
+    const overduePayrollTax = liabilitiesList.filter(liability => {
+      const dueDate = new Date(liability.due_date);
+      return dueDate < new Date() && liability.status === 'pending';
+    }).length;
+    
+    const quarterlyPayrollTax = liabilitiesList.reduce((sum, liability) => {
+      const dueDate = new Date(liability.due_date);
+      const currentQuarter = Math.floor(new Date().getMonth() / 3);
+      const liabilityQuarter = Math.floor(dueDate.getMonth() / 3);
+      return currentQuarter === liabilityQuarter ? sum + (liability.amount || 0) : sum;
+    }, 0);
+    
+    // Get next and last pay dates
+    const sortedPayrolls = [...payrollRunsList].sort((a, b) => new Date(a.pay_date) - new Date(b.pay_date));
+    const lastPayDate = sortedPayrolls.length > 0 ? sortedPayrolls[sortedPayrolls.length - 1].pay_date : null;
+    const nextPayDate = pendingPayrolls.length > 0 ? pendingPayrolls[0].pay_date : null;
+    
+    setPayrollSummary({
+      totalEmployees: employeesList.length,
+      activeEmployees: activeEmployees.length,
+      nextPayDate,
+      lastPayDate,
+      monthlyPayroll,
+      ytdPayroll,
+      pendingTimeSheets: timeEntries.filter(entry => entry.status === 'pending').length,
+      unprocessedPayroll: pendingPayrolls.length,
+      overduePayrollTax,
+      quarterlyPayrollTax
+    });
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadPayrollData();
+    setRefreshing(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <span className="ml-2 text-gray-600">Loading payroll data...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <div className="text-red-600 mb-4">Error: {error}</div>
+        <Button onClick={handleRefresh} variant="outline">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  if (!currentCompany) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-600">Please select a company to view payroll data</div>
+      </div>
+    );
+  }
 
   // Scheduled payroll runs
   const [scheduledPayrolls] = useState([
