@@ -90,9 +90,48 @@ const Dashboard = () => {
     }
   };
 
-  const handleCustomizeDashboard = () => {
-    // Navigate to dashboard customization page
-    navigate('/dashboard/customize');
+  const handleAlertAction = async (alert) => {
+    try {
+      setLoading(true);
+      
+      switch (alert.action) {
+        case 'Review':
+          // Navigate to relevant review page
+          navigate('/reports/review');
+          break;
+        case 'Pay Now':
+          // Navigate to payment page
+          navigate('/vendors/pay-bills');
+          break;
+        case 'Contact':
+          // Navigate to customer contact page
+          navigate('/customers');
+          break;
+        case 'Update':
+          // Navigate to settings page
+          navigate('/settings');
+          break;
+        case 'Approve':
+          // Handle approval logic
+          await dashboardService.approveAlert(currentCompany.company_id, alert.id);
+          // Refresh alerts
+          await loadDashboardData();
+          break;
+        case 'Dismiss':
+          // Handle dismissal logic
+          await dashboardService.dismissAlert(currentCompany.company_id, alert.id);
+          // Refresh alerts
+          await loadDashboardData();
+          break;
+        default:
+          console.log(`Action: ${alert.action} for alert: ${alert.message}`);
+      }
+    } catch (error) {
+      console.error('Error handling alert action:', error);
+      alert(`Failed to handle alert action: ${error.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle date range change
