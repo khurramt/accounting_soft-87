@@ -456,21 +456,42 @@ const TemplateDesigner = () => {
 
   // Text formatting handlers
   const handleTextFormat = (format) => {
-    // This would typically interact with a rich text editor
-    alert(`Applied ${format} formatting`);
+    // In a real implementation, this would apply text formatting
+    // For now, we'll update the template settings to reflect the change
+    setTemplateSettings(prev => ({
+      ...prev,
+      lastAction: `Applied ${format} formatting`,
+      lastActionTime: new Date().toISOString()
+    }));
+    
+    // Visual feedback for user
+    console.log(`Applied ${format} formatting`);
   };
 
   const handleTextAlign = (alignment) => {
-    // This would typically interact with a rich text editor
-    alert(`Applied ${alignment} alignment`);
+    // In a real implementation, this would apply text alignment
+    // For now, we'll update the template settings to reflect the change
+    setTemplateSettings(prev => ({
+      ...prev,
+      textAlignment: alignment,
+      lastAction: `Applied ${alignment} alignment`,
+      lastActionTime: new Date().toISOString()
+    }));
+    
+    // Visual feedback for user
+    console.log(`Applied ${alignment} alignment`);
   };
 
   const handleUndo = () => {
-    alert('Undo last action');
+    // In a real implementation, this would undo the last action
+    // For now, we'll just provide feedback
+    console.log('Undo last action');
   };
 
   const handleRedo = () => {
-    alert('Redo last action');
+    // In a real implementation, this would redo the last action
+    // For now, we'll just provide feedback
+    console.log('Redo last action');
   };
 
   return (
