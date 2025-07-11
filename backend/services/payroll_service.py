@@ -106,7 +106,7 @@ class PayrollService:
             employer_taxes=tax_calculations['employer_taxes']
         )
     
-    def _calculate_gross_pay(self, employee_id: str, payroll_info: EmployeePayrollInfo, 
+    async def _calculate_gross_pay(self, employee_id: str, payroll_info: EmployeePayrollInfo, 
                            period_start: date, period_end: date) -> Decimal:
         """Calculate gross pay for an employee"""
         
@@ -115,7 +115,7 @@ class PayrollService:
             return self._calculate_salary_pay(payroll_info)
         elif payroll_info.pay_type == PayType.HOURLY:
             # For hourly employees, calculate based on time entries
-            return self._calculate_hourly_pay(employee_id, payroll_info, period_start, period_end)
+            return await self._calculate_hourly_pay(employee_id, payroll_info, period_start, period_end)
         else:
             # For commission and contractor, would need additional logic
             return Decimal('0')
