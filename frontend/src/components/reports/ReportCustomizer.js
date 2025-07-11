@@ -120,6 +120,13 @@ const ReportCustomizer = () => {
     }));
   };
 
+  const resetToDefaults = () => {
+    if (window.confirm('Are you sure you want to reset all customizations to default? This action cannot be undone.')) {
+      setReportSettings(initialReportSettings);
+      alert('Report settings reset to defaults!');
+    }
+  };
+
   const generateReport = () => {
     console.log("Generating report with settings:", reportSettings);
   };
