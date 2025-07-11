@@ -4,7 +4,7 @@ class CompanyService {
   // Get all companies for the authenticated user
   async getCompanies() {
     try {
-      const response = await apiClient.get('/companies/');
+      const response = await apiClient.get('/companies');
       return response.data;
     } catch (error) {
       console.error('Error fetching companies:', error);
