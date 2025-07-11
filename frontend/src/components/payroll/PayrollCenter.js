@@ -53,6 +53,7 @@ const PayrollCenter = () => {
   const [payrollRuns, setPayrollRuns] = useState([]);
   const [payrollLiabilities, setPayrollLiabilities] = useState([]);
   const [timeEntries, setTimeEntries] = useState([]);
+  const [payrollForms, setPayrollForms] = useState([]);
   const [payrollSummary, setPayrollSummary] = useState({
     totalEmployees: 0,
     activeEmployees: 0,
