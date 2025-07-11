@@ -3365,6 +3365,26 @@ if __name__ == "__main__":
         test_update_payment()
         test_delete_payment()
         
+        # Banking Integration API tests (Phase 3.1)
+        print("\n===== BANKING INTEGRATION API TESTS =====")
+        test_get_bank_connections()
+        test_create_bank_connection()
+        test_get_bank_transactions()
+        test_search_institutions()
+        test_upload_bank_statement()
+        test_account_merge()
+        
+        # Payroll Integration API tests (Phase 3.2)
+        print("\n===== PAYROLL INTEGRATION API TESTS =====")
+        test_get_payroll_items()
+        test_create_payroll_item()
+        test_get_time_entries()
+        test_get_payroll_runs()
+        test_create_payroll_run()
+        test_get_paychecks()
+        test_get_payroll_liabilities()
+        test_get_due_payroll_liabilities()
+        
         # Error handling tests
         test_transaction_error_handling()
     
