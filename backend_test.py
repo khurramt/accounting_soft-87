@@ -1733,6 +1733,299 @@ def test_update_payment():
         print(f"❌ Update payment test failed: {str(e)}")
         return False
 
+# ===== PAYROLL API TESTS =====
+
+def test_get_payroll_items():
+    """Test getting payroll items"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get payroll items test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get payroll items...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/payroll-items", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get payroll items test passed (Found {data['total']} items)")
+                return True
+            else:
+                print(f"❌ Get payroll items test failed: Unexpected response structure")
+                return False
+        else:
+            print(f"❌ Get payroll items test failed: Status code {response.status_code}")
+            if response.status_code == 500:
+                print("🔍 500 Internal Server Error - This is the issue we need to investigate")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get payroll items test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get payroll items test failed: {str(e)}")
+        return False
+
+def test_create_payroll_item():
+    """Test creating a payroll item"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create payroll item test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing create payroll item...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Generate a unique payroll item
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        payload = {
+            "item_name": f"Test Wages Item {timestamp}",
+            "item_type": "wages",  # Using valid enum value
+            "item_category": "Regular Pay",
+            "rate": 25.00,
+            "calculation_basis": "hourly",
+            "is_active": True
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/payroll-items", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 201:
+            if "payroll_item_id" in data:
+                print(f"✅ Create payroll item test passed (ID: {data['payroll_item_id']})")
+                return True
+            else:
+                print(f"❌ Create payroll item test failed: Unexpected response structure")
+                return False
+        else:
+            print(f"❌ Create payroll item test failed: Status code {response.status_code}")
+            if response.status_code == 500:
+                print("🔍 500 Internal Server Error - This is the issue we need to investigate")
+            elif response.status_code == 422:
+                print("🔍 422 Validation Error - Check enum values and required fields")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Create payroll item test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Create payroll item test failed: {str(e)}")
+        return False
+
+def test_get_time_entries():
+    """Test getting time entries"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get time entries test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get time entries...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/time-entries", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get time entries test passed (Found {data['total']} entries)")
+                return True
+            else:
+                print(f"❌ Get time entries test failed: Unexpected response structure")
+                return False
+        else:
+            print(f"❌ Get time entries test failed: Status code {response.status_code}")
+            if response.status_code == 500:
+                print("🔍 500 Internal Server Error - This is the issue we need to investigate")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get time entries test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get time entries test failed: {str(e)}")
+        return False
+
+def test_get_payroll_runs():
+    """Test getting payroll runs"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get payroll runs test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get payroll runs...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/payroll-runs", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get payroll runs test passed (Found {data['total']} runs)")
+                return True
+            else:
+                print(f"❌ Get payroll runs test failed: Unexpected response structure")
+                return False
+        else:
+            print(f"❌ Get payroll runs test failed: Status code {response.status_code}")
+            if response.status_code == 500:
+                print("🔍 500 Internal Server Error - This is the issue we need to investigate")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get payroll runs test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get payroll runs test failed: {str(e)}")
+        return False
+
+def test_get_paychecks():
+    """Test getting paychecks"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get paychecks test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get paychecks...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/paychecks", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get paychecks test passed (Found {data['total']} paychecks)")
+                return True
+            else:
+                print(f"❌ Get paychecks test failed: Unexpected response structure")
+                return False
+        else:
+            print(f"❌ Get paychecks test failed: Status code {response.status_code}")
+            if response.status_code == 500:
+                print("🔍 500 Internal Server Error - This is the issue we need to investigate")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get paychecks test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get paychecks test failed: {str(e)}")
+        return False
+
+def test_get_payroll_liabilities():
+    """Test getting payroll liabilities"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get payroll liabilities test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get payroll liabilities...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/payroll-liabilities", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get payroll liabilities test passed (Found {data['total']} liabilities)")
+                return True
+            else:
+                print(f"❌ Get payroll liabilities test failed: Unexpected response structure")
+                return False
+        else:
+            print(f"❌ Get payroll liabilities test failed: Status code {response.status_code}")
+            if response.status_code == 500:
+                print("🔍 500 Internal Server Error - This is the issue we need to investigate")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get payroll liabilities test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get payroll liabilities test failed: {str(e)}")
+        return False
+
 # ===== BANKING API TESTS =====
 
 def test_get_bank_connections():
