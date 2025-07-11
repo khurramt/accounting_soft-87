@@ -2784,7 +2784,7 @@ def test_create_payroll_item():
         
         payload = {
             "item_name": f"Test Salary Item {timestamp}",
-            "item_type": "earning",
+            "item_type": "salary",  # Changed from "earning" to valid enum value
             "calculation_type": "fixed",
             "amount": 5000.00,
             "is_taxable": True,
