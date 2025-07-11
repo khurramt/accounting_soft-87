@@ -87,7 +87,20 @@ const MainLayout = () => {
       path: "/items",
       children: [
         { title: "Items & Services", path: "/items" },
-        { title: "Inventory Center", path: "/inventory" }
+        { title: "Inventory Center", path: "/inventory" },
+        { title: "Purchase Orders", path: "/purchase-orders" }
+      ]
+    },
+    {
+      title: "Communication",
+      icon: Mail,
+      path: "/email",
+      children: [
+        { title: "Email Management", path: "/email" },
+        { title: "SMS Management", path: "/sms" },
+        { title: "Webhook Management", path: "/webhooks" },
+        { title: "Notifications", path: "/notifications" },
+        { title: "Notification Preferences", path: "/notification-preferences" }
       ]
     },
     {
