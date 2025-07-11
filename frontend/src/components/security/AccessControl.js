@@ -126,15 +126,46 @@ const AccessControl = () => {
     }));
   };
 
-  const saveAccessSettings = () => {
-    // In a real application, this would save to backend
-    alert('Access control settings saved successfully!');
+  const saveAccessSettings = async () => {
+    try {
+      // Save security settings to backend
+      await securityService.updateSecuritySettings(currentCompany.id, securitySettings);
+      alert('Access control settings saved successfully!');
+    } catch (err) {
+      console.error('Error saving access settings:', err);
+      alert('Failed to save access control settings. Please try again.');
+    }
   };
 
   const testPermission = (area, permission) => {
     const hasPermission = permissions[area] && permissions[area][permission];
     alert(`Permission Test: ${area} - ${permission} = ${hasPermission ? 'ALLOWED' : 'DENIED'}`);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading access control data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">Error: {error}</div>
+          <Button onClick={loadAccessControlData} className="bg-blue-600 hover:bg-blue-700">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
