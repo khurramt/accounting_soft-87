@@ -484,7 +484,12 @@ const UserManagement = () => {
           <DialogHeader>
             <DialogTitle>Add New User</DialogTitle>
           </DialogHeader>
-          <AddUserForm onSubmit={handleAddUser} roles={roles} departments={departments} />
+          <AddUserForm 
+            onSubmit={handleAddUser} 
+            onCancel={() => setIsAddUserOpen(false)}
+            roles={roles} 
+            departments={departments} 
+          />
         </DialogContent>
       </Dialog>
 
