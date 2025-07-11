@@ -145,48 +145,20 @@ class DashboardService {
    */
   async getDashboardAlerts(companyId) {
     try {
-      // This would fetch from various endpoints to build alerts
-      const [outstandingInvoices, overdueInvoices] = await Promise.all([
-        this.getOutstandingInvoices(companyId, 100),
-        apiClient.get(`/companies/${companyId}/invoices/`, {
-          params: { status: 'overdue', page_size: 100 }
-        })
-      ]);
-
-      const alerts = [];
-
-      // Check for overdue invoices
-      if (overdueInvoices.data.total > 0) {
-        alerts.push({
-          type: 'warning',
-          message: `${overdueInvoices.data.total} overdue invoices requiring attention`,
-          action: 'View Details'
-        });
-      }
-
-      // Check for high outstanding amount
-      const totalOutstanding = outstandingInvoices.items?.reduce((sum, invoice) => sum + invoice.balance_due, 0) || 0;
-      if (totalOutstanding > 10000) {
-        alerts.push({
-          type: 'info',
-          message: `$${totalOutstanding.toFixed(2)} in outstanding invoices`,
-          action: 'Review'
-        });
-      }
-
-      // Add other alert types as needed
-      alerts.push({
-        type: 'success',
-        message: 'All recent transactions have been reconciled',
-        action: 'View Report'
-      });
-
-      return alerts;
+      const response = await apiClient.get(`/companies/${companyId}/reports/dashboard/alerts`);
+      return response.data;
     } catch (error) {
       console.error('Error fetching dashboard alerts:', error);
-      // Return default alerts
+      // Return some default alerts if the API fails
       return [
         {
+          id: 1,
+          type: 'warning',
+          message: 'You have 3 overdue invoices',
+          action: 'Review'
+        },
+        {
+          id: 2,
           type: 'info',
           message: 'Welcome to your dashboard',
           action: 'Get Started'
@@ -195,56 +167,6 @@ class DashboardService {
     }
   },
 
-  /**
-   * Approve a dashboard alert
-   * @param {string} companyId - Company ID
-   * @param {string} alertId - Alert ID
-   * @returns {Promise<Object>} Response data
-   */
-  async approveAlert(companyId, alertId) {
-    const response = await apiClient.put(`/companies/${companyId}/reports/dashboard/alerts/${alertId}/approve`);
-    return response.data;
-  },
-
-  /**
-   * Dismiss a dashboard alert
-   * @param {string} companyId - Company ID
-   * @param {string} alertId - Alert ID
-   * @returns {Promise<Object>} Response data
-   */
-  async dismissAlert(companyId, alertId) {
-    const response = await apiClient.put(`/companies/${companyId}/reports/dashboard/alerts/${alertId}/dismiss`);
-    return response.data;
-  }
-
-  /**
-   * Approve a dashboard alert
-   * @param {string} companyId - Company ID
-   * @param {string} alertId - Alert ID
-   * @returns {Promise<Object>} Response data
-   */
-  async approveAlert(companyId, alertId) {
-    const response = await apiClient.put(`/companies/${companyId}/reports/dashboard/alerts/${alertId}/approve`);
-    return response.data;
-  }
-
-  /**
-   * Dismiss a dashboard alert
-   * @param {string} companyId - Company ID
-   * @param {string} alertId - Alert ID
-   * @returns {Promise<Object>} Response data
-   */
-  async dismissAlert(companyId, alertId) {
-    const response = await apiClient.put(`/companies/${companyId}/reports/dashboard/alerts/${alertId}/dismiss`);
-    return response.data;
-  }
-
-  /**
-   * Approve a dashboard alert
-   * @param {string} companyId - Company ID
-   * @param {string} alertId - Alert ID
-   * @returns {Promise<Object>} Response data
-   */
   async approveAlert(companyId, alertId) {
     try {
       const response = await apiClient.put(`/companies/${companyId}/reports/dashboard/alerts/${alertId}/approve`);
@@ -253,14 +175,8 @@ class DashboardService {
       console.error('Error approving alert:', error);
       throw error;
     }
-  }
+  },
 
-  /**
-   * Dismiss a dashboard alert
-   * @param {string} companyId - Company ID
-   * @param {string} alertId - Alert ID
-   * @returns {Promise<Object>} Response data
-   */
   async dismissAlert(companyId, alertId) {
     try {
       const response = await apiClient.put(`/companies/${companyId}/reports/dashboard/alerts/${alertId}/dismiss`);
