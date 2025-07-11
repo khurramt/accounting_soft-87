@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Path
 from fastapi.security import HTTPBearer
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func, desc, asc, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+from sqlalchemy import and_, or_, func, desc, asc, select
 from typing import List, Optional
 from datetime import datetime, date, timedelta
 import uuid
@@ -141,17 +141,20 @@ async def create_payroll_item(
 async def get_payroll_item(
     company_id: str = Path(..., description="Company ID"),
     item_id: str = Path(..., description="Payroll Item ID"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get a specific payroll item"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    payroll_item = db.query(PayrollItem).filter(
-        PayrollItem.payroll_item_id == item_id,
-        PayrollItem.company_id == company_id
-    ).first()
+    result = await db.execute(
+        select(PayrollItem).filter(
+            PayrollItem.payroll_item_id == item_id,
+            PayrollItem.company_id == company_id
+        )
+    )
+    payroll_item = result.scalars().first()
     
     if not payroll_item:
         raise HTTPException(
@@ -166,17 +169,20 @@ async def update_payroll_item(
     company_id: str = Path(..., description="Company ID"),
     item_id: str = Path(..., description="Payroll Item ID"),
     payroll_item_data: PayrollItemUpdate = ...,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Update a payroll item"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    payroll_item = db.query(PayrollItem).filter(
-        PayrollItem.payroll_item_id == item_id,
-        PayrollItem.company_id == company_id
-    ).first()
+    result = await db.execute(
+        select(PayrollItem).filter(
+            PayrollItem.payroll_item_id == item_id,
+            PayrollItem.company_id == company_id
+        )
+    )
+    payroll_item = result.scalars().first()
     
     if not payroll_item:
         raise HTTPException(
@@ -191,8 +197,8 @@ async def update_payroll_item(
     
     payroll_item.updated_at = datetime.utcnow()
     
-    db.commit()
-    db.refresh(payroll_item)
+    await db.commit()
+    await db.refresh(payroll_item)
     
     return payroll_item
 
@@ -200,17 +206,20 @@ async def update_payroll_item(
 async def delete_payroll_item(
     company_id: str = Path(..., description="Company ID"),
     item_id: str = Path(..., description="Payroll Item ID"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Delete a payroll item (soft delete)"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    payroll_item = db.query(PayrollItem).filter(
-        PayrollItem.payroll_item_id == item_id,
-        PayrollItem.company_id == company_id
-    ).first()
+    result = await db.execute(
+        select(PayrollItem).filter(
+            PayrollItem.payroll_item_id == item_id,
+            PayrollItem.company_id == company_id
+        )
+    )
+    payroll_item = result.scalars().first()
     
     if not payroll_item:
         raise HTTPException(
@@ -221,7 +230,7 @@ async def delete_payroll_item(
     payroll_item.is_active = False
     payroll_item.updated_at = datetime.utcnow()
     
-    db.commit()
+    await db.commit()
     
     return {"message": "Payroll item deleted successfully"}
 
@@ -231,18 +240,21 @@ async def delete_payroll_item(
 async def get_employee_payroll_info(
     company_id: str = Path(..., description="Company ID"),
     employee_id: str = Path(..., description="Employee ID"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get payroll information for an employee"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
     # Verify employee belongs to company
-    employee = db.query(Employee).filter(
-        Employee.employee_id == employee_id,
-        Employee.company_id == company_id
-    ).first()
+    employee_result = await db.execute(
+        select(Employee).filter(
+            Employee.employee_id == employee_id,
+            Employee.company_id == company_id
+        )
+    )
+    employee = employee_result.scalars().first()
     
     if not employee:
         raise HTTPException(
@@ -250,9 +262,12 @@ async def get_employee_payroll_info(
             detail="Employee not found"
         )
     
-    payroll_info = db.query(EmployeePayrollInfo).filter(
-        EmployeePayrollInfo.employee_id == employee_id
-    ).first()
+    payroll_info_result = await db.execute(
+        select(EmployeePayrollInfo).filter(
+            EmployeePayrollInfo.employee_id == employee_id
+        )
+    )
+    payroll_info = payroll_info_result.scalars().first()
     
     if not payroll_info:
         raise HTTPException(
@@ -267,18 +282,21 @@ async def update_employee_payroll_info(
     company_id: str = Path(..., description="Company ID"),
     employee_id: str = Path(..., description="Employee ID"),
     payroll_data: EmployeePayrollInfoUpdate = ...,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Update payroll information for an employee"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
     # Verify employee belongs to company
-    employee = db.query(Employee).filter(
-        Employee.employee_id == employee_id,
-        Employee.company_id == company_id
-    ).first()
+    employee_result = await db.execute(
+        select(Employee).filter(
+            Employee.employee_id == employee_id,
+            Employee.company_id == company_id
+        )
+    )
+    employee = employee_result.scalars().first()
     
     if not employee:
         raise HTTPException(
@@ -286,9 +304,12 @@ async def update_employee_payroll_info(
             detail="Employee not found"
         )
     
-    payroll_info = db.query(EmployeePayrollInfo).filter(
-        EmployeePayrollInfo.employee_id == employee_id
-    ).first()
+    payroll_info_result = await db.execute(
+        select(EmployeePayrollInfo).filter(
+            EmployeePayrollInfo.employee_id == employee_id
+        )
+    )
+    payroll_info = payroll_info_result.scalars().first()
     
     if not payroll_info:
         # Create new payroll info if it doesn't exist
@@ -311,8 +332,8 @@ async def update_employee_payroll_info(
         
         payroll_info.updated_at = datetime.utcnow()
     
-    db.commit()
-    db.refresh(payroll_info)
+    await db.commit()
+    await db.refresh(payroll_info)
     
     return payroll_info
 
@@ -330,14 +351,14 @@ async def get_time_entries(
     billable: Optional[bool] = Query(None),
     sort_by: str = Query("date", pattern="^(date|hours|created_at)$"),
     sort_order: str = Query("desc", pattern="^(asc|desc)$"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get time entries for a company with filtering and pagination"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    query = db.query(TimeEntry).filter(TimeEntry.company_id == company_id)
+    query = select(TimeEntry).filter(TimeEntry.company_id == company_id)
     
     # Apply filters
     if employee_id:
@@ -362,11 +383,16 @@ async def get_time_entries(
         query = query.order_by(asc(getattr(TimeEntry, sort_by)))
     
     # Get total count
-    total = query.count()
+    count_query = select(func.count()).select_from(query.subquery())
+    total_result = await db.execute(count_query)
+    total = total_result.scalar()
     
     # Apply pagination
     offset = (page - 1) * page_size
-    items = query.offset(offset).limit(page_size).all()
+    query = query.offset(offset).limit(page_size)
+    
+    result = await db.execute(query)
+    items = result.scalars().all()
     
     return TimeEntryListResponse(
         items=items,
@@ -381,18 +407,21 @@ async def get_time_entries(
 async def create_time_entry(
     company_id: str = Path(..., description="Company ID"),
     time_entry_data: TimeEntryCreate = ...,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Create a new time entry"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
     # Verify employee belongs to company
-    employee = db.query(Employee).filter(
-        Employee.employee_id == time_entry_data.employee_id,
-        Employee.company_id == company_id
-    ).first()
+    employee_result = await db.execute(
+        select(Employee).filter(
+            Employee.employee_id == time_entry_data.employee_id,
+            Employee.company_id == company_id
+        )
+    )
+    employee = employee_result.scalars().first()
     
     if not employee:
         raise HTTPException(
@@ -408,8 +437,8 @@ async def create_time_entry(
     )
     
     db.add(time_entry)
-    db.commit()
-    db.refresh(time_entry)
+    await db.commit()
+    await db.refresh(time_entry)
     
     return time_entry
 
@@ -417,17 +446,20 @@ async def create_time_entry(
 async def get_time_entry(
     company_id: str = Path(..., description="Company ID"),
     entry_id: str = Path(..., description="Time Entry ID"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get a specific time entry"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    time_entry = db.query(TimeEntry).filter(
-        TimeEntry.time_entry_id == entry_id,
-        TimeEntry.company_id == company_id
-    ).first()
+    result = await db.execute(
+        select(TimeEntry).filter(
+            TimeEntry.time_entry_id == entry_id,
+            TimeEntry.company_id == company_id
+        )
+    )
+    time_entry = result.scalars().first()
     
     if not time_entry:
         raise HTTPException(
@@ -442,17 +474,20 @@ async def update_time_entry(
     company_id: str = Path(..., description="Company ID"),
     entry_id: str = Path(..., description="Time Entry ID"),
     time_entry_data: TimeEntryUpdate = ...,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Update a time entry"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    time_entry = db.query(TimeEntry).filter(
-        TimeEntry.time_entry_id == entry_id,
-        TimeEntry.company_id == company_id
-    ).first()
+    result = await db.execute(
+        select(TimeEntry).filter(
+            TimeEntry.time_entry_id == entry_id,
+            TimeEntry.company_id == company_id
+        )
+    )
+    time_entry = result.scalars().first()
     
     if not time_entry:
         raise HTTPException(
@@ -467,8 +502,8 @@ async def update_time_entry(
     
     time_entry.updated_at = datetime.utcnow()
     
-    db.commit()
-    db.refresh(time_entry)
+    await db.commit()
+    await db.refresh(time_entry)
     
     return time_entry
 
@@ -476,17 +511,20 @@ async def update_time_entry(
 async def delete_time_entry(
     company_id: str = Path(..., description="Company ID"),
     entry_id: str = Path(..., description="Time Entry ID"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Delete a time entry"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    time_entry = db.query(TimeEntry).filter(
-        TimeEntry.time_entry_id == entry_id,
-        TimeEntry.company_id == company_id
-    ).first()
+    result = await db.execute(
+        select(TimeEntry).filter(
+            TimeEntry.time_entry_id == entry_id,
+            TimeEntry.company_id == company_id
+        )
+    )
+    time_entry = result.scalars().first()
     
     if not time_entry:
         raise HTTPException(
@@ -494,8 +532,8 @@ async def delete_time_entry(
             detail="Time entry not found"
         )
     
-    db.delete(time_entry)
-    db.commit()
+    await db.delete(time_entry)
+    await db.commit()
     
     return {"message": "Time entry deleted successfully"}
 
@@ -510,14 +548,14 @@ async def get_payroll_runs(
     year: Optional[int] = Query(None),
     sort_by: str = Query("pay_date", pattern="^(pay_date|pay_period_start|created_at)$"),
     sort_order: str = Query("desc", pattern="^(asc|desc)$"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get payroll runs for a company with filtering and pagination"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    query = db.query(PayrollRun).filter(PayrollRun.company_id == company_id)
+    query = select(PayrollRun).filter(PayrollRun.company_id == company_id)
     
     # Apply filters
     if status:
@@ -533,11 +571,16 @@ async def get_payroll_runs(
         query = query.order_by(asc(getattr(PayrollRun, sort_by)))
     
     # Get total count
-    total = query.count()
+    count_query = select(func.count()).select_from(query.subquery())
+    total_result = await db.execute(count_query)
+    total = total_result.scalar()
     
     # Apply pagination
     offset = (page - 1) * page_size
-    items = query.offset(offset).limit(page_size).all()
+    query = query.offset(offset).limit(page_size)
+    
+    result = await db.execute(query)
+    items = result.scalars().all()
     
     return PayrollRunListResponse(
         items=items,
@@ -552,15 +595,15 @@ async def get_payroll_runs(
 async def create_payroll_run(
     company_id: str = Path(..., description="Company ID"),
     payroll_run_data: PayrollRunCreate = ...,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Create a new payroll run"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
     payroll_service = PayrollService(db)
-    payroll_run = payroll_service.create_payroll_run(
+    payroll_run = await payroll_service.create_payroll_run(
         company_id, payroll_run_data, current_user.user_id
     )
     
@@ -570,17 +613,20 @@ async def create_payroll_run(
 async def get_payroll_run(
     company_id: str = Path(..., description="Company ID"),
     run_id: str = Path(..., description="Payroll Run ID"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get a specific payroll run"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    payroll_run = db.query(PayrollRun).filter(
-        PayrollRun.payroll_run_id == run_id,
-        PayrollRun.company_id == company_id
-    ).first()
+    result = await db.execute(
+        select(PayrollRun).filter(
+            PayrollRun.payroll_run_id == run_id,
+            PayrollRun.company_id == company_id
+        )
+    )
+    payroll_run = result.scalars().first()
     
     if not payroll_run:
         raise HTTPException(
@@ -594,17 +640,20 @@ async def get_payroll_run(
 async def calculate_payroll_run(
     company_id: str = Path(..., description="Company ID"),
     run_id: str = Path(..., description="Payroll Run ID"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Calculate payroll for a payroll run"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    payroll_run = db.query(PayrollRun).filter(
-        PayrollRun.payroll_run_id == run_id,
-        PayrollRun.company_id == company_id
-    ).first()
+    result = await db.execute(
+        select(PayrollRun).filter(
+            PayrollRun.payroll_run_id == run_id,
+            PayrollRun.company_id == company_id
+        )
+    )
+    payroll_run = result.scalars().first()
     
     if not payroll_run:
         raise HTTPException(
@@ -621,7 +670,7 @@ async def calculate_payroll_run(
         run_type=payroll_run.run_type
     )
     
-    calculation_result = payroll_service.calculate_payroll_run(company_id, payroll_run_data)
+    calculation_result = await payroll_service.calculate_payroll_run(company_id, payroll_run_data)
     calculation_result.payroll_run_id = run_id
     
     return calculation_result
@@ -631,15 +680,15 @@ async def process_payroll_run(
     company_id: str = Path(..., description="Company ID"),
     run_id: str = Path(..., description="Payroll Run ID"),
     process_data: ProcessPayrollRunRequest = ...,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Process a payroll run and create paychecks"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
     payroll_service = PayrollService(db)
-    payroll_run = payroll_service.process_payroll_run(run_id, company_id)
+    payroll_run = await payroll_service.process_payroll_run(run_id, company_id)
     
     return payroll_run
 
@@ -648,15 +697,15 @@ async def approve_payroll_run(
     company_id: str = Path(..., description="Company ID"),
     run_id: str = Path(..., description="Payroll Run ID"),
     approve_data: ApprovePayrollRunRequest = ...,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Approve a payroll run"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
     payroll_service = PayrollService(db)
-    payroll_run = payroll_service.approve_payroll_run(run_id, company_id, current_user.user_id)
+    payroll_run = await payroll_service.approve_payroll_run(run_id, company_id, current_user.user_id)
     
     return payroll_run
 
@@ -674,14 +723,14 @@ async def get_paychecks(
     end_date: Optional[date] = Query(None),
     sort_by: str = Query("pay_date", pattern="^(pay_date|check_number|created_at)$"),
     sort_order: str = Query("desc", pattern="^(asc|desc)$"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get paychecks for a company with filtering and pagination"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    query = db.query(Paycheck).join(PayrollRun).filter(PayrollRun.company_id == company_id)
+    query = select(Paycheck).join(PayrollRun).filter(PayrollRun.company_id == company_id)
     
     # Apply filters
     if employee_id:
@@ -706,11 +755,16 @@ async def get_paychecks(
         query = query.order_by(asc(getattr(Paycheck, sort_by)))
     
     # Get total count
-    total = query.count()
+    count_query = select(func.count()).select_from(query.subquery())
+    total_result = await db.execute(count_query)
+    total = total_result.scalar()
     
     # Apply pagination
     offset = (page - 1) * page_size
-    items = query.options(joinedload(Paycheck.paycheck_lines)).offset(offset).limit(page_size).all()
+    query = query.options(selectinload(Paycheck.paycheck_lines)).offset(offset).limit(page_size)
+    
+    result = await db.execute(query)
+    items = result.scalars().all()
     
     return PaycheckListResponse(
         items=items,
@@ -725,19 +779,22 @@ async def get_paychecks(
 async def get_paycheck(
     company_id: str = Path(..., description="Company ID"),
     paycheck_id: str = Path(..., description="Paycheck ID"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get a specific paycheck"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    paycheck = db.query(Paycheck).join(PayrollRun).options(
-        joinedload(Paycheck.paycheck_lines)
-    ).filter(
-        Paycheck.paycheck_id == paycheck_id,
-        PayrollRun.company_id == company_id
-    ).first()
+    result = await db.execute(
+        select(Paycheck).join(PayrollRun).options(
+            selectinload(Paycheck.paycheck_lines)
+        ).filter(
+            Paycheck.paycheck_id == paycheck_id,
+            PayrollRun.company_id == company_id
+        )
+    )
+    paycheck = result.scalars().first()
     
     if not paycheck:
         raise HTTPException(
@@ -752,15 +809,15 @@ async def void_paycheck(
     company_id: str = Path(..., description="Company ID"),
     paycheck_id: str = Path(..., description="Paycheck ID"),
     void_data: VoidPaycheckRequest = ...,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Void a paycheck"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
     payroll_service = PayrollService(db)
-    paycheck = payroll_service.void_paycheck(paycheck_id, company_id, void_data.reason)
+    paycheck = await payroll_service.void_paycheck(paycheck_id, company_id, void_data.reason)
     
     return paycheck
 
@@ -776,14 +833,14 @@ async def get_payroll_liabilities(
     due_before: Optional[date] = Query(None),
     sort_by: str = Query("due_date", pattern="^(due_date|amount|created_at)$"),
     sort_order: str = Query("asc", pattern="^(asc|desc)$"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get payroll liabilities for a company with filtering and pagination"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    query = db.query(PayrollLiability).filter(PayrollLiability.company_id == company_id)
+    query = select(PayrollLiability).filter(PayrollLiability.company_id == company_id)
     
     # Apply filters
     if status:
@@ -802,11 +859,16 @@ async def get_payroll_liabilities(
         query = query.order_by(asc(getattr(PayrollLiability, sort_by)))
     
     # Get total count
-    total = query.count()
+    count_query = select(func.count()).select_from(query.subquery())
+    total_result = await db.execute(count_query)
+    total = total_result.scalar()
     
     # Apply pagination
     offset = (page - 1) * page_size
-    items = query.offset(offset).limit(page_size).all()
+    query = query.offset(offset).limit(page_size)
+    
+    result = await db.execute(query)
+    items = result.scalars().all()
     
     return PayrollLiabilityListResponse(
         items=items,
@@ -821,20 +883,23 @@ async def get_payroll_liabilities(
 async def get_due_payroll_liabilities(
     company_id: str = Path(..., description="Company ID"),
     days_ahead: int = Query(30, ge=0, le=365),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get payroll liabilities due within specified days"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
     due_date = date.today() + timedelta(days=days_ahead)
     
-    items = db.query(PayrollLiability).filter(
-        PayrollLiability.company_id == company_id,
-        PayrollLiability.status == PayrollLiabilityStatus.PENDING,
-        PayrollLiability.due_date <= due_date
-    ).order_by(PayrollLiability.due_date).all()
+    result = await db.execute(
+        select(PayrollLiability).filter(
+            PayrollLiability.company_id == company_id,
+            PayrollLiability.status == PayrollLiabilityStatus.PENDING,
+            PayrollLiability.due_date <= due_date
+        ).order_by(PayrollLiability.due_date)
+    )
+    items = result.scalars().all()
     
     return PayrollLiabilityListResponse(
         items=items,
@@ -850,17 +915,20 @@ async def pay_payroll_liability(
     company_id: str = Path(..., description="Company ID"),
     liability_id: str = Path(..., description="Liability ID"),
     payment_data: PayLiabilityRequest = ...,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Record payment for a payroll liability"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    liability = db.query(PayrollLiability).filter(
-        PayrollLiability.liability_id == liability_id,
-        PayrollLiability.company_id == company_id
-    ).first()
+    result = await db.execute(
+        select(PayrollLiability).filter(
+            PayrollLiability.liability_id == liability_id,
+            PayrollLiability.company_id == company_id
+        )
+    )
+    liability = result.scalars().first()
     
     if not liability:
         raise HTTPException(
@@ -889,7 +957,7 @@ async def pay_payroll_liability(
     
     liability.updated_at = datetime.utcnow()
     
-    db.commit()
-    db.refresh(liability)
+    await db.commit()
+    await db.refresh(liability)
     
     return liability
