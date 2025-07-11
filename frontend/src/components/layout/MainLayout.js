@@ -194,9 +194,9 @@ const MainLayout = () => {
               </button>
 
               {/* Submenu */}
-              {item.subItems && (
+              {item.children && item.children.length > 0 && (
                 <div className={`ml-6 mt-1 space-y-1 ${sidebarOpen ? 'block' : 'hidden'}`}>
-                  {item.subItems.map((subItem) => (
+                  {item.children.map((subItem) => (
                     <button
                       key={subItem.title}
                       onClick={() => navigate(subItem.path)}
