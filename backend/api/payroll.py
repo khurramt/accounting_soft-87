@@ -52,14 +52,15 @@ async def get_payroll_items(
     is_active: Optional[bool] = Query(None),
     sort_by: str = Query("item_name", pattern="^(item_name|item_type|created_at)$"),
     sort_order: str = Query("asc", pattern="^(asc|desc)$"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get payroll items for a company with filtering and pagination"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
-    query = db.query(PayrollItem).filter(PayrollItem.company_id == company_id)
+    # Build query with filters
+    query = select(PayrollItem).filter(PayrollItem.company_id == company_id)
     
     # Apply filters
     if search:
@@ -78,11 +79,16 @@ async def get_payroll_items(
         query = query.order_by(asc(getattr(PayrollItem, sort_by)))
     
     # Get total count
-    total = query.count()
+    count_query = select(func.count()).select_from(query.subquery())
+    total_result = await db.execute(count_query)
+    total = total_result.scalar()
     
     # Apply pagination
     offset = (page - 1) * page_size
-    items = query.offset(offset).limit(page_size).all()
+    query = query.offset(offset).limit(page_size)
+    
+    result = await db.execute(query)
+    items = result.scalars().all()
     
     return PayrollItemListResponse(
         items=items,
