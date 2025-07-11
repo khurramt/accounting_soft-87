@@ -225,6 +225,15 @@ const UserManagement = () => {
         </div>
         <div className="flex space-x-2">
           <Button
+            onClick={refreshData}
+            disabled={refreshing}
+            variant="outline"
+            className="flex items-center"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button
             onClick={() => setIsRoleManagerOpen(true)}
             variant="outline"
             className="flex items-center"
