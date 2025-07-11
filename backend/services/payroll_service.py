@@ -241,7 +241,7 @@ class PayrollService:
             'employer_taxes': employer_taxes.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         }
     
-    def _calculate_federal_income_tax(self, payroll_info: EmployeePayrollInfo, gross_pay: Decimal) -> Decimal:
+    async def _calculate_federal_income_tax(self, payroll_info: EmployeePayrollInfo, gross_pay: Decimal) -> Decimal:
         """Calculate federal income tax using tax tables"""
         
         if not payroll_info.federal_filing_status:
@@ -249,17 +249,20 @@ class PayrollService:
         
         # Get current year tax table
         current_year = datetime.now().year
-        tax_table = self.db.query(FederalTaxTable).filter(
-            FederalTaxTable.tax_year == current_year,
-            FederalTaxTable.filing_status == payroll_info.federal_filing_status,
-            FederalTaxTable.pay_frequency == payroll_info.pay_frequency,
-            FederalTaxTable.income_from <= gross_pay,
-            or_(FederalTaxTable.income_to.is_(None), FederalTaxTable.income_to >= gross_pay)
-        ).first()
+        result = await self.db.execute(
+            select(FederalTaxTable).filter(
+                FederalTaxTable.tax_year == current_year,
+                FederalTaxTable.filing_status == payroll_info.federal_filing_status,
+                FederalTaxTable.pay_frequency == payroll_info.pay_frequency,
+                FederalTaxTable.income_from <= gross_pay,
+                or_(FederalTaxTable.income_to.is_(None), FederalTaxTable.income_to >= gross_pay)
+            )
+        )
+        tax_table = result.scalars().first()
         
         if not tax_table:
             # Fallback calculation - simplified percentage method
-            return self._calculate_federal_tax_percentage_method(payroll_info, gross_pay)
+            return await self._calculate_federal_tax_percentage_method(payroll_info, gross_pay)
         
         # Calculate tax using tax table
         excess_income = gross_pay - tax_table.income_from
