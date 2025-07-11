@@ -174,10 +174,21 @@ const AccessControl = () => {
           <h1 className="text-2xl font-bold text-gray-900">Access Control</h1>
           <p className="text-gray-600">Manage user permissions and security settings</p>
         </div>
-        <Button onClick={saveAccessSettings} className="bg-blue-600 hover:bg-blue-700">
-          <Shield className="w-4 h-4 mr-2" />
-          Save Settings
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            onClick={refreshData}
+            disabled={refreshing}
+            variant="outline"
+            className="flex items-center"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button onClick={saveAccessSettings} className="bg-blue-600 hover:bg-blue-700">
+            <Shield className="w-4 h-4 mr-2" />
+            Save Settings
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="levels" className="w-full">
