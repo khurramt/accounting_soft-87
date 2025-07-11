@@ -21,15 +21,67 @@ import {
 } from "lucide-react";
 
 const ChartOfAccounts = () => {
+  const { currentCompany } = useCompany();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [showInactive, setShowInactive] = useState(false);
+  const [accounts, setAccounts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const filteredAccounts = mockAccounts.filter(account => {
-    const matchesSearch = account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         account.number.includes(searchTerm);
+  // Load accounts data
+  useEffect(() => {
+    if (currentCompany?.id) {
+      loadAccounts();
+    }
+  }, [currentCompany?.id]);
+
+  const loadAccounts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const accountsData = await accountService.getAccounts(currentCompany.id, {
+        limit: 1000, // Get all accounts
+        is_active: showInactive ? undefined : true,
+        search: searchTerm || undefined,
+        account_type: filterType === "all" ? undefined : filterType
+      });
+      
+      setAccounts(accountsData.data || []);
+    } catch (err) {
+      setError(err.message || 'Failed to load accounts');
+      console.error('Error loading accounts:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadAccounts();
+    setRefreshing(false);
+  };
+
+  // Handle search and filter changes
+  useEffect(() => {
+    if (currentCompany?.id) {
+      const delayedSearch = setTimeout(() => {
+        loadAccounts();
+      }, 500);
+      
+      return () => clearTimeout(delayedSearch);
+    }
+  }, [searchTerm, filterType, showInactive]);
+
+  const filteredAccounts = accounts.filter(account => {
+    const matchesSearch = searchTerm === "" || 
+                         account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (account.number && account.number.includes(searchTerm));
     const matchesType = filterType === "all" || account.type.toLowerCase() === filterType.toLowerCase();
-    return matchesSearch && matchesType;
+    const matchesActive = showInactive || account.is_active;
+    return matchesSearch && matchesType && matchesActive;
   });
 
   const getTypeColor = (type) => {
