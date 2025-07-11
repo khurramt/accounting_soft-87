@@ -723,7 +723,7 @@ const EditUserForm = ({ user, onSubmit, roles, departments, availablePermissions
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={() => {}}>
           Cancel
         </Button>
         <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
