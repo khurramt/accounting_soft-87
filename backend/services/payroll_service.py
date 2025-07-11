@@ -1,8 +1,8 @@
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, date, timedelta
 from typing import List, Dict, Optional, Tuple, Any
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import and_, or_, func, select
 import uuid
 
 from models.payroll import (
@@ -17,7 +17,7 @@ from schemas.payroll_schemas import (
 )
 
 class PayrollService:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
     
     def calculate_payroll_run(self, company_id: str, payroll_run_data: PayrollRunCreate) -> PayrollRunCalculationResponse:
