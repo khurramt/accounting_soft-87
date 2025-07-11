@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Path
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func, desc, asc
+from sqlalchemy import and_, or_, func, desc, asc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from datetime import datetime, date, timedelta
 import uuid
