@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the API URL
-API_URL="https://349cd279-bb14-4e92-a870-469588c2eaf4.preview.emergentagent.com/api"
+API_URL="https://7f0f4a26-b0c6-435b-a023-2778db00407d.preview.emergentagent.com/api"
 echo "Using API URL: $API_URL"
 
 # Set the access token

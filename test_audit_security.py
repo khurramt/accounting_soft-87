@@ -29,7 +29,7 @@ import os
 sys.path.append('/app/backend')
 
 # Configuration
-BASE_URL = "https://349cd279-bb14-4e92-a870-469588c2eaf4.preview.emergentagent.com"
+BASE_URL = "https://7f0f4a26-b0c6-435b-a023-2778db00407d.preview.emergentagent.com"
 TEST_EMAIL = "demo@quickbooks.com"
 TEST_PASSWORD = "Password123!"
 
