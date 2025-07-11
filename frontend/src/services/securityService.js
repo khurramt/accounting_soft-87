@@ -105,6 +105,49 @@ export const securityService = {
   async updateSecuritySettings(companyId, settings) {
     const response = await apiClient.put(`/companies/${companyId}/security/settings`, settings);
     return response.data;
+  },
+
+  // Company User Management
+  async getCompanyUsers(companyId) {
+    const response = await apiClient.get(`/companies/${companyId}/users`);
+    return response.data;
+  },
+
+  async inviteUser(companyId, userData) {
+    const response = await apiClient.post(`/companies/${companyId}/users/invite`, userData);
+    return response.data;
+  },
+
+  async updateCompanyUser(companyId, userId, userData) {
+    const response = await apiClient.put(`/companies/${companyId}/users/${userId}`, userData);
+    return response.data;
+  },
+
+  async removeCompanyUser(companyId, userId) {
+    const response = await apiClient.delete(`/companies/${companyId}/users/${userId}`);
+    return response.data;
+  },
+
+  // Password reset functionality
+  async resetUserPassword(companyId, userId, newPassword) {
+    const response = await apiClient.post(`/companies/${companyId}/users/${userId}/reset-password`, { 
+      newPassword 
+    });
+    return response.data;
+  },
+
+  async toggleUserStatus(companyId, userId, status) {
+    const response = await apiClient.put(`/companies/${companyId}/users/${userId}`, { 
+      status 
+    });
+    return response.data;
+  },
+
+  async toggleTwoFactor(companyId, userId, enabled) {
+    const response = await apiClient.put(`/companies/${companyId}/users/${userId}`, { 
+      twoFactorEnabled: enabled 
+    });
+    return response.data;
   }
 };
 
