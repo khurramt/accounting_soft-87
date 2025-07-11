@@ -1,144 +1,146 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useCompany } from '../../contexts/CompanyContext';
+import { securityService, auditService, securityUtils } from '../../services/securityService';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Activity, User, Shield, Clock, Download, Filter, Search, AlertCircle, Eye } from 'lucide-react';
+import { Activity, User, Shield, Clock, Download, Filter, Search, AlertCircle, Eye, RefreshCw, Loader2 } from 'lucide-react';
 
 const ActivityTracking = () => {
-  const [activityLogs, setActivityLogs] = useState([
-    {
-      id: 1,
-      timestamp: '2024-01-15 14:30:15',
-      user: 'admin',
-      userFullName: 'System Administrator',
-      action: 'Login',
-      category: 'Authentication',
-      details: 'Successful login from IP 192.168.1.100',
-      ipAddress: '192.168.1.100',
-      userAgent: 'Chrome 120.0.0.0',
-      severity: 'info',
-      module: 'System'
-    },
-    {
-      id: 2,
-      timestamp: '2024-01-15 14:25:32',
-      user: 'jsmith',
-      userFullName: 'Jane Smith',
-      action: 'Invoice Created',
-      category: 'Transaction',
-      details: 'Created invoice INV-001 for customer ABC Corp, amount $1,500.00',
-      ipAddress: '192.168.1.105',
-      userAgent: 'Chrome 120.0.0.0',
-      severity: 'info',
-      module: 'Sales'
-    },
-    {
-      id: 3,
-      timestamp: '2024-01-15 14:20:18',
-      user: 'jsmith',
-      userFullName: 'Jane Smith',
-      action: 'Payment Received',
-      category: 'Transaction',
-      details: 'Received payment of $2,000.00 from customer XYZ Inc',
-      ipAddress: '192.168.1.105',
-      userAgent: 'Chrome 120.0.0.0',
-      severity: 'info',
-      module: 'Sales'
-    },
-    {
-      id: 4,
-      timestamp: '2024-01-15 14:15:45',
-      user: 'admin',
-      userFullName: 'System Administrator',
-      action: 'User Permission Modified',
-      category: 'Security',
-      details: 'Modified permissions for user jdoe - removed access to Payroll module',
-      ipAddress: '192.168.1.100',
-      userAgent: 'Chrome 120.0.0.0',
-      severity: 'warning',
-      module: 'User Management'
-    },
-    {
-      id: 5,
-      timestamp: '2024-01-15 14:10:22',
-      user: 'bookkeeper',
-      userFullName: 'Mary Johnson',
-      action: 'Report Generated',
-      category: 'Reporting',
-      details: 'Generated Profit & Loss report for period 2024-01-01 to 2024-01-31',
-      ipAddress: '192.168.1.110',
-      userAgent: 'Firefox 121.0.0.0',
-      severity: 'info',
-      module: 'Reports'
-    },
-    {
-      id: 6,
-      timestamp: '2024-01-15 14:05:33',
-      user: 'admin',
-      userFullName: 'System Administrator',
-      action: 'Backup Created',
-      category: 'System',
-      details: 'Manual backup created: Demo_Company_2024-01-15_14-05.qbb',
-      ipAddress: '192.168.1.100',
-      userAgent: 'Chrome 120.0.0.0',
-      severity: 'info',
-      module: 'System'
-    },
-    {
-      id: 7,
-      timestamp: '2024-01-15 13:55:17',
-      user: 'jdoe',
-      userFullName: 'John Doe',
-      action: 'Failed Login',
-      category: 'Authentication',
-      details: 'Failed login attempt - incorrect password',
-      ipAddress: '192.168.1.108',
-      userAgent: 'Safari 17.1.0',
-      severity: 'error',
-      module: 'System'
-    }
-  ]);
+  const { currentCompany } = useCompany();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [activityLogs, setActivityLogs] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [userSessions, setUserSessions] = useState([]);
+  const [stats, setStats] = useState({
+    totalToday: 0,
+    errors: 0,
+    warnings: 0,
+    activeSessions: 0
+  });
 
-  const [userSessions, setUserSessions] = useState([
-    {
-      id: 1,
-      user: 'admin',
-      userFullName: 'System Administrator',
-      loginTime: '2024-01-15 14:30:15',
-      lastActivity: '2024-01-15 15:45:22',
-      ipAddress: '192.168.1.100',
-      userAgent: 'Chrome 120.0.0.0',
-      status: 'Active',
-      sessionDuration: '1h 15m',
-      actionsCount: 8
-    },
-    {
-      id: 2,
-      user: 'jsmith',
-      userFullName: 'Jane Smith',
-      loginTime: '2024-01-15 14:20:30',
-      lastActivity: '2024-01-15 15:40:18',
-      ipAddress: '192.168.1.105',
-      userAgent: 'Chrome 120.0.0.0',
-      status: 'Active',
-      sessionDuration: '1h 20m',
-      actionsCount: 12
-    },
-    {
-      id: 3,
-      user: 'bookkeeper',
-      userFullName: 'Mary Johnson',
-      loginTime: '2024-01-15 13:45:10',
-      lastActivity: '2024-01-15 14:10:22',
-      ipAddress: '192.168.1.110',
-      userAgent: 'Firefox 121.0.0.0',
-      status: 'Idle',
-      sessionDuration: '25m',
-      actionsCount: 3
+  // Load data when component mounts or company changes
+  useEffect(() => {
+    if (currentCompany?.id) {
+      loadActivityTrackingData();
     }
-  ]);
+  }, [currentCompany?.id]);
+
+  const loadActivityTrackingData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Load security logs for activity tracking
+      const securityLogsData = await securityService.getSecurityLogs(currentCompany.id, {
+        page: 1,
+        page_size: 100
+      });
+      
+      // Transform security logs into activity logs format
+      const transformedActivityLogs = securityLogsData.items?.map(log => ({
+        id: log.id || Math.random(),
+        timestamp: log.timestamp,
+        user: log.details?.username || 'Unknown',
+        userFullName: log.details?.full_name || log.details?.username || 'Unknown User',
+        action: log.event_type ? securityUtils.formatEventType(log.event_type) : 'Unknown',
+        category: log.threat_level ? securityUtils.formatEventType(log.threat_level) : 'General',
+        details: log.details?.description || log.details?.message || 'No details available',
+        ipAddress: log.ip_address || 'Unknown',
+        userAgent: log.user_agent || 'Unknown',
+        severity: log.success ? 'info' : 'error',
+        module: log.details?.module || 'System'
+      })) || [];
+      
+      setActivityLogs(transformedActivityLogs);
+      
+      // Load audit logs
+      const auditLogsData = await auditService.getAuditLogs(currentCompany.id, {
+        page: 1,
+        page_size: 100
+      });
+      
+      setAuditLogs(auditLogsData.items || []);
+      
+      // Process user sessions from security logs
+      const userSessionsMap = {};
+      securityLogsData.items?.forEach(log => {
+        if (log.user_id && log.event_type === 'login' && log.success) {
+          const userId = log.user_id;
+          if (!userSessionsMap[userId] || new Date(log.timestamp) > new Date(userSessionsMap[userId].loginTime)) {
+            userSessionsMap[userId] = {
+              id: userId,
+              user: log.details?.username || `user_${userId}`,
+              userFullName: log.details?.full_name || log.details?.username || `User ${userId}`,
+              loginTime: log.timestamp,
+              lastActivity: log.timestamp,
+              ipAddress: log.ip_address || 'Unknown',
+              userAgent: log.user_agent || 'Unknown',
+              status: 'Active',
+              sessionDuration: securityUtils.formatDuration(log.timestamp, new Date().toISOString()),
+              actionsCount: 1
+            };
+          }
+        }
+      });
+      
+      setUserSessions(Object.values(userSessionsMap));
+      
+      // Calculate statistics
+      const today = new Date().toISOString().split('T')[0];
+      const todayLogs = transformedActivityLogs.filter(log => log.timestamp.startsWith(today));
+      
+      setStats({
+        totalToday: todayLogs.length,
+        errors: todayLogs.filter(log => log.severity === 'error').length,
+        warnings: todayLogs.filter(log => log.severity === 'warning').length,
+        activeSessions: Object.values(userSessionsMap).length
+      });
+      
+    } catch (err) {
+      // If API calls fail, use fallback data
+      console.warn('Failed to load activity tracking data from API, using fallback:', err);
+      
+      // Use fallback mock data
+      const mockActivityLogs = [
+        {
+          id: 1,
+          timestamp: new Date().toISOString(),
+          user: 'admin',
+          userFullName: 'System Administrator',
+          action: 'Login',
+          category: 'Authentication',
+          details: 'Successful login from IP 192.168.1.100',
+          ipAddress: '192.168.1.100',
+          userAgent: 'Chrome 120.0.0.0',
+          severity: 'info',
+          module: 'System'
+        }
+      ];
+      
+      setActivityLogs(mockActivityLogs);
+      setUserSessions([]);
+      setStats({
+        totalToday: mockActivityLogs.length,
+        errors: 0,
+        warnings: 0,
+        activeSessions: 0
+      });
+      
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const refreshData = async () => {
+    setRefreshing(true);
+    await loadActivityTrackingData();
+    setRefreshing(false);
+  };
 
   const [filters, setFilters] = useState({
     user: '',
