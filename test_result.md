@@ -648,11 +648,11 @@
 
   - task: "Payroll Integration - Phase 3.2"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/api/payroll.py, /app/frontend/src/services/payrollService.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "main"
@@ -663,6 +663,9 @@
         - working: true
           agent: "main"
           comment: "🔧 PAYROLL ROUTER REGISTRATION CONFIRMED: Verified that payroll endpoints are now accessible and returning 403 (authentication required) instead of 404 (not found), confirming proper routing is working. The previous 500 Internal Server Error issues may have been related to the overall backend startup problems. Ready for comprehensive testing with proper authentication to identify and resolve any remaining service layer issues."
+        - working: false
+          agent: "testing"
+          comment: "❌ PAYROLL INTEGRATION TESTING FAILED - CRITICAL SERVICE LAYER ISSUES: Comprehensive testing confirms that while the Payroll Integration Phase 3.2 routing is working correctly (no more 404 errors), there are critical service layer implementation issues preventing functionality: 1) ❌ GET /companies/{id}/payroll-items returns 500 Internal Server Error - Database/service layer issue, 2) ❌ POST /companies/{id}/payroll-items returns 422 validation error - Schema mismatch: expected enum values 'wages', 'salary', 'overtime', 'bonus', 'commission', 'allowance', 'deduction', 'tax', 'benefits', 'reimbursement' but test used 'earning', 3) ❌ GET /companies/{id}/time-entries returns 500 Internal Server Error - Database/service layer issue, 4) ❌ GET /companies/{id}/payroll-runs returns 500 Internal Server Error - Database/service layer issue, 5) ❌ POST /companies/{id}/payroll-runs returns 500 Internal Server Error - Database/service layer issue, 6) ❌ GET /companies/{id}/paychecks returns 500 Internal Server Error - Database/service layer issue, 7) ❌ GET /companies/{id}/payroll-liabilities returns 500 Internal Server Error - Database/service layer issue. CRITICAL ISSUES: All payroll endpoints are accessible (routing fixed) but fail with 500 errors indicating database connection problems, missing service implementations, or database schema issues. The payroll service layer needs significant debugging and implementation fixes."
 
   - task: "Accounts API Integration - Chart of Accounts"
     implemented: true
