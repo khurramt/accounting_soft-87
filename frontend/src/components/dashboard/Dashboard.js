@@ -79,8 +79,24 @@ const Dashboard = () => {
   }, [currentCompany?.company_id, dateRange]);
 
   // Handle refresh
-  const handleRefresh = () => {
-    loadDashboardData();
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    try {
+      await Promise.all([
+        loadDashboardData(),
+        loadRecentTransactions(),
+        loadOutstandingInvoices()
+      ]);
+    } catch (error) {
+      console.error('Error refreshing dashboard:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCustomizeDashboard = () => {
+    // Navigate to dashboard customization page
+    navigate('/dashboard/customize');
   };
 
   // Handle date range change
