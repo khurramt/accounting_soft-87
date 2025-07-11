@@ -310,7 +310,7 @@ class PayrollService:
         
         return tax
     
-    def _calculate_state_income_tax(self, payroll_info: EmployeePayrollInfo, gross_pay: Decimal) -> Decimal:
+    async def _calculate_state_income_tax(self, payroll_info: EmployeePayrollInfo, gross_pay: Decimal) -> Decimal:
         """Calculate state income tax"""
         
         if not payroll_info.state_code or not payroll_info.state_filing_status:
@@ -323,18 +323,21 @@ class PayrollService:
         
         # Get current year state tax table
         current_year = datetime.now().year
-        tax_table = self.db.query(StateTaxTable).filter(
-            StateTaxTable.state_code == payroll_info.state_code,
-            StateTaxTable.tax_year == current_year,
-            StateTaxTable.filing_status == payroll_info.state_filing_status,
-            StateTaxTable.pay_frequency == payroll_info.pay_frequency,
-            StateTaxTable.income_from <= gross_pay,
-            or_(StateTaxTable.income_to.is_(None), StateTaxTable.income_to >= gross_pay)
-        ).first()
+        result = await self.db.execute(
+            select(StateTaxTable).filter(
+                StateTaxTable.state_code == payroll_info.state_code,
+                StateTaxTable.tax_year == current_year,
+                StateTaxTable.filing_status == payroll_info.state_filing_status,
+                StateTaxTable.pay_frequency == payroll_info.pay_frequency,
+                StateTaxTable.income_from <= gross_pay,
+                or_(StateTaxTable.income_to.is_(None), StateTaxTable.income_to >= gross_pay)
+            )
+        )
+        tax_table = result.scalars().first()
         
         if not tax_table:
             # Fallback - use simplified rate based on state
-            return self._calculate_state_tax_simplified(payroll_info, gross_pay)
+            return await self._calculate_state_tax_simplified(payroll_info, gross_pay)
         
         # Calculate tax using state tax table
         excess_income = gross_pay - tax_table.income_from
