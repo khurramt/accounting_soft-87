@@ -89,14 +89,24 @@ const UserManagement = () => {
 
   const handleUpdateUser = async (updatedUser) => {
     try {
-      // In a real implementation, this would update a user via API
-      setUsers(users.map(user => 
-        user.id === updatedUser.id ? updatedUser : user
-      ));
+      setLoading(true);
+      
+      // Use the update user API
+      const response = await securityService.updateCompanyUser(currentCompany.id, updatedUser.id, updatedUser);
+      
+      // Refresh the user list after updating
+      await loadUserManagementData();
+      
       setSelectedUser(null);
+      
+      // Show success message
+      alert(`User updated successfully! ${response.message}`);
+      
     } catch (err) {
       console.error('Error updating user:', err);
-      alert('Failed to update user. Please try again.');
+      alert(`Failed to update user: ${err.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
     }
   };
 
