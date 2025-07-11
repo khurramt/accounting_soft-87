@@ -103,18 +103,21 @@ async def get_payroll_items(
 async def create_payroll_item(
     company_id: str = Path(..., description="Company ID"),
     payroll_item_data: PayrollItemCreate = ...,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Create a new payroll item"""
     
-    verify_company_access(company_id, current_user, db)
+    await verify_company_access(company_id, current_user, db)
     
     # Check if payroll item name already exists for this company
-    existing_item = db.query(PayrollItem).filter(
-        PayrollItem.company_id == company_id,
-        PayrollItem.item_name == payroll_item_data.item_name
-    ).first()
+    existing_item_result = await db.execute(
+        select(PayrollItem).filter(
+            PayrollItem.company_id == company_id,
+            PayrollItem.item_name == payroll_item_data.item_name
+        )
+    )
+    existing_item = existing_item_result.scalars().first()
     
     if existing_item:
         raise HTTPException(
@@ -129,8 +132,8 @@ async def create_payroll_item(
     )
     
     db.add(payroll_item)
-    db.commit()
-    db.refresh(payroll_item)
+    await db.commit()
+    await db.refresh(payroll_item)
     
     return payroll_item
 
