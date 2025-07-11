@@ -139,6 +139,15 @@ const ChartOfAccounts = () => {
           <p className="text-gray-600">Manage your company's accounts</p>
         </div>
         <div className="flex items-center space-x-2">
+          <Button 
+            onClick={handleRefresh} 
+            variant="outline" 
+            size="sm"
+            disabled={refreshing}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
           <Button className="bg-green-600 hover:bg-green-700">
             <Plus className="w-4 h-4 mr-2" />
             New Account
