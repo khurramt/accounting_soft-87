@@ -635,7 +635,7 @@
     file: "/app/backend/api/banking.py, /app/frontend/src/services/bankingService.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
