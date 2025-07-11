@@ -402,7 +402,18 @@ const InventoryCenter = () => {
                   Inventory Items
                 </CardTitle>
                 <div className="flex space-x-2">
-                  <Button size="sm" variant="outline">
+                  <input
+                    type="file"
+                    accept=".csv,.xlsx,.xls"
+                    onChange={handleImportInventory}
+                    style={{ display: 'none' }}
+                    id="import-inventory-file"
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => document.getElementById('import-inventory-file').click()}
+                  >
                     <Upload className="w-4 h-4 mr-2" />
                     Import
                   </Button>
