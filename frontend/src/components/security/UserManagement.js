@@ -638,7 +638,7 @@ const AddUserForm = ({ onSubmit, onCancel, roles, departments }) => {
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={() => {}}>
+        <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
         <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
