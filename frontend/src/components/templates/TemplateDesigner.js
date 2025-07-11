@@ -1,13 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useCompany } from '../../contexts/CompanyContext';
+import { templateService } from '../../services/templateService';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Badge } from '../ui/badge';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Badge } from '../ui/badge';
+import { Switch } from '../ui/switch';
 import { 
-  Palette, Type, Layout, Image, Save, Eye, Copy, 
-  Download, Upload, Undo, Redo, AlignLeft, AlignCenter, 
-  AlignRight, Bold, Italic, Underline
+  FileText, 
+  Eye, 
+  Download, 
+  Upload, 
+  Save, 
+  Copy, 
+  Trash2,
+  Settings,
+  Image,
+  Type,
+  Palette,
+  Layout,
+  Undo,
+  Redo,
+  Bold,
+  Italic,
+  Underline,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Plus,
+  Loader2
 } from 'lucide-react';
 
 const TemplateDesigner = () => {
