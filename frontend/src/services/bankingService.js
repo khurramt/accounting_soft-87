@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient';
+import apiClient from './apiClient';
 
 // Banking Service - Handles all banking-related API calls
 export const bankingService = {
