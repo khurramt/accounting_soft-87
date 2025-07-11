@@ -407,13 +407,16 @@ class PayrollService:
         
         return payroll_run
     
-    def process_payroll_run(self, payroll_run_id: str, company_id: str) -> PayrollRun:
+    async def process_payroll_run(self, payroll_run_id: str, company_id: str) -> PayrollRun:
         """Process payroll run and create paychecks"""
         
-        payroll_run = self.db.query(PayrollRun).filter(
-            PayrollRun.payroll_run_id == payroll_run_id,
-            PayrollRun.company_id == company_id
-        ).first()
+        result = await self.db.execute(
+            select(PayrollRun).filter(
+                PayrollRun.payroll_run_id == payroll_run_id,
+                PayrollRun.company_id == company_id
+            )
+        )
+        payroll_run = result.scalars().first()
         
         if not payroll_run:
             raise ValueError("Payroll run not found")
@@ -429,7 +432,7 @@ class PayrollService:
             run_type=payroll_run.run_type
         )
         
-        calc_response = self.calculate_payroll_run(company_id, payroll_run_data)
+        calc_response = await self.calculate_payroll_run(company_id, payroll_run_data)
         
         # Update payroll run totals
         payroll_run.total_gross_pay = calc_response.total_gross_pay
@@ -442,12 +445,12 @@ class PayrollService:
         
         # Create paychecks for each employee
         for calc in calc_response.calculations:
-            self._create_paycheck(payroll_run, calc)
+            await self._create_paycheck(payroll_run, calc)
         
-        self.db.commit()
+        await self.db.commit()
         
         # Create payroll liabilities
-        self._create_payroll_liabilities(payroll_run)
+        await self._create_payroll_liabilities(payroll_run)
         
         return payroll_run
     
