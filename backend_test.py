@@ -1733,6 +1733,773 @@ def test_update_payment():
         print(f"❌ Update payment test failed: {str(e)}")
         return False
 
+# ===== BANKING API TESTS =====
+
+def test_get_bank_connections():
+    """Test getting bank connections"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get bank connections test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get bank connections...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/bank-connections", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "connections" in data and "total" in data:
+                print(f"✅ Get bank connections test passed (Found {data['total']} connections)")
+                return True
+            else:
+                print(f"❌ Get bank connections test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get bank connections test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get bank connections test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get bank connections test failed: {str(e)}")
+        return False
+
+def test_create_bank_connection():
+    """Test creating a bank connection"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create bank connection test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing create bank connection...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        payload = {
+            "institution_name": f"Test Bank {timestamp}",
+            "account_name": f"Test Checking Account {timestamp}",
+            "account_type": "checking",
+            "account_number": f"1234567890{timestamp[-4:]}",
+            "routing_number": "123456789",
+            "is_active": True,
+            "auto_sync": True,
+            "sync_frequency": "daily"
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/bank-connections", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 201:
+            if "connection_id" in data:
+                print(f"✅ Create bank connection test passed (ID: {data['connection_id']})")
+                return True
+            else:
+                print(f"❌ Create bank connection test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Create bank connection test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Create bank connection test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Create bank connection test failed: {str(e)}")
+        return False
+
+def test_get_bank_transactions():
+    """Test getting bank transactions with filtering"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get bank transactions test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get bank transactions with filtering...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with various filters
+        filters = [
+            {"name": "No filters", "params": {}},
+            {"name": "Filter by status", "params": {"status": "pending"}},
+            {"name": "Filter by transaction type", "params": {"transaction_type": "debit"}},
+            {"name": "Filter by date range", "params": {
+                "date_from": (date.today() - timedelta(days=30)).isoformat(),
+                "date_to": date.today().isoformat()
+            }},
+            {"name": "Filter by amount range", "params": {"amount_min": 0, "amount_max": 1000}},
+            {"name": "Pagination", "params": {"skip": 0, "limit": 10}}
+        ]
+        
+        for filter_test in filters:
+            print(f"\n  Testing {filter_test['name']}...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/bank-transactions", 
+                headers=headers, 
+                params=filter_test["params"],
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"  Found {data.get('total', 0)} transactions")
+                print(f"  ✅ {filter_test['name']} test passed")
+            else:
+                print(f"  ❌ {filter_test['name']} test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Get bank transactions with filtering test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Get bank transactions test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get bank transactions test failed: {str(e)}")
+        return False
+
+def test_search_institutions():
+    """Test searching bank institutions"""
+    global ACCESS_TOKEN
+    
+    if not ACCESS_TOKEN:
+        print("❌ Search institutions test skipped: No access token available")
+        return False
+    
+    try:
+        print("\n🔍 Testing search bank institutions...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with various search parameters
+        searches = [
+            {"name": "Search by name", "params": {"name_contains": "Bank"}},
+            {"name": "Search by routing number", "params": {"routing_number": "123456789"}},
+            {"name": "Filter by OFX support", "params": {"supports_ofx": True}},
+            {"name": "No filters", "params": {}}
+        ]
+        
+        for search_test in searches:
+            print(f"\n  Testing {search_test['name']}...")
+            
+            response = requests.get(
+                f"{API_URL}/banking/institutions/search", 
+                headers=headers, 
+                params=search_test["params"],
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"  Found {data.get('total', 0)} institutions")
+                print(f"  ✅ {search_test['name']} test passed")
+            else:
+                print(f"  ❌ {search_test['name']} test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Search institutions test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Search institutions test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Search institutions test failed: {str(e)}")
+        return False
+
+def test_upload_bank_statement():
+    """Test uploading a bank statement file"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Upload bank statement test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing upload bank statement...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Create a mock CSV file content
+        csv_content = """Date,Description,Amount,Type
+2024-01-01,Opening Balance,1000.00,Credit
+2024-01-02,Test Transaction 1,-50.00,Debit
+2024-01-03,Test Transaction 2,100.00,Credit"""
+        
+        # Create file-like object
+        files = {
+            'file': ('test_statement.csv', csv_content, 'text/csv')
+        }
+        
+        data = {
+            'connection_id': None  # Optional parameter
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/bank-statements/upload", 
+            headers=headers, 
+            files=files,
+            data=data,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            response_data = response.json()
+            print(f"Response: {pretty_print_json(response_data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "file_id" in response_data and "upload_status" in response_data:
+                print(f"✅ Upload bank statement test passed (Status: {response_data['upload_status']})")
+                return True
+            else:
+                print(f"❌ Upload bank statement test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Upload bank statement test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Upload bank statement test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Upload bank statement test failed: {str(e)}")
+        return False
+
+def test_account_merge():
+    """Test account merging functionality"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Account merge test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing account merge functionality...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # First, create two test accounts to merge
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        # Create source account
+        source_payload = {
+            "account_name": f"Source Account {timestamp}",
+            "account_type": "expense",
+            "account_number": f"SRC{timestamp}",
+            "description": "Source account for merge test",
+            "is_active": True
+        }
+        
+        source_response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/accounts/", 
+            headers=headers, 
+            json=source_payload, 
+            timeout=TIMEOUT
+        )
+        
+        if source_response.status_code != 201:
+            print(f"❌ Failed to create source account: {source_response.status_code}")
+            return False
+        
+        source_account_id = source_response.json()["account_id"]
+        print(f"Created source account: {source_account_id}")
+        
+        # Create target account
+        target_payload = {
+            "account_name": f"Target Account {timestamp}",
+            "account_type": "expense",
+            "account_number": f"TGT{timestamp}",
+            "description": "Target account for merge test",
+            "is_active": True
+        }
+        
+        target_response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/accounts/", 
+            headers=headers, 
+            json=target_payload, 
+            timeout=TIMEOUT
+        )
+        
+        if target_response.status_code != 201:
+            print(f"❌ Failed to create target account: {target_response.status_code}")
+            return False
+        
+        target_account_id = target_response.json()["account_id"]
+        print(f"Created target account: {target_account_id}")
+        
+        # Now test the merge
+        merge_response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/accounts/{source_account_id}/merge",
+            headers=headers,
+            params={"target_account_id": target_account_id},
+            timeout=TIMEOUT
+        )
+        print(f"Merge Status Code: {merge_response.status_code}")
+        
+        try:
+            merge_data = merge_response.json()
+            print(f"Merge Response: {pretty_print_json(merge_data)}")
+        except:
+            print(f"Merge Response: {merge_response.text}")
+            return False
+        
+        if merge_response.status_code == 200:
+            if "message" in merge_data and "merged" in merge_data["message"].lower():
+                print("✅ Account merge test passed")
+                return True
+            else:
+                print(f"❌ Account merge test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Account merge test failed: Status code {merge_response.status_code}")
+            return False
+            
+    except requests.exceptions.Timeout:
+        print(f"❌ Account merge test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Account merge test failed: {str(e)}")
+        return False
+
+# ===== PAYROLL API TESTS =====
+
+def test_get_payroll_items():
+    """Test getting payroll items"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get payroll items test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get payroll items...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with various filters
+        filters = [
+            {"name": "No filters", "params": {}},
+            {"name": "Filter by item type", "params": {"item_type": "earning"}},
+            {"name": "Filter by active status", "params": {"is_active": True}},
+            {"name": "Search by name", "params": {"search": "salary"}},
+            {"name": "Pagination", "params": {"page": 1, "page_size": 10}}
+        ]
+        
+        for filter_test in filters:
+            print(f"\n  Testing {filter_test['name']}...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/payroll-items", 
+                headers=headers, 
+                params=filter_test["params"],
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"  Found {data.get('total', 0)} payroll items")
+                print(f"  ✅ {filter_test['name']} test passed")
+            else:
+                print(f"  ❌ {filter_test['name']} test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Get payroll items test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Get payroll items test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get payroll items test failed: {str(e)}")
+        return False
+
+def test_create_payroll_item():
+    """Test creating a payroll item"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create payroll item test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing create payroll item...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        payload = {
+            "item_name": f"Test Salary Item {timestamp}",
+            "item_type": "earning",
+            "calculation_type": "fixed",
+            "amount": 5000.00,
+            "is_taxable": True,
+            "is_active": True,
+            "description": f"Test payroll item created at {timestamp}"
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/payroll-items", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 201:
+            if "payroll_item_id" in data:
+                print(f"✅ Create payroll item test passed (ID: {data['payroll_item_id']})")
+                return True
+            else:
+                print(f"❌ Create payroll item test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Create payroll item test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Create payroll item test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Create payroll item test failed: {str(e)}")
+        return False
+
+def test_get_time_entries():
+    """Test getting time entries"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get time entries test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get time entries...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with various filters
+        filters = [
+            {"name": "No filters", "params": {}},
+            {"name": "Filter by date range", "params": {
+                "start_date": (date.today() - timedelta(days=30)).isoformat(),
+                "end_date": date.today().isoformat()
+            }},
+            {"name": "Filter by approved status", "params": {"approved": False}},
+            {"name": "Filter by billable status", "params": {"billable": True}},
+            {"name": "Pagination", "params": {"page": 1, "page_size": 10}}
+        ]
+        
+        for filter_test in filters:
+            print(f"\n  Testing {filter_test['name']}...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/time-entries", 
+                headers=headers, 
+                params=filter_test["params"],
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"  Found {data.get('total', 0)} time entries")
+                print(f"  ✅ {filter_test['name']} test passed")
+            else:
+                print(f"  ❌ {filter_test['name']} test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Get time entries test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Get time entries test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get time entries test failed: {str(e)}")
+        return False
+
+def test_get_payroll_runs():
+    """Test getting payroll runs"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get payroll runs test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get payroll runs...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with various filters
+        filters = [
+            {"name": "No filters", "params": {}},
+            {"name": "Filter by status", "params": {"status": "draft"}},
+            {"name": "Filter by year", "params": {"year": 2024}},
+            {"name": "Pagination", "params": {"page": 1, "page_size": 10}}
+        ]
+        
+        for filter_test in filters:
+            print(f"\n  Testing {filter_test['name']}...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/payroll-runs", 
+                headers=headers, 
+                params=filter_test["params"],
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"  Found {data.get('total', 0)} payroll runs")
+                print(f"  ✅ {filter_test['name']} test passed")
+            else:
+                print(f"  ❌ {filter_test['name']} test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Get payroll runs test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Get payroll runs test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get payroll runs test failed: {str(e)}")
+        return False
+
+def test_create_payroll_run():
+    """Test creating a payroll run"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create payroll run test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing create payroll run...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Calculate pay period dates
+        today = date.today()
+        pay_period_start = today - timedelta(days=14)  # 2 weeks ago
+        pay_period_end = today - timedelta(days=1)     # Yesterday
+        pay_date = today + timedelta(days=3)           # 3 days from now
+        
+        payload = {
+            "pay_period_start": pay_period_start.isoformat(),
+            "pay_period_end": pay_period_end.isoformat(),
+            "pay_date": pay_date.isoformat(),
+            "run_type": "regular"
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/payroll-runs", 
+            headers=headers, 
+            json=payload, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 201:
+            if "payroll_run_id" in data:
+                print(f"✅ Create payroll run test passed (ID: {data['payroll_run_id']})")
+                return True
+            else:
+                print(f"❌ Create payroll run test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Create payroll run test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Create payroll run test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Create payroll run test failed: {str(e)}")
+        return False
+
+def test_get_paychecks():
+    """Test getting paychecks"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get paychecks test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get paychecks...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with various filters
+        filters = [
+            {"name": "No filters", "params": {}},
+            {"name": "Filter by void status", "params": {"is_void": False}},
+            {"name": "Filter by date range", "params": {
+                "start_date": (date.today() - timedelta(days=90)).isoformat(),
+                "end_date": date.today().isoformat()
+            }},
+            {"name": "Pagination", "params": {"page": 1, "page_size": 10}}
+        ]
+        
+        for filter_test in filters:
+            print(f"\n  Testing {filter_test['name']}...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/paychecks", 
+                headers=headers, 
+                params=filter_test["params"],
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"  Found {data.get('total', 0)} paychecks")
+                print(f"  ✅ {filter_test['name']} test passed")
+            else:
+                print(f"  ❌ {filter_test['name']} test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Get paychecks test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Get paychecks test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get paychecks test failed: {str(e)}")
+        return False
+
+def test_get_payroll_liabilities():
+    """Test getting payroll liabilities"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get payroll liabilities test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get payroll liabilities...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with various filters
+        filters = [
+            {"name": "No filters", "params": {}},
+            {"name": "Filter by status", "params": {"status": "pending"}},
+            {"name": "Filter by liability type", "params": {"liability_type": "federal"}},
+            {"name": "Filter by due date", "params": {
+                "due_before": (date.today() + timedelta(days=30)).isoformat()
+            }},
+            {"name": "Pagination", "params": {"page": 1, "page_size": 10}}
+        ]
+        
+        for filter_test in filters:
+            print(f"\n  Testing {filter_test['name']}...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/payroll-liabilities", 
+                headers=headers, 
+                params=filter_test["params"],
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"  Found {data.get('total', 0)} payroll liabilities")
+                print(f"  ✅ {filter_test['name']} test passed")
+            else:
+                print(f"  ❌ {filter_test['name']} test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Get payroll liabilities test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Get payroll liabilities test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get payroll liabilities test failed: {str(e)}")
+        return False
+
+def test_get_due_payroll_liabilities():
+    """Test getting due payroll liabilities"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get due payroll liabilities test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get due payroll liabilities...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with different days ahead values
+        days_ahead_values = [7, 30, 90]
+        
+        for days_ahead in days_ahead_values:
+            print(f"\n  Testing liabilities due within {days_ahead} days...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/payroll-liabilities/due", 
+                headers=headers, 
+                params={"days_ahead": days_ahead},
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"  Found {data.get('total', 0)} due liabilities")
+                print(f"  ✅ Due liabilities ({days_ahead} days) test passed")
+            else:
+                print(f"  ❌ Due liabilities ({days_ahead} days) test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Get due payroll liabilities test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Get due payroll liabilities test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get due payroll liabilities test failed: {str(e)}")
+        return False
+
 # ===== REPORTS API TESTS =====
 
 def test_profit_loss_report():
