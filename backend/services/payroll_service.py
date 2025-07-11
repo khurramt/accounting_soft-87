@@ -454,7 +454,7 @@ class PayrollService:
         
         return payroll_run
     
-    def _create_paycheck(self, payroll_run: PayrollRun, calculation: PayrollCalculationResult):
+    async def _create_paycheck(self, payroll_run: PayrollRun, calculation: PayrollCalculationResult):
         """Create a paycheck for an employee"""
         
         paycheck = Paycheck(
@@ -472,7 +472,7 @@ class PayrollService:
         )
         
         self.db.add(paycheck)
-        self.db.flush()  # Get the paycheck ID
+        await self.db.flush()  # Get the paycheck ID
         
         # Create paycheck lines for earnings
         earnings_line = PaycheckLine(
