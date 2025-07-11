@@ -165,7 +165,7 @@ class DashboardService {
         }
       ];
     }
-  },
+  }
 
   async approveAlert(companyId, alertId) {
     try {
