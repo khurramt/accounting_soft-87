@@ -375,7 +375,7 @@ class PayrollService:
         
         return state_tax
     
-    def _calculate_deductions(self, employee_id: str, gross_pay: Decimal) -> Decimal:
+    async def _calculate_deductions(self, employee_id: str, gross_pay: Decimal) -> Decimal:
         """Calculate employee deductions (health insurance, 401k, etc.)"""
         
         # This would be more complex in a real implementation
