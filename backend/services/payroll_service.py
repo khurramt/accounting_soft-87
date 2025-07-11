@@ -186,7 +186,7 @@ class PayrollService:
         
         return gross_pay.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
     
-    def _calculate_taxes(self, payroll_info: EmployeePayrollInfo, gross_pay: Decimal) -> Dict[str, Decimal]:
+    async def _calculate_taxes(self, payroll_info: EmployeePayrollInfo, gross_pay: Decimal) -> Dict[str, Decimal]:
         """Calculate all taxes for an employee"""
         
         # Social Security tax (6.2% up to wage base)
@@ -206,10 +206,10 @@ class PayrollService:
         medicare_tax += additional_medicare_tax
         
         # Federal income tax
-        federal_income_tax = self._calculate_federal_income_tax(payroll_info, gross_pay)
+        federal_income_tax = await self._calculate_federal_income_tax(payroll_info, gross_pay)
         
         # State income tax
-        state_income_tax = self._calculate_state_income_tax(payroll_info, gross_pay)
+        state_income_tax = await self._calculate_state_income_tax(payroll_info, gross_pay)
         
         # State disability insurance (example for CA)
         state_disability_tax = Decimal('0')
