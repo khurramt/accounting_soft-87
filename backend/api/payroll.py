@@ -35,7 +35,7 @@ router = APIRouter(prefix="/companies/{company_id}", tags=["payroll"])
 security = HTTPBearer()
 
 # Helper function to verify company access
-def verify_company_access(company_id: str, current_user: User, db: Session):
+async def verify_company_access(company_id: str, current_user: User, db: AsyncSession):
     # This would check if user has access to the company
     # Implementation would depend on your company access model
     return True
