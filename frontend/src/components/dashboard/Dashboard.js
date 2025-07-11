@@ -454,7 +454,7 @@ const Dashboard = () => {
                         }`} />
                         <span>{alert.message}</span>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => handleAlertAction(alert)}>
                         {alert.action}
                       </Button>
                     </div>
