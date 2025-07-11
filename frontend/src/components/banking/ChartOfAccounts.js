@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { mockAccounts } from "../../data/mockData";
+import React, { useState, useEffect } from "react";
+import { accountService, bankingUtils } from "../../services/bankingService";
+import { useCompany } from "../../contexts/CompanyContext";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -14,7 +15,9 @@ import {
   Trash2,
   Filter,
   Eye,
-  EyeOff
+  EyeOff,
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 
 const ChartOfAccounts = () => {
