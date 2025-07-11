@@ -298,6 +298,12 @@ export const inventoryService = {
       }
     });
     return response.data;
+  },
+
+  // Purchase Order creation for reorder functionality
+  async createPurchaseOrder(companyId, purchaseOrderData) {
+    const response = await apiClient.post(`/companies/${companyId}/purchase-orders`, purchaseOrderData);
+    return response.data;
   }
 };
 
