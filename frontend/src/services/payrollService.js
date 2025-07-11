@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient';
+import apiClient from './apiClient';
 
 // Payroll Service - Handles all payroll-related API calls
 export const payrollService = {
