@@ -650,7 +650,7 @@ const AddUserForm = ({ onSubmit, onCancel, roles, departments }) => {
 };
 
 // Edit User Form Component
-const EditUserForm = ({ user, onSubmit, roles, departments, availablePermissions }) => {
+const EditUserForm = ({ user, onSubmit, onCancel, roles, departments, availablePermissions }) => {
   const [formData, setFormData] = useState({
     ...user,
     password: '',
