@@ -255,49 +255,15 @@ const PayrollCenter = () => {
     }
   ]);
 
-  // Enhanced employee data with payroll info
-  const [employees] = useState([
-    {
-      id: "1",
-      name: "John Smith",
-      email: "john.smith@company.com",
-      ssn: "***-**-1234",
-      payType: "Salary",
-      rate: 75000.00,
-      payFrequency: "Bi-weekly",
-      status: "Active",
-      hireDate: "2023-01-15",
-      lastPayDate: "2024-01-15",
-      ytdGross: 6250.00,
-      ytdTaxes: 1562.50,
-      directDeposit: true,
-      federalFilingStatus: "Married",
-      federalAllowances: 2,
-      stateFilingStatus: "Married",
-      sickHours: 40,
-      vacationHours: 80
-    },
-    {
-      id: "2",
-      name: "Jane Doe",
-      email: "jane.doe@company.com", 
-      ssn: "***-**-5678",
-      payType: "Hourly",
-      rate: 25.00,
-      payFrequency: "Bi-weekly",
-      status: "Active",
-      hireDate: "2023-03-01",
-      lastPayDate: "2024-01-15",
-      ytdGross: 4000.00,
-      ytdTaxes: 1000.00,
-      directDeposit: false,
-      federalFilingStatus: "Single",
-      federalAllowances: 1,
-      stateFilingStatus: "Single",
-      sickHours: 32,
-      vacationHours: 24
-    }
-  ]);
+  // Filtered employees for display
+  const filteredEmployees = employees.filter(employee => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      employee.name?.toLowerCase().includes(searchLower) ||
+      employee.email?.toLowerCase().includes(searchLower) ||
+      employee.employee_id?.toLowerCase().includes(searchLower)
+    );
+  });
 
   // Payroll liabilities
   const [payrollLiabilities] = useState([
