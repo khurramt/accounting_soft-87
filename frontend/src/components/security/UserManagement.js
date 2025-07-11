@@ -188,15 +188,31 @@ const UserManagement = () => {
 
   const enableTwoFactor = async (userId) => {
     try {
-      // In a real implementation, this would update 2FA setting via API
-      setUsers(users.map(user =>
-        user.id === userId
-          ? { ...user, twoFactorEnabled: !user.twoFactorEnabled }
-          : user
-      ));
+      setLoading(true);
+      
+      // Find the user to get current 2FA status
+      const user = users.find(u => u.id === userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      
+      const newStatus = !user.twoFactorEnabled;
+      
+      // Use the toggle 2FA API
+      const response = await securityService.toggleTwoFactor(currentCompany.id, userId, newStatus);
+      
+      // Refresh the user list after updating
+      await loadUserManagementData();
+      
+      // Show success message
+      const action = newStatus ? 'enabled' : 'disabled';
+      alert(`Two-factor authentication ${action} successfully! ${response.message}`);
+      
     } catch (err) {
       console.error('Error updating 2FA setting:', err);
-      alert('Failed to update 2FA setting. Please try again.');
+      alert(`Failed to update 2FA setting: ${err.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
     }
   };
 
