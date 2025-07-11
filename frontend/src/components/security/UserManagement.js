@@ -525,7 +525,7 @@ const UserManagement = () => {
 };
 
 // Add User Form Component
-const AddUserForm = ({ onSubmit, roles, departments }) => {
+const AddUserForm = ({ onSubmit, onCancel, roles, departments }) => {
   const [formData, setFormData] = useState({
     username: '',
     fullName: '',
