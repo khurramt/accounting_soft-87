@@ -113,11 +113,22 @@ const UserManagement = () => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        // In a real implementation, this would delete a user via API
-        setUsers(users.filter(user => user.id !== userId));
+        setLoading(true);
+        
+        // Use the remove user API
+        const response = await securityService.removeCompanyUser(currentCompany.id, userId);
+        
+        // Refresh the user list after deletion
+        await loadUserManagementData();
+        
+        // Show success message
+        alert(`User removed successfully! ${response.message}`);
+        
       } catch (err) {
         console.error('Error deleting user:', err);
-        alert('Failed to delete user. Please try again.');
+        alert(`Failed to delete user: ${err.message || 'Please try again.'}`);
+      } finally {
+        setLoading(false);
       }
     }
   };
