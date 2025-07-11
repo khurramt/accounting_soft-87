@@ -709,7 +709,7 @@ const TemplateDesigner = () => {
                         <Download className="w-4 h-4 mr-2" />
                         Export
                       </Button>
-                      <Button variant="outline">
+                      <Button variant="outline" onClick={resetToDefault}>
                         Reset to Default
                       </Button>
                     </div>
