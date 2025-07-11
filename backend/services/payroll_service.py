@@ -20,15 +20,18 @@ class PayrollService:
     def __init__(self, db: AsyncSession):
         self.db = db
     
-    def calculate_payroll_run(self, company_id: str, payroll_run_data: PayrollRunCreate) -> PayrollRunCalculationResponse:
+    async def calculate_payroll_run(self, company_id: str, payroll_run_data: PayrollRunCreate) -> PayrollRunCalculationResponse:
         """Calculate payroll for all employees in a payroll run"""
         
         # Get all active employees if no specific employee IDs provided
         if not payroll_run_data.employee_ids:
-            employees = self.db.query(Employee).filter(
-                Employee.company_id == company_id,
-                Employee.is_active == True
-            ).all()
+            result = await self.db.execute(
+                select(Employee).filter(
+                    Employee.company_id == company_id,
+                    Employee.is_active == True
+                )
+            )
+            employees = result.scalars().all()
             employee_ids = [emp.employee_id for emp in employees]
         else:
             employee_ids = payroll_run_data.employee_ids
@@ -41,7 +44,7 @@ class PayrollService:
         total_employer_taxes = Decimal('0')
         
         for employee_id in employee_ids:
-            calc_result = self._calculate_employee_payroll(
+            calc_result = await self._calculate_employee_payroll(
                 company_id, employee_id, payroll_run_data.pay_period_start, payroll_run_data.pay_period_end
             )
             calculations.append(calc_result)
