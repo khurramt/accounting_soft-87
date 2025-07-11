@@ -65,26 +65,29 @@ class PayrollService:
             total_employer_taxes=total_employer_taxes
         )
     
-    def _calculate_employee_payroll(self, company_id: str, employee_id: str, 
+    async def _calculate_employee_payroll(self, company_id: str, employee_id: str, 
                                   period_start: date, period_end: date) -> PayrollCalculationResult:
         """Calculate payroll for a single employee"""
         
         # Get employee payroll info
-        payroll_info = self.db.query(EmployeePayrollInfo).filter(
-            EmployeePayrollInfo.employee_id == employee_id
-        ).first()
+        result = await self.db.execute(
+            select(EmployeePayrollInfo).filter(
+                EmployeePayrollInfo.employee_id == employee_id
+            )
+        )
+        payroll_info = result.scalars().first()
         
         if not payroll_info:
             raise ValueError(f"No payroll information found for employee {employee_id}")
         
         # Calculate gross pay
-        gross_pay = self._calculate_gross_pay(employee_id, payroll_info, period_start, period_end)
+        gross_pay = await self._calculate_gross_pay(employee_id, payroll_info, period_start, period_end)
         
         # Calculate taxes
-        tax_calculations = self._calculate_taxes(payroll_info, gross_pay)
+        tax_calculations = await self._calculate_taxes(payroll_info, gross_pay)
         
         # Calculate deductions (placeholder - would be more complex in real implementation)
-        total_deductions = self._calculate_deductions(employee_id, gross_pay)
+        total_deductions = await self._calculate_deductions(employee_id, gross_pay)
         
         # Calculate net pay
         net_pay = gross_pay - tax_calculations['total_taxes'] - total_deductions
