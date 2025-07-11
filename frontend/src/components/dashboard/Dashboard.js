@@ -90,9 +90,15 @@ const Dashboard = () => {
     }
   };
 
+  const handleCustomizeDashboard = () => {
+    // Navigate to dashboard customization page
+    navigate('/dashboard/customize');
+  };
+
   const handleAlertAction = async (alert) => {
     try {
-      setLoading(true);
+      // Set loading state to true during action
+      setIsLoading(true);
       
       switch (alert.action) {
         case 'Review':
@@ -130,7 +136,7 @@ const Dashboard = () => {
       console.error('Error handling alert action:', error);
       alert(`Failed to handle alert action: ${error.message || 'Please try again.'}`);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
