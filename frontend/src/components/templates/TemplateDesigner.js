@@ -65,6 +65,63 @@ const TemplateDesigner = () => {
     { id: 2, name: 'Department', type: 'dropdown', required: false, position: 'line-item' },
     { id: 3, name: 'Special Instructions', type: 'textarea', required: false, position: 'footer' }
   ]);
+  
+  // Load templates when component mounts
+  useEffect(() => {
+    if (currentCompany?.id) {
+      loadTemplates();
+    }
+  }, [currentCompany?.id]);
+  
+  const loadTemplates = async () => {
+    try {
+      setLoading(true);
+      const response = await templateService.getTemplates(currentCompany.id, {
+        category: 'document',
+        page_size: 100
+      });
+      setTemplates(response || []);
+    } catch (error) {
+      console.error('Error loading templates:', error);
+      // Fall back to default templates if API fails
+      setTemplates([
+        {
+          id: 'invoice_modern',
+          name: 'Modern Invoice',
+          template_type: 'invoice',
+          is_active: true,
+          preview: '/api/placeholder/300/400',
+          description: 'Clean, modern invoice template'
+        },
+        {
+          id: 'invoice_classic',
+          name: 'Classic Invoice',
+          template_type: 'invoice',
+          is_active: true,
+          preview: '/api/placeholder/300/400',
+          description: 'Traditional invoice template'
+        },
+        {
+          id: 'estimate_modern',
+          name: 'Modern Estimate',
+          template_type: 'estimate',
+          is_active: true,
+          preview: '/api/placeholder/300/400',
+          description: 'Professional estimate template'
+        },
+        {
+          id: 'receipt_simple',
+          name: 'Simple Receipt',
+          template_type: 'receipt',
+          is_active: true,
+          preview: '/api/placeholder/300/400',
+          description: 'Basic receipt template'
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const colorSchemes = [
     { name: 'Blue', primary: '#3B82F6', secondary: '#EBF4FF' },
