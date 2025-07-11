@@ -738,21 +738,57 @@ const RoleManager = ({ roles, setRoles, availablePermissions }) => {
     permissions: []
   });
 
-  const handleAddRole = () => {
-    if (!newRole.name || !newRole.description) {
-      alert('Please fill in all fields');
-      return;
+  const handleAddRole = async (newRole) => {
+    try {
+      const role = await securityService.createRole(currentCompany.id, {
+        role_name: newRole.name,
+        description: newRole.description,
+        permissions: newRole.permissions
+      });
+      
+      // Refresh roles data
+      await loadUserManagementData();
+      
+      setNewRole({ name: '', description: '', permissions: [] });
+      alert('Role created successfully!');
+    } catch (err) {
+      console.error('Error creating role:', err);
+      alert('Failed to create role. Please try again.');
     }
-    
-    const role = {
-      id: roles.length + 1,
-      ...newRole,
-      userCount: 0,
-      isSystem: false
-    };
-    
-    setRoles([...roles, role]);
-    setNewRole({ name: '', description: '', permissions: [] });
+  };
+
+  const handleUpdateRole = async (roleId, updatedRole) => {
+    try {
+      await securityService.updateRole(currentCompany.id, roleId, {
+        role_name: updatedRole.name,
+        description: updatedRole.description,
+        permissions: updatedRole.permissions
+      });
+      
+      // Refresh roles data
+      await loadUserManagementData();
+      
+      alert('Role updated successfully!');
+    } catch (err) {
+      console.error('Error updating role:', err);
+      alert('Failed to update role. Please try again.');
+    }
+  };
+
+  const handleDeleteRole = async (roleId) => {
+    if (window.confirm('Are you sure you want to delete this role?')) {
+      try {
+        await securityService.deleteRole(currentCompany.id, roleId);
+        
+        // Refresh roles data
+        await loadUserManagementData();
+        
+        alert('Role deleted successfully!');
+      } catch (err) {
+        console.error('Error deleting role:', err);
+        alert('Failed to delete role. Please try again.');
+      }
+    }
   };
 
   return (
