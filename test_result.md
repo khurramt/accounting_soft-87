@@ -49,10 +49,10 @@
 ##
 ## test_plan:
   current_focus:
-    - "Reports Integration - Phase 2.2 Frontend Testing"
-    - "HTTPS Mixed Content Error Resolution Verification"
-    - "Company Selection and Authentication Flow"
-    - "Reports API Integration Verification"
+    - "Banking Integration - Phase 3.1 Backend API Testing"
+    - "Payroll Integration - Phase 3.2 Backend API Testing"
+    - "Verification of Backend Router Registration Fixes"
+    - "Authentication Flow Testing for Banking and Payroll APIs"
   stuck_tasks: 
     - "Reports Integration - Phase 2.2"
   test_all: false
