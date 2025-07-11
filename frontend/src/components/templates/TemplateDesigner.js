@@ -168,16 +168,148 @@ const TemplateDesigner = () => {
     setCustomFields(fields => fields.filter(field => field.id !== id));
   };
 
-  const saveTemplate = () => {
-    alert('Template saved successfully!');
+  const saveTemplate = async () => {
+    try {
+      setLoading(true);
+      
+      // Validate template data
+      const templateData = {
+        name: `Custom Template ${Date.now()}`,
+        subject: 'Document Template',
+        body: JSON.stringify(templateSettings),
+        category: 'document',
+        template_type: 'custom',
+        variables: customFields,
+        is_active: true
+      };
+      
+      const validation = await templateService.validateTemplate(templateData);
+      if (!validation.isValid) {
+        alert(`Template validation failed: ${validation.errors.join(', ')}`);
+        return;
+      }
+      
+      const response = await templateService.saveDocumentTemplate(currentCompany.id, templateData);
+      
+      // Refresh templates list
+      await loadTemplates();
+      
+      alert('Template saved successfully!');
+    } catch (error) {
+      console.error('Error saving template:', error);
+      alert(`Failed to save template: ${error.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const previewTemplate = () => {
-    alert('Opening template preview...');
+  const previewTemplate = async () => {
+    try {
+      setLoading(true);
+      
+      if (!selectedTemplate) {
+        alert('Please select a template to preview');
+        return;
+      }
+      
+      // Find the selected template
+      const template = templates.find(t => t.id === selectedTemplate);
+      if (!template) {
+        alert('Template not found');
+        return;
+      }
+      
+      // Open preview in new window
+      const previewWindow = window.open('', '_blank', 'width=800,height=600');
+      previewWindow.document.write(`
+        <html>
+          <head>
+            <title>Template Preview - ${template.name}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              .preview-container { max-width: 800px; margin: 0 auto; }
+              .template-header { border-bottom: 2px solid ${templateSettings.headerBgColor}; padding: 20px 0; }
+              .template-body { padding: 20px 0; }
+              .template-footer { border-top: 1px solid #ccc; padding: 20px 0; color: #666; }
+            </style>
+          </head>
+          <body>
+            <div class="preview-container">
+              <div class="template-header">
+                <h1 style="color: ${templateSettings.headerBgColor}">${template.name} Preview</h1>
+                ${templateSettings.companyLogo ? `<img src="${templateSettings.companyLogo}" alt="Company Logo" style="max-height: 100px;">` : ''}
+              </div>
+              <div class="template-body">
+                <p>This is a preview of your ${template.template_type} template with the selected settings.</p>
+                <p><strong>Color Scheme:</strong> ${templateSettings.colorScheme}</p>
+                <p><strong>Font Family:</strong> ${templateSettings.fontFamily}</p>
+                <p><strong>Font Size:</strong> ${templateSettings.fontSize}</p>
+                ${templateSettings.customMessage ? `<p><strong>Custom Message:</strong> ${templateSettings.customMessage}</p>` : ''}
+              </div>
+              <div class="template-footer">
+                <p>${templateSettings.footerText}</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `);
+      
+      alert('Template preview opened in new window');
+    } catch (error) {
+      console.error('Error previewing template:', error);
+      alert(`Failed to preview template: ${error.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const exportTemplate = () => {
-    alert('Exporting template...');
+  const exportTemplate = async () => {
+    try {
+      setLoading(true);
+      
+      if (!selectedTemplate) {
+        alert('Please select a template to export');
+        return;
+      }
+      
+      // Find the selected template
+      const template = templates.find(t => t.id === selectedTemplate);
+      if (!template) {
+        alert('Template not found');
+        return;
+      }
+      
+      // If it's a custom template with an ID, use the API export
+      if (template.id && template.id !== 'invoice_modern' && template.id !== 'invoice_classic' && template.id !== 'estimate_modern' && template.id !== 'receipt_simple') {
+        const response = await templateService.exportTemplate(currentCompany.id, template.id);
+        alert(`Template exported successfully! ${response.message}`);
+      } else {
+        // For default templates, create a manual export
+        const exportData = {
+          ...template,
+          settings: templateSettings,
+          customFields: customFields,
+          exportDate: new Date().toISOString()
+        };
+        
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        
+        const exportFileDefaultName = `${template.name}_export.json`;
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+        
+        alert('Template exported successfully!');
+      }
+    } catch (error) {
+      console.error('Error exporting template:', error);
+      alert(`Failed to export template: ${error.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const duplicateTemplate = () => {
