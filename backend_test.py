@@ -5106,6 +5106,34 @@ if __name__ == "__main__":
         test_get_payroll_liabilities()
         test_get_due_payroll_liabilities()
         
+        # Phase 4 Backend Integration tests
+        print("\n===== PHASE 4 BACKEND INTEGRATION TESTS =====")
+        
+        # Security APIs tests (Phase 4.1)
+        print("\n===== SECURITY API TESTS =====")
+        test_get_security_logs()
+        test_get_security_summary()
+        test_get_security_roles()
+        test_create_security_role()
+        test_get_security_settings()
+        test_update_security_settings()
+        
+        # Inventory APIs tests (Phase 4.2)
+        print("\n===== INVENTORY API TESTS =====")
+        test_get_inventory_overview()
+        test_get_inventory_items()
+        test_get_inventory_locations()
+        test_get_inventory_transactions()
+        test_create_inventory_adjustment()
+        test_get_inventory_adjustments()
+        test_get_low_stock_items()
+        
+        # Audit APIs tests (Phase 4.1)
+        print("\n===== AUDIT API TESTS =====")
+        test_get_audit_logs()
+        test_get_audit_summary()
+        test_generate_audit_report()
+        
         # Error handling tests
         test_transaction_error_handling()
     
