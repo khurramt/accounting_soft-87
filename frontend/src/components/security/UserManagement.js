@@ -66,21 +66,24 @@ const UserManagement = () => {
 
   const handleAddUser = async (userData) => {
     try {
-      // In a real implementation, this would create a user via API
-      const newUser = {
-        id: users.length + 1,
-        ...userData,
-        status: 'Active',
-        lastLogin: 'Never',
-        loginCount: 0,
-        twoFactorEnabled: false,
-        passwordExpiry: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      };
-      setUsers([...users, newUser]);
+      setLoading(true);
+      
+      // Use the invite user API to add new user
+      const response = await securityService.inviteUser(currentCompany.id, userData);
+      
+      // Refresh the user list after adding
+      await loadUserManagementData();
+      
       setIsAddUserOpen(false);
+      
+      // Show success message
+      alert(`User invitation sent successfully! ${response.message}`);
+      
     } catch (err) {
       console.error('Error adding user:', err);
-      alert('Failed to add user. Please try again.');
+      alert(`Failed to add user: ${err.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
     }
   };
 
