@@ -277,7 +277,7 @@ class PayrollService:
         
         return federal_tax
     
-    def _calculate_federal_tax_percentage_method(self, payroll_info: EmployeePayrollInfo, gross_pay: Decimal) -> Decimal:
+    async def _calculate_federal_tax_percentage_method(self, payroll_info: EmployeePayrollInfo, gross_pay: Decimal) -> Decimal:
         """Simplified federal tax calculation using percentage method"""
         
         # This is a simplified calculation - real implementation would use current IRS tables
