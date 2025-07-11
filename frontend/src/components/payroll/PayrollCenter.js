@@ -104,6 +104,12 @@ const PayrollCenter = () => {
       });
       setTimeEntries(timeEntriesData.data || []);
       
+      // Load payroll forms
+      const payrollFormsData = await payrollService.getPayrollForms(currentCompany.id, {
+        limit: 50
+      });
+      setPayrollForms(payrollFormsData.data || []);
+      
       // Calculate payroll summary
       calculatePayrollSummary(employeesData.data || [], payrollRunsData.data || [], liabilitiesData.data || []);
       
