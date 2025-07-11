@@ -66,6 +66,14 @@ import TemplateDesigner from "./components/templates/TemplateDesigner";
 
 // Inventory Components  
 import InventoryCenter from "./components/inventory/InventoryCenter";
+import PurchaseOrderManagement from "./components/inventory/PurchaseOrderManagement";
+
+// Communication Components
+import EmailManagement from "./components/communication/EmailManagement";
+import SMSManagement from "./components/communication/SMSManagement";
+import WebhookManagement from "./components/communication/WebhookManagement";
+import NotificationCenter from "./components/communication/NotificationCenter";
+import NotificationPreferences from "./components/communication/NotificationPreferences";
 
 // Additional Customer Components
 import CreateEstimate from "./components/customers/CreateEstimate";
