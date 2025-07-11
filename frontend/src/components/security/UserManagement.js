@@ -1,88 +1,92 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useCompany } from '../../contexts/CompanyContext';
+import { securityService, securityUtils } from '../../services/securityService';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Plus, Edit, Trash2, Key, Shield, User, Users, Activity, Settings, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit, Trash2, Key, Shield, User, Users, Activity, Settings, Eye, EyeOff, RefreshCw, Loader2 } from 'lucide-react';
 
 const UserManagement = () => {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      username: 'admin',
-      fullName: 'System Administrator',
-      email: 'admin@company.com',
-      role: 'Super Admin',
-      department: 'IT',
-      status: 'Active',
-      lastLogin: '2024-01-15 10:30 AM',
-      loginCount: 1247,
-      permissions: ['All'],
-      twoFactorEnabled: true,
-      passwordExpiry: '2024-06-15'
-    },
-    {
-      id: 2,
-      username: 'jsmith',
-      fullName: 'Jane Smith',
-      email: 'jane.smith@company.com',
-      role: 'Accountant',
-      department: 'Finance',
-      status: 'Active',
-      lastLogin: '2024-01-14 2:15 PM',
-      loginCount: 892,
-      permissions: ['Accounting', 'Reports'],
-      twoFactorEnabled: false,
-      passwordExpiry: '2024-04-20'
-    },
-    {
-      id: 3,
-      username: 'jdoe',
-      fullName: 'John Doe',
-      email: 'john.doe@company.com',
-      role: 'Sales Manager',
-      department: 'Sales',
-      status: 'Inactive',
-      lastLogin: '2024-01-10 9:45 AM',
-      loginCount: 356,
-      permissions: ['Sales', 'Customers'],
-      twoFactorEnabled: true,
-      passwordExpiry: '2024-03-10'
-    }
-  ]);
-
-  const [roles, setRoles] = useState([
-    {
-      id: 1,
-      name: 'Super Admin',
-      description: 'Full system access',
-      permissions: ['All'],
-      userCount: 1,
-      isSystem: true
-    },
-    {
-      id: 2,
-      name: 'Accountant',
-      description: 'Accounting and financial operations',
-      permissions: ['Accounting', 'Reports', 'Banking'],
-      userCount: 3,
-      isSystem: false
-    },
-    {
-      id: 3,
-      name: 'Sales Manager',
-      description: 'Sales and customer management',
-      permissions: ['Sales', 'Customers', 'Reports'],
-      userCount: 2,
-      isSystem: false
-    }
-  ]);
-
+  const { currentCompany } = useCompany();
+  const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [isRoleManagerOpen, setIsRoleManagerOpen] = useState(false);
   const [showPasswordDetails, setShowPasswordDetails] = useState(false);
+
+  // Load data when component mounts or company changes
+  useEffect(() => {
+    if (currentCompany?.id) {
+      loadUserManagementData();
+    }
+  }, [currentCompany?.id]);
+
+  const loadUserManagementData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Load roles
+      const rolesData = await securityService.getRoles(currentCompany.id, {
+        page: 1,
+        page_size: 100
+      });
+      setRoles(rolesData.items || []);
+      
+      // For now, we'll use the current user data and mock additional users
+      // In a real implementation, this would come from a users API
+      const mockUsers = [
+        {
+          id: 1,
+          username: 'admin',
+          fullName: 'System Administrator',
+          email: 'admin@company.com',
+          role: 'Super Admin',
+          department: 'IT',
+          status: 'Active',
+          lastLogin: '2024-01-15 10:30 AM',
+          loginCount: 1247,
+          permissions: ['All'],
+          twoFactorEnabled: true,
+          passwordExpiry: '2024-06-15'
+        },
+        {
+          id: 2,
+          username: 'demo',
+          fullName: 'Demo User',
+          email: 'demo@quickbooks.com',
+          role: 'Accountant',
+          department: 'Finance',
+          status: 'Active',
+          lastLogin: new Date().toLocaleString(),
+          loginCount: 1,
+          permissions: ['All'],
+          twoFactorEnabled: false,
+          passwordExpiry: '2024-12-31'
+        }
+      ];
+      
+      setUsers(mockUsers);
+      
+    } catch (err) {
+      setError(err.message || 'Failed to load user management data');
+      console.error('Error loading user management data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const refreshData = async () => {
+    setRefreshing(true);
+    await loadUserManagementData();
+    setRefreshing(false);
+  };
 
   const availablePermissions = [
     'Dashboard', 'Accounting', 'Sales', 'Customers', 'Vendors', 'Banking', 
@@ -91,55 +95,91 @@ const UserManagement = () => {
 
   const departments = ['IT', 'Finance', 'Sales', 'HR', 'Operations', 'Marketing'];
 
-  const handleAddUser = (userData) => {
-    const newUser = {
-      id: users.length + 1,
-      ...userData,
-      status: 'Active',
-      lastLogin: 'Never',
-      loginCount: 0,
-      twoFactorEnabled: false,
-      passwordExpiry: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    };
-    setUsers([...users, newUser]);
-    setIsAddUserOpen(false);
-  };
-
-  const handleUpdateUser = (updatedUser) => {
-    setUsers(users.map(user => 
-      user.id === updatedUser.id ? updatedUser : user
-    ));
-    setSelectedUser(null);
-  };
-
-  const handleDeleteUser = (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      setUsers(users.filter(user => user.id !== userId));
+  const handleAddUser = async (userData) => {
+    try {
+      // In a real implementation, this would create a user via API
+      const newUser = {
+        id: users.length + 1,
+        ...userData,
+        status: 'Active',
+        lastLogin: 'Never',
+        loginCount: 0,
+        twoFactorEnabled: false,
+        passwordExpiry: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      };
+      setUsers([...users, newUser]);
+      setIsAddUserOpen(false);
+    } catch (err) {
+      console.error('Error adding user:', err);
+      alert('Failed to add user. Please try again.');
     }
   };
 
-  const toggleUserStatus = (userId) => {
-    setUsers(users.map(user =>
-      user.id === userId
-        ? { ...user, status: user.status === 'Active' ? 'Inactive' : 'Active' }
-        : user
-    ));
+  const handleUpdateUser = async (updatedUser) => {
+    try {
+      // In a real implementation, this would update a user via API
+      setUsers(users.map(user => 
+        user.id === updatedUser.id ? updatedUser : user
+      ));
+      setSelectedUser(null);
+    } catch (err) {
+      console.error('Error updating user:', err);
+      alert('Failed to update user. Please try again.');
+    }
   };
 
-  const resetPassword = (userId) => {
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        // In a real implementation, this would delete a user via API
+        setUsers(users.filter(user => user.id !== userId));
+      } catch (err) {
+        console.error('Error deleting user:', err);
+        alert('Failed to delete user. Please try again.');
+      }
+    }
+  };
+
+  const toggleUserStatus = async (userId) => {
+    try {
+      // In a real implementation, this would update user status via API
+      setUsers(users.map(user =>
+        user.id === userId
+          ? { ...user, status: user.status === 'Active' ? 'Inactive' : 'Active' }
+          : user
+      ));
+    } catch (err) {
+      console.error('Error updating user status:', err);
+      alert('Failed to update user status. Please try again.');
+    }
+  };
+
+  const resetPassword = async (userId) => {
     const newPassword = prompt('Enter new password:');
     if (newPassword) {
-      const user = users.find(u => u.id === userId);
-      alert(`Password reset for ${user.fullName}. New password: ${newPassword}`);
+      try {
+        // In a real implementation, this would reset password via API
+        const user = users.find(u => u.id === userId);
+        alert(`Password reset for ${user.fullName}. New password: ${newPassword}`);
+      } catch (err) {
+        console.error('Error resetting password:', err);
+        alert('Failed to reset password. Please try again.');
+      }
     }
   };
 
-  const enableTwoFactor = (userId) => {
-    setUsers(users.map(user =>
-      user.id === userId
-        ? { ...user, twoFactorEnabled: !user.twoFactorEnabled }
-        : user
-    ));
+  const enableTwoFactor = async (userId) => {
+    try {
+      // In a real implementation, this would update 2FA setting via API
+      setUsers(users.map(user =>
+        user.id === userId
+          ? { ...user, twoFactorEnabled: !user.twoFactorEnabled }
+          : user
+      ));
+    } catch (err) {
+      console.error('Error updating 2FA setting:', err);
+      alert('Failed to update 2FA setting. Please try again.');
+    }
   };
 
   const getUsersNeedingPasswordReset = () => {
@@ -150,6 +190,31 @@ const UserManagement = () => {
       return daysUntilExpiry <= 7;
     });
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading user management data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">Error: {error}</div>
+          <Button onClick={loadUserManagementData} className="bg-blue-600 hover:bg-blue-700">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
