@@ -416,27 +416,41 @@ const TemplateDesigner = () => {
     }
   };
 
-  const resetToDefault = () => {
+  const resetToDefault = async () => {
     if (window.confirm('Are you sure you want to reset all settings to default? This action cannot be undone.')) {
-      setTemplateSettings({
-        companyLogo: null,
-        logoPosition: 'top-left',
-        logoSize: 'medium',
-        colorScheme: 'blue',
-        fontFamily: 'arial',
-        fontSize: 'medium',
-        headerBgColor: '#3B82F6',
-        headerTextColor: '#FFFFFF',
-        bodyTextColor: '#374151',
-        borderColor: '#E5E7EB',
-        showCompanyAddress: true,
-        showPaymentTerms: true,
-        showNotes: true,
-        showSignature: false,
-        customMessage: '',
-        footerText: 'Thank you for your business!'
-      });
-      alert('Template settings reset to default!');
+      try {
+        setLoading(true);
+        
+        setTemplateSettings({
+          companyLogo: null,
+          logoPosition: 'top-left',
+          logoSize: 'medium',
+          colorScheme: 'blue',
+          fontFamily: 'arial',
+          fontSize: 'medium',
+          headerBgColor: '#3B82F6',
+          headerTextColor: '#FFFFFF',
+          footerText: 'Thank you for your business!',
+          customMessage: '',
+          showCompanyAddress: true,
+          showBankDetails: true,
+          showTermsAndConditions: true,
+          includeSignature: false,
+          watermark: false,
+          pageFormat: 'A4',
+          orientation: 'portrait',
+          margins: 'normal'
+        });
+        
+        setCustomFields([]);
+        
+        alert('Template settings reset to default!');
+      } catch (error) {
+        console.error('Error resetting template:', error);
+        alert(`Failed to reset template: ${error.message || 'Please try again.'}`);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
