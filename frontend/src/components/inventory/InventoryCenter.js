@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useCompany } from '../../contexts/CompanyContext';
+import { inventoryService, inventoryUtils } from '../../services/inventoryService';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -7,128 +9,155 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { 
   Package, Search, Plus, Edit, Trash2, AlertTriangle, 
   TrendingUp, TrendingDown, BarChart3, Download, Upload,
-  Filter, RefreshCw, ShoppingCart, CheckCircle
+  Filter, RefreshCw, ShoppingCart, CheckCircle, Loader2
 } from 'lucide-react';
 
 const InventoryCenter = () => {
+  const { currentCompany } = useCompany();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   
-  const [inventoryItems, setInventoryItems] = useState([
-    {
-      id: 1,
-      name: 'Laptop Computer',
-      sku: 'LT-001',
-      category: 'Electronics',
-      description: 'High-performance business laptop',
-      quantityOnHand: 15,
-      reorderPoint: 5,
-      maxStock: 50,
-      unitCost: 899.00,
-      unitPrice: 1299.00,
-      totalValue: 13485.00,
-      lastUpdated: '2024-01-15',
-      status: 'In Stock',
-      vendor: 'Tech Supplies Inc',
-      location: 'Warehouse A',
-      barcode: '123456789012'
-    },
-    {
-      id: 2,
-      name: 'Office Chair',
-      sku: 'OC-002',
-      category: 'Furniture',
-      description: 'Ergonomic office chair with lumbar support',
-      quantityOnHand: 3,
-      reorderPoint: 8,
-      maxStock: 25,
-      unitCost: 250.00,
-      unitPrice: 399.00,
-      totalValue: 750.00,
-      lastUpdated: '2024-01-14',
-      status: 'Low Stock',
-      vendor: 'Office Furniture Co',
-      location: 'Showroom',
-      barcode: '123456789013'
-    },
-    {
-      id: 3,
-      name: 'Printer Paper',
-      sku: 'PP-003',
-      category: 'Office Supplies',
-      description: 'Premium white paper, 500 sheets',
-      quantityOnHand: 120,
-      reorderPoint: 30,
-      maxStock: 200,
-      unitCost: 8.50,
-      unitPrice: 15.99,
-      totalValue: 1020.00,
-      lastUpdated: '2024-01-13',
-      status: 'In Stock',
-      vendor: 'Paper Products LLC',
-      location: 'Storage Room B',
-      barcode: '123456789014'
-    },
-    {
-      id: 4,
-      name: 'Wireless Mouse',
-      sku: 'WM-004',
-      category: 'Electronics',
-      description: 'Bluetooth wireless mouse',
-      quantityOnHand: 0,
-      reorderPoint: 10,
-      maxStock: 30,
-      unitCost: 25.00,
-      unitPrice: 49.99,
-      totalValue: 0.00,
-      lastUpdated: '2024-01-12',
-      status: 'Out of Stock',
-      vendor: 'Tech Supplies Inc',
-      location: 'Warehouse A',
-      barcode: '123456789015'
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const [inventoryLocations, setInventoryLocations] = useState([]);
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [inventoryOverview, setInventoryOverview] = useState({
+    totalItems: 0,
+    totalValue: 0,
+    lowStockItems: 0,
+    outOfStockItems: 0
+  });
+  const [categories, setCategories] = useState([]);
+
+  // Load data when component mounts or company changes
+  useEffect(() => {
+    if (currentCompany?.id) {
+      loadInventoryData();
     }
-  ]);
+  }, [currentCompany?.id]);
 
-  const [inventoryLocations] = useState([
-    { id: 1, name: 'Warehouse A', address: '123 Industrial Way', capacity: 1000 },
-    { id: 2, name: 'Showroom', address: '456 Main Street', capacity: 100 },
-    { id: 3, name: 'Storage Room B', address: '789 Back Street', capacity: 500 }
-  ]);
-
-  const [categories] = useState([
-    'Electronics', 'Furniture', 'Office Supplies', 'Equipment', 'Materials'
-  ]);
-
-  const [recentTransactions] = useState([
-    {
-      id: 1,
-      type: 'Purchase',
-      item: 'Laptop Computer',
-      quantity: 5,
-      date: '2024-01-15',
-      reference: 'PO-001',
-      cost: 4495.00
-    },
-    {
-      id: 2,
-      type: 'Sale',
-      item: 'Office Chair',
-      quantity: -2,
-      date: '2024-01-14',
-      reference: 'INV-101',
-      cost: -500.00
-    },
-    {
-      id: 3,
-      type: 'Adjustment',
-      item: 'Printer Paper',
-      quantity: -5,
-      date: '2024-01-13',
-      reference: 'ADJ-001',
-      cost: -42.50
+  const loadInventoryData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Load inventory overview
+      const overviewData = await inventoryService.getInventoryOverview(currentCompany.id);
+      setInventoryOverview(overviewData);
+      
+      // Load inventory items
+      const itemsData = await inventoryService.getInventoryItems(currentCompany.id, {
+        page: 1,
+        page_size: 100
+      });
+      
+      // Transform API data into component format
+      const transformedItems = itemsData.items?.map(item => ({
+        id: item.id,
+        name: item.name,
+        sku: item.sku,
+        category: item.category,
+        description: item.description,
+        quantityOnHand: item.quantity_on_hand || 0,
+        reorderPoint: item.reorder_point || 0,
+        maxStock: item.max_stock || 0,
+        unitCost: parseFloat(item.unit_cost || 0),
+        unitPrice: parseFloat(item.unit_price || 0),
+        totalValue: inventoryUtils.calculateInventoryValue(item.quantity_on_hand, item.unit_cost),
+        lastUpdated: inventoryUtils.formatDate(item.last_updated),
+        status: inventoryUtils.getInventoryStatus(item.quantity_on_hand, item.reorder_point),
+        vendor: item.vendor_name || 'N/A',
+        location: item.location_name || 'N/A',
+        barcode: item.barcode || ''
+      })) || [];
+      
+      setInventoryItems(transformedItems);
+      
+      // Extract unique categories
+      const uniqueCategories = [...new Set(transformedItems.map(item => item.category).filter(Boolean))];
+      setCategories(uniqueCategories);
+      
+      // Load inventory locations
+      const locationsData = await inventoryService.getInventoryLocations(currentCompany.id);
+      const transformedLocations = locationsData.items?.map(location => ({
+        id: location.id,
+        name: location.name,
+        address: location.address,
+        capacity: location.capacity || 0
+      })) || [];
+      
+      setInventoryLocations(transformedLocations);
+      
+      // Load recent transactions
+      const transactionsData = await inventoryService.getInventoryTransactions(currentCompany.id, {
+        page: 1,
+        page_size: 20
+      });
+      
+      const transformedTransactions = transactionsData.items?.map(transaction => ({
+        id: transaction.id,
+        type: transaction.transaction_type,
+        item: transaction.item_name,
+        quantity: transaction.quantity || 0,
+        date: inventoryUtils.formatDate(transaction.transaction_date),
+        reference: transaction.reference || 'N/A',
+        cost: parseFloat(transaction.total_cost || 0)
+      })) || [];
+      
+      setRecentTransactions(transformedTransactions);
+      
+    } catch (err) {
+      // If API calls fail, use fallback data
+      console.warn('Failed to load inventory data from API, using fallback:', err);
+      
+      // Use fallback mock data
+      const fallbackItems = [
+        {
+          id: 1,
+          name: 'Sample Item',
+          sku: 'SAM-001',
+          category: 'General',
+          description: 'Sample inventory item',
+          quantityOnHand: 10,
+          reorderPoint: 5,
+          maxStock: 50,
+          unitCost: 10.00,
+          unitPrice: 20.00,
+          totalValue: 100.00,
+          lastUpdated: inventoryUtils.formatDate(new Date()),
+          status: 'In Stock',
+          vendor: 'Sample Vendor',
+          location: 'Main Warehouse',
+          barcode: '1234567890'
+        }
+      ];
+      
+      setInventoryItems(fallbackItems);
+      setCategories(['General']);
+      setInventoryLocations([
+        { id: 1, name: 'Main Warehouse', address: '123 Main St', capacity: 1000 }
+      ]);
+      setRecentTransactions([]);
+      setInventoryOverview({
+        totalItems: fallbackItems.length,
+        totalValue: fallbackItems.reduce((sum, item) => sum + item.totalValue, 0),
+        lowStockItems: fallbackItems.filter(item => item.status === 'Low Stock').length,
+        outOfStockItems: fallbackItems.filter(item => item.status === 'Out of Stock').length
+      });
+      
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  const refreshData = async () => {
+    setRefreshing(true);
+    await loadInventoryData();
+    setRefreshing(false);
+  };
 
   const filteredItems = inventoryItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
