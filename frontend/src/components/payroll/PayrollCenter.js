@@ -265,86 +265,29 @@ const PayrollCenter = () => {
     );
   });
 
-  // Payroll liabilities
-  const [payrollLiabilities] = useState([
-    {
-      vendor: "Federal Taxes",
-      description: "Federal Withholding",
-      period: "Q4 2023",
-      dueDate: "2024-01-31",
-      amount: 2500.00,
-      status: "Due"
-    },
-    {
-      vendor: "State Taxes",
-      description: "State Withholding",
-      period: "Q4 2023", 
-      dueDate: "2024-01-31",
-      amount: 750.00,
-      status: "Due"
-    },
-    {
-      vendor: "Social Security",
-      description: "FICA Employee & Employer",
-      period: "Q4 2023",
-      dueDate: "2024-01-31",
-      amount: 1240.00,
-      status: "Paid"
-    }
-  ]);
+  // Filtered data for display
+  const filteredPayrollRuns = payrollRuns.filter(run => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      run.description?.toLowerCase().includes(searchLower) ||
+      run.pay_date?.toLowerCase().includes(searchLower)
+    );
+  });
 
-  // Payroll forms
-  const [payrollForms] = useState([
-    {
-      form: "941 - Quarterly",
-      description: "Employer's Quarterly Federal Tax Return", 
-      quarter: "Q4 2023",
-      dueDate: "2024-01-31",
-      status: "Ready to File",
-      amount: 3250.00
-    },
-    {
-      form: "940 - Annual",
-      description: "Employer's Annual Federal Unemployment Tax Return",
-      year: "2023",
-      dueDate: "2024-01-31", 
-      status: "In Progress",
-      amount: 420.00
-    },
-    {
-      form: "W-2 Forms",
-      description: "Employee Wage and Tax Statements",
-      year: "2023",
-      dueDate: "2024-01-31",
-      status: "Ready to Print",
-      employeeCount: 2
-    }
-  ]);
-
-  const filteredEmployees = employees.filter(employee =>
-    employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    employee.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
+  const filteredPayrollLiabilities = payrollLiabilities.filter(liability => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      liability.vendor?.toLowerCase().includes(searchLower) ||
+      liability.description?.toLowerCase().includes(searchLower)
+    );
+  });
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'Active': return 'bg-green-100 text-green-800';
-      case 'Completed': return 'bg-green-100 text-green-800';
-      case 'Scheduled': return 'bg-blue-100 text-blue-800';
-      case 'Due': return 'bg-orange-100 text-orange-800';
-      case 'Paid': return 'bg-green-100 text-green-800';
-      case 'Ready to File': return 'bg-blue-100 text-blue-800';
-      case 'In Progress': return 'bg-yellow-100 text-yellow-800';
-      case 'Ready to Print': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+    return payrollUtils.getPayrollStatusColor(status);
+  };
+
+  const getLiabilityStatusColor = (status) => {
+    return payrollUtils.getLiabilityStatusColor(status);
   };
 
   return (
