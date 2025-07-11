@@ -551,30 +551,30 @@ const TemplateDesigner = () => {
                   <div className="mt-6">
                     <h3 className="font-medium mb-3">Text Formatting Toolbar</h3>
                     <div className="flex space-x-2 p-2 border rounded-lg bg-gray-50">
-                      <Button size="sm" variant="outline" className="p-2">
+                      <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextFormat('bold')}>
                         <Bold className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="outline" className="p-2">
+                      <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextFormat('italic')}>
                         <Italic className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="outline" className="p-2">
+                      <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextFormat('underline')}>
                         <Underline className="w-4 h-4" />
                       </Button>
                       <div className="border-l mx-2"></div>
-                      <Button size="sm" variant="outline" className="p-2">
+                      <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextAlign('left')}>
                         <AlignLeft className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="outline" className="p-2">
+                      <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextAlign('center')}>
                         <AlignCenter className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="outline" className="p-2">
+                      <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextAlign('right')}>
                         <AlignRight className="w-4 h-4" />
                       </Button>
                       <div className="border-l mx-2"></div>
-                      <Button size="sm" variant="outline" className="p-2">
+                      <Button size="sm" variant="outline" className="p-2" onClick={handleUndo}>
                         <Undo className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="outline" className="p-2">
+                      <Button size="sm" variant="outline" className="p-2" onClick={handleRedo}>
                         <Redo className="w-4 h-4" />
                       </Button>
                     </div>
