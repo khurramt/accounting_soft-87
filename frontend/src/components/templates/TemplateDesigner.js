@@ -324,40 +324,74 @@ const TemplateDesigner = () => {
     alert('Template duplicated successfully!');
   };
 
-  const importTemplate = () => {
-    // Create a file input element to trigger file selection
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,.xml,.html';
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        // Here you would typically read the file and process it
-        console.log('Selected file:', file.name);
-        alert(`Importing template: ${file.name}`);
-        // TODO: Implement actual file processing logic
-      }
-    };
-    input.click();
+  const importTemplate = async () => {
+    try {
+      setLoading(true);
+      
+      // Create a file input element to trigger file selection
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,.xml,.html';
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          try {
+            const response = await templateService.importTemplate(currentCompany.id, file);
+            
+            // Refresh templates list
+            await loadTemplates();
+            
+            alert(`Template imported successfully! ${response.name}`);
+          } catch (error) {
+            console.error('Error importing template:', error);
+            alert(`Failed to import template: ${error.message || 'Please check the file format and try again.'}`);
+          }
+        }
+      };
+      input.click();
+    } catch (error) {
+      console.error('Error importing template:', error);
+      alert(`Failed to import template: ${error.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const uploadLogo = () => {
-    // Create a file input element to trigger logo upload
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          handleSettingChange('companyLogo', event.target.result);
-          alert('Logo uploaded successfully!');
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-    input.click();
+  const uploadLogo = async () => {
+    try {
+      setLoading(true);
+      
+      // Create a file input element to trigger logo upload
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          try {
+            const response = await templateService.uploadLogo(currentCompany.id, file);
+            
+            // Read the file as data URL for preview
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              handleSettingChange('companyLogo', event.target.result);
+            };
+            reader.readAsDataURL(file);
+            
+            alert('Logo uploaded successfully!');
+          } catch (error) {
+            console.error('Error uploading logo:', error);
+            alert(`Failed to upload logo: ${error.message || 'Please try again.'}`);
+          }
+        }
+      };
+      input.click();
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      alert(`Failed to upload logo: ${error.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetToDefault = () => {
