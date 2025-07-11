@@ -352,7 +352,7 @@ class PayrollService:
         
         return state_tax
     
-    def _calculate_state_tax_simplified(self, payroll_info: EmployeePayrollInfo, gross_pay: Decimal) -> Decimal:
+    async def _calculate_state_tax_simplified(self, payroll_info: EmployeePayrollInfo, gross_pay: Decimal) -> Decimal:
         """Simplified state tax calculation"""
         
         # Simplified rates by state (examples)
