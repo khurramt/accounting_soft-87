@@ -508,20 +508,22 @@ class PayrollService:
                 self.db.add(tax_line)
                 line_number += 1
     
-    def _create_payroll_liabilities(self, payroll_run: PayrollRun):
+    async def _create_payroll_liabilities(self, payroll_run: PayrollRun):
         """Create payroll liabilities for taxes"""
         
         # Federal Income Tax liability
+        calc_response = await self.calculate_payroll_run(
+            payroll_run.company_id, 
+            PayrollRunCreate(
+                pay_period_start=payroll_run.pay_period_start,
+                pay_period_end=payroll_run.pay_period_end,
+                pay_date=payroll_run.pay_date
+            )
+        )
+        
         federal_tax_total = sum(
             calc.federal_income_tax 
-            for calc in self.calculate_payroll_run(
-                payroll_run.company_id, 
-                PayrollRunCreate(
-                    pay_period_start=payroll_run.pay_period_start,
-                    pay_period_end=payroll_run.pay_period_end,
-                    pay_date=payroll_run.pay_date
-                )
-            ).calculations
+            for calc in calc_response.calculations
         )
         
         if federal_tax_total > 0:
@@ -540,7 +542,7 @@ class PayrollService:
         
         # Additional liabilities would be created similarly for FICA, FUTA, SUTA, etc.
         
-        self.db.commit()
+        await self.db.commit()
     
     def approve_payroll_run(self, payroll_run_id: str, company_id: str, approved_by: str) -> PayrollRun:
         """Approve a payroll run"""
