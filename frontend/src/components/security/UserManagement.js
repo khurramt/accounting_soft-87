@@ -166,12 +166,22 @@ const UserManagement = () => {
     const newPassword = prompt('Enter new password:');
     if (newPassword) {
       try {
-        // In a real implementation, this would reset password via API
-        const user = users.find(u => u.id === userId);
-        alert(`Password reset for ${user.fullName}. New password: ${newPassword}`);
+        setLoading(true);
+        
+        // Use the reset password API
+        const response = await securityService.resetUserPassword(currentCompany.id, userId, newPassword);
+        
+        // Refresh the user list after password reset
+        await loadUserManagementData();
+        
+        // Show success message
+        alert(`Password reset successfully! ${response.message}`);
+        
       } catch (err) {
         console.error('Error resetting password:', err);
-        alert('Failed to reset password. Please try again.');
+        alert(`Failed to reset password: ${err.message || 'Please try again.'}`);
+      } finally {
+        setLoading(false);
       }
     }
   };
