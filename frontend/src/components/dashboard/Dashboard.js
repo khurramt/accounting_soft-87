@@ -187,7 +187,7 @@ const Dashboard = () => {
             <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleCustomizeDashboard}>
             <Settings className="w-4 h-4 mr-2" />
             Customize
           </Button>
