@@ -175,7 +175,7 @@ class DashboardService {
       console.error('Error approving alert:', error);
       throw error;
     }
-  },
+  }
 
   async dismissAlert(companyId, alertId) {
     try {
