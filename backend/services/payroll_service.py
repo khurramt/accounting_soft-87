@@ -138,17 +138,20 @@ class PayrollService:
         else:
             return salary / 26  # Default to biweekly
     
-    def _calculate_hourly_pay(self, employee_id: str, payroll_info: EmployeePayrollInfo, 
+    async def _calculate_hourly_pay(self, employee_id: str, payroll_info: EmployeePayrollInfo, 
                             period_start: date, period_end: date) -> Decimal:
         """Calculate hourly pay based on time entries"""
         
         # Get time entries for the pay period
-        time_entries = self.db.query(TimeEntry).filter(
-            TimeEntry.employee_id == employee_id,
-            TimeEntry.date >= period_start,
-            TimeEntry.date <= period_end,
-            TimeEntry.approved == True
-        ).all()
+        result = await self.db.execute(
+            select(TimeEntry).filter(
+                TimeEntry.employee_id == employee_id,
+                TimeEntry.date >= period_start,
+                TimeEntry.date <= period_end,
+                TimeEntry.approved == True
+            )
+        )
+        time_entries = result.scalars().all()
         
         if not time_entries:
             return Decimal('0')
