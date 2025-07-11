@@ -1,95 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useCompany } from '../../contexts/CompanyContext';
+import { securityService, securityUtils } from '../../services/securityService';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Shield, Lock, Users, Activity, Settings, AlertTriangle, Check, X } from 'lucide-react';
+import { Shield, Lock, Users, Activity, Settings, AlertTriangle, Check, X, RefreshCw, Loader2 } from 'lucide-react';
 
 const AccessControl = () => {
-  const [accessLevels, setAccessLevels] = useState([
-    {
-      id: 1,
-      name: 'Full Access',
-      description: 'Complete access to all areas of QuickBooks',
-      areas: ['All'],
-      restrictions: [],
-      userCount: 2,
-      color: 'green'
-    },
-    {
-      id: 2,
-      name: 'Accounting Only',
-      description: 'Access to accounting features only',
-      areas: ['Chart of Accounts', 'Journal Entries', 'Banking', 'Reports'],
-      restrictions: ['Sales', 'Purchases', 'Payroll'],
-      userCount: 3,
-      color: 'blue'
-    },
-    {
-      id: 3,
-      name: 'Sales & Customers',
-      description: 'Access to customer and sales functions',
-      areas: ['Customers', 'Invoices', 'Sales Receipts', 'Deposits'],
-      restrictions: ['Banking', 'Payroll', 'Company Settings'],
-      userCount: 2,
-      color: 'purple'
-    },
-    {
-      id: 4,
-      name: 'Vendors & Purchases',
-      description: 'Access to vendor and purchase functions',
-      areas: ['Vendors', 'Bills', 'Purchase Orders', 'Checks'],
-      restrictions: ['Customers', 'Payroll', 'Banking'],
-      userCount: 1,
-      color: 'orange'
+  const { currentCompany } = useCompany();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [securitySettings, setSecuritySettings] = useState(null);
+  const [accessLevels, setAccessLevels] = useState([]);
+  const [permissions, setPermissions] = useState({});
+  const [auditSettings, setAuditSettings] = useState({});
+
+  // Load data when component mounts or company changes
+  useEffect(() => {
+    if (currentCompany?.id) {
+      loadAccessControlData();
     }
-  ]);
+  }, [currentCompany?.id]);
 
-  const [permissions, setPermissions] = useState({
-    dashboard: { view: true, edit: false, delete: false },
-    customers: { view: true, edit: true, delete: false },
-    vendors: { view: true, edit: true, delete: false },
-    banking: { view: false, edit: false, delete: false },
-    reports: { view: true, edit: false, delete: false },
-    payroll: { view: false, edit: false, delete: false },
-    inventory: { view: true, edit: false, delete: false },
-    settings: { view: false, edit: false, delete: false }
-  });
-
-  const [securitySettings, setSecuritySettings] = useState({
-    passwordPolicy: {
-      minLength: 8,
-      requireUppercase: true,
-      requireLowercase: true,
-      requireNumbers: true,
-      requireSpecialChars: true,
-      passwordExpiry: 90,
-      preventReuse: 3
-    },
-    sessionSettings: {
-      sessionTimeout: 120,
-      maxSessions: 3,
-      requireReauth: false,
-      logoutOnClose: true
-    },
-    loginSecurity: {
-      maxAttempts: 5,
-      lockoutDuration: 30,
-      twoFactorRequired: false,
-      ipRestriction: false,
-      allowedIPs: []
+  const loadAccessControlData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Load security settings
+      const settingsData = await securityService.getSecuritySettings(currentCompany.id);
+      setSecuritySettings(settingsData);
+      
+      // Load roles as access levels
+      const rolesData = await securityService.getRoles(currentCompany.id);
+      
+      // Transform roles into access levels format
+      const transformedAccessLevels = rolesData.items?.map(role => ({
+        id: role.id,
+        name: role.role_name,
+        description: role.description,
+        areas: role.permissions || [],
+        restrictions: [],
+        userCount: role.user_count || 0,
+        color: getAccessLevelColor(role.role_name)
+      })) || [];
+      
+      setAccessLevels(transformedAccessLevels);
+      
+      // Initialize permissions with default values
+      const defaultPermissions = {
+        dashboard: { view: true, edit: false, delete: false },
+        customers: { view: true, edit: true, delete: false },
+        vendors: { view: true, edit: true, delete: false },
+        banking: { view: false, edit: false, delete: false },
+        reports: { view: true, edit: false, delete: false },
+        payroll: { view: false, edit: false, delete: false },
+        inventory: { view: true, edit: false, delete: false },
+        settings: { view: false, edit: false, delete: false }
+      };
+      
+      setPermissions(defaultPermissions);
+      
+      // Initialize audit settings
+      const defaultAuditSettings = {
+        trackLogins: true,
+        trackTransactions: true,
+        trackReports: false,
+        trackSettings: true,
+        retentionDays: 90,
+        alertThreshold: 10
+      };
+      
+      setAuditSettings(defaultAuditSettings);
+      
+    } catch (err) {
+      setError(err.message || 'Failed to load access control data');
+      console.error('Error loading access control data:', err);
+    } finally {
+      setLoading(false);
     }
-  });
+  };
 
-  const [auditSettings, setAuditSettings] = useState({
-    trackLogins: true,
-    trackTransactions: true,
-    trackReports: false,
-    trackSettings: true,
-    retentionDays: 90,
-    alertThreshold: 10
-  });
+  const refreshData = async () => {
+    setRefreshing(true);
+    await loadAccessControlData();
+    setRefreshing(false);
+  };
+
+  const getAccessLevelColor = (roleName) => {
+    if (!roleName) return 'gray';
+    const name = roleName.toLowerCase();
+    if (name.includes('admin')) return 'red';
+    if (name.includes('manager')) return 'orange';
+    if (name.includes('accountant')) return 'blue';
+    if (name.includes('sales')) return 'purple';
+    return 'green';
+  };
 
   const availableAreas = [
     'Dashboard', 'Customers', 'Vendors', 'Banking', 'Reports', 
