@@ -238,6 +238,31 @@ const ActivityTracking = () => {
     };
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading activity tracking data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">Error: {error}</div>
+          <Button onClick={loadActivityTrackingData} className="bg-blue-600 hover:bg-blue-700">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -246,6 +271,15 @@ const ActivityTracking = () => {
           <p className="text-gray-600">Monitor user activities and system events</p>
         </div>
         <div className="flex space-x-2">
+          <Button
+            onClick={refreshData}
+            disabled={refreshing}
+            variant="outline"
+            className="flex items-center"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
           <Button onClick={exportLogs} variant="outline">
             <Download className="w-4 h-4 mr-2" />
             Export Logs
