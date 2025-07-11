@@ -730,7 +730,7 @@ const EditUserForm = ({ user, onSubmit, roles, departments, availablePermissions
 };
 
 // Role Manager Component
-const RoleManager = ({ roles, setRoles, availablePermissions }) => {
+const RoleManager = ({ roles, setRoles, availablePermissions, currentCompany, onUpdateRole, onDeleteRole }) => {
   const [selectedRole, setSelectedRole] = useState(null);
   const [newRole, setNewRole] = useState({
     name: '',
@@ -738,7 +738,12 @@ const RoleManager = ({ roles, setRoles, availablePermissions }) => {
     permissions: []
   });
 
-  const handleAddRole = async (newRole) => {
+  const handleAddRole = async () => {
+    if (!newRole.name || !newRole.description) {
+      alert('Please fill in all fields');
+      return;
+    }
+    
     try {
       const role = await securityService.createRole(currentCompany.id, {
         role_name: newRole.name,
@@ -746,9 +751,16 @@ const RoleManager = ({ roles, setRoles, availablePermissions }) => {
         permissions: newRole.permissions
       });
       
-      // Refresh roles data
-      await loadUserManagementData();
+      const newRoleData = {
+        id: role.id,
+        name: role.role_name,
+        description: role.description,
+        permissions: role.permissions || [],
+        userCount: 0,
+        isSystem: false
+      };
       
+      setRoles([...roles, newRoleData]);
       setNewRole({ name: '', description: '', permissions: [] });
       alert('Role created successfully!');
     } catch (err) {
@@ -765,8 +777,9 @@ const RoleManager = ({ roles, setRoles, availablePermissions }) => {
         permissions: updatedRole.permissions
       });
       
-      // Refresh roles data
-      await loadUserManagementData();
+      setRoles(roles.map(role => 
+        role.id === roleId ? { ...role, ...updatedRole } : role
+      ));
       
       alert('Role updated successfully!');
     } catch (err) {
@@ -779,10 +792,7 @@ const RoleManager = ({ roles, setRoles, availablePermissions }) => {
     if (window.confirm('Are you sure you want to delete this role?')) {
       try {
         await securityService.deleteRole(currentCompany.id, roleId);
-        
-        // Refresh roles data
-        await loadUserManagementData();
-        
+        setRoles(roles.filter(role => role.id !== roleId));
         alert('Role deleted successfully!');
       } catch (err) {
         console.error('Error deleting role:', err);
