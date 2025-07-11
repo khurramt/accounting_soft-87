@@ -48,11 +48,11 @@ export const bankingService = {
       connection_id,
       start_date,
       end_date,
-      min_amount,
-      max_amount,
       transaction_type,
       status,
-      description_contains
+      min_amount,
+      max_amount,
+      search 
     } = params;
     
     const queryParams = new URLSearchParams({
@@ -61,80 +61,62 @@ export const bankingService = {
       ...(connection_id && { connection_id }),
       ...(start_date && { start_date }),
       ...(end_date && { end_date }),
-      ...(min_amount && { min_amount: min_amount.toString() }),
-      ...(max_amount && { max_amount: max_amount.toString() }),
       ...(transaction_type && { transaction_type }),
       ...(status && { status }),
-      ...(description_contains && { description_contains })
+      ...(min_amount && { min_amount: min_amount.toString() }),
+      ...(max_amount && { max_amount: max_amount.toString() }),
+      ...(search && { search })
     });
     
     const response = await apiClient.get(`/companies/${companyId}/bank-transactions?${queryParams}`);
     return response.data;
   },
 
-  async getBankTransactionsByConnection(companyId, connectionId) {
-    const response = await apiClient.get(`/companies/${companyId}/bank-transactions/${connectionId}`);
+  async getBankTransaction(companyId, transactionId) {
+    const response = await apiClient.get(`/companies/${companyId}/bank-transactions/${transactionId}`);
     return response.data;
   },
 
-  // Transaction Matching
-  async matchTransaction(companyId, bankTransactionId, matchData) {
-    const response = await apiClient.post(`/companies/${companyId}/bank-transactions/${bankTransactionId}/match`, matchData);
+  async matchBankTransaction(companyId, transactionId, matchData) {
+    const response = await apiClient.post(`/companies/${companyId}/bank-transactions/${transactionId}/match`, matchData);
     return response.data;
   },
 
-  async ignoreTransaction(companyId, bankTransactionId, ignoreData) {
-    const response = await apiClient.post(`/companies/${companyId}/bank-transactions/${bankTransactionId}/ignore`, ignoreData);
+  async unmatchBankTransaction(companyId, transactionId) {
+    const response = await apiClient.post(`/companies/${companyId}/bank-transactions/${transactionId}/unmatch`);
     return response.data;
   },
 
-  async getPotentialMatches(companyId, bankTransactionId) {
-    const response = await apiClient.get(`/companies/${companyId}/bank-transactions/${bankTransactionId}/potential-matches`);
-    return response.data;
-  },
-
-  async batchTransactionActions(companyId, batchData) {
-    const response = await apiClient.post(`/companies/${companyId}/bank-transactions/batch-actions`, batchData);
+  // Bank Statement Upload
+  async uploadBankStatement(companyId, connectionId, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await apiClient.post(`/companies/${companyId}/bank-statements/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      params: {
+        connection_id: connectionId
+      }
+    });
     return response.data;
   },
 
   // Institution Search
-  async searchInstitutions(params = {}) {
-    const { name_contains, routing_number, institution_type, skip = 0, limit = 100 } = params;
+  async searchInstitutions(query, params = {}) {
+    const { country = 'US', product = 'transactions' } = params;
     const queryParams = new URLSearchParams({
-      skip: skip.toString(),
-      limit: limit.toString(),
-      ...(name_contains && { name_contains }),
-      ...(routing_number && { routing_number }),
-      ...(institution_type && { institution_type })
+      query,
+      country,
+      product
     });
     
     const response = await apiClient.get(`/banking/institutions/search?${queryParams}`);
     return response.data;
   },
 
-  async getInstitution(institutionId) {
-    const response = await apiClient.get(`/banking/institutions/${institutionId}`);
-    return response.data;
-  },
-
-  // File Upload
-  async uploadBankStatement(companyId, file, fileType) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('file_type', fileType);
-    
-    const response = await apiClient.post(`/companies/${companyId}/bank-statements/upload`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  }
-};
-
-// Account Service - Handles Chart of Accounts API calls
-export const accountService = {
+  // Chart of Accounts
   async getAccounts(companyId, params = {}) {
     const { 
       skip = 0, 
@@ -182,6 +164,113 @@ export const accountService = {
 
   async mergeAccounts(companyId, accountId, mergeData) {
     const response = await apiClient.post(`/companies/${companyId}/accounts/${accountId}/merge`, mergeData);
+    return response.data;
+  },
+
+  // Bank Reconciliation
+  async getBankReconciliations(companyId, params = {}) {
+    const { 
+      skip = 0, 
+      limit = 100, 
+      account_id,
+      status,
+      start_date,
+      end_date,
+      sort_by = 'statement_date',
+      sort_order = 'desc'
+    } = params;
+    
+    const queryParams = new URLSearchParams({
+      skip: skip.toString(),
+      limit: limit.toString(),
+      sort_by,
+      sort_order,
+      ...(account_id && { account_id }),
+      ...(status && { status }),
+      ...(start_date && { start_date }),
+      ...(end_date && { end_date })
+    });
+    
+    const response = await apiClient.get(`/companies/${companyId}/bank-reconciliations?${queryParams}`);
+    return response.data;
+  },
+
+  async createBankReconciliation(companyId, reconciliationData) {
+    const response = await apiClient.post(`/companies/${companyId}/bank-reconciliations`, reconciliationData);
+    return response.data;
+  },
+
+  async getBankReconciliation(companyId, reconciliationId) {
+    const response = await apiClient.get(`/companies/${companyId}/bank-reconciliations/${reconciliationId}`);
+    return response.data;
+  },
+
+  async updateBankReconciliation(companyId, reconciliationId, reconciliationData) {
+    const response = await apiClient.put(`/companies/${companyId}/bank-reconciliations/${reconciliationId}`, reconciliationData);
+    return response.data;
+  },
+
+  async completeBankReconciliation(companyId, reconciliationId) {
+    const response = await apiClient.post(`/companies/${companyId}/bank-reconciliations/${reconciliationId}/complete`);
+    return response.data;
+  },
+
+  async deleteBankReconciliation(companyId, reconciliationId) {
+    const response = await apiClient.delete(`/companies/${companyId}/bank-reconciliations/${reconciliationId}`);
+    return response.data;
+  },
+
+  // Bank Rules
+  async getBankRules(companyId, params = {}) {
+    const { 
+      skip = 0, 
+      limit = 100, 
+      is_active,
+      rule_type,
+      sort_by = 'priority',
+      sort_order = 'asc'
+    } = params;
+    
+    const queryParams = new URLSearchParams({
+      skip: skip.toString(),
+      limit: limit.toString(),
+      sort_by,
+      sort_order,
+      ...(is_active !== undefined && { is_active: is_active.toString() }),
+      ...(rule_type && { rule_type })
+    });
+    
+    const response = await apiClient.get(`/companies/${companyId}/bank-rules?${queryParams}`);
+    return response.data;
+  },
+
+  async createBankRule(companyId, ruleData) {
+    const response = await apiClient.post(`/companies/${companyId}/bank-rules`, ruleData);
+    return response.data;
+  },
+
+  async getBankRule(companyId, ruleId) {
+    const response = await apiClient.get(`/companies/${companyId}/bank-rules/${ruleId}`);
+    return response.data;
+  },
+
+  async updateBankRule(companyId, ruleId, ruleData) {
+    const response = await apiClient.put(`/companies/${companyId}/bank-rules/${ruleId}`, ruleData);
+    return response.data;
+  },
+
+  async deleteBankRule(companyId, ruleId) {
+    const response = await apiClient.delete(`/companies/${companyId}/bank-rules/${ruleId}`);
+    return response.data;
+  },
+
+  async testBankRule(companyId, ruleId, testData) {
+    const response = await apiClient.post(`/companies/${companyId}/bank-rules/${ruleId}/test`, testData);
+    return response.data;
+  },
+
+  async applyBankRule(companyId, ruleId, transactionIds) {
+    const response = await apiClient.post(`/companies/${companyId}/bank-rules/${ruleId}/apply`, { transaction_ids: transactionIds });
     return response.data;
   }
 };
@@ -243,5 +332,84 @@ export const bankingUtils = {
       default:
         return 'bg-blue-100 text-blue-800';
     }
+  },
+
+  getReconciliationStatusColor: (status) => {
+    switch (status?.toLowerCase()) {
+      case 'in_progress':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'discrepancy':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  },
+
+  getBankRuleStatusColor: (isActive) => {
+    return isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+  },
+
+  getBankRuleTypeColor: (type) => {
+    switch (type?.toLowerCase()) {
+      case 'categorize':
+        return 'bg-blue-100 text-blue-800';
+      case 'split':
+        return 'bg-purple-100 text-purple-800';
+      case 'exclude':
+        return 'bg-red-100 text-red-800';
+      case 'memo':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  },
+
+  getBankRuleTypes: () => [
+    { value: 'categorize', label: 'Categorize' },
+    { value: 'split', label: 'Split' },
+    { value: 'exclude', label: 'Exclude' },
+    { value: 'memo', label: 'Add Memo' }
+  ],
+
+  getBankRuleConditions: () => [
+    { value: 'contains', label: 'Contains' },
+    { value: 'starts_with', label: 'Starts With' },
+    { value: 'ends_with', label: 'Ends With' },
+    { value: 'equals', label: 'Equals' },
+    { value: 'amount_greater', label: 'Amount Greater Than' },
+    { value: 'amount_less', label: 'Amount Less Than' },
+    { value: 'amount_equals', label: 'Amount Equals' }
+  ],
+
+  validateBankRuleData: (ruleData) => {
+    const errors = [];
+    
+    if (!ruleData.name || !ruleData.name.trim()) {
+      errors.push('Rule name is required');
+    }
+    
+    if (!ruleData.rule_type || !ruleData.rule_type.trim()) {
+      errors.push('Rule type is required');
+    }
+    
+    if (!ruleData.conditions || !Array.isArray(ruleData.conditions) || ruleData.conditions.length === 0) {
+      errors.push('At least one condition is required');
+    }
+    
+    if (!ruleData.actions || !Array.isArray(ruleData.actions) || ruleData.actions.length === 0) {
+      errors.push('At least one action is required');
+    }
+    
+    return errors;
+  },
+
+  calculateReconciliationDifference: (statementBalance, bookBalance) => {
+    const statement = parseFloat(statementBalance) || 0;
+    const book = parseFloat(bookBalance) || 0;
+    return statement - book;
   }
 };
+
+export default bankingService;
