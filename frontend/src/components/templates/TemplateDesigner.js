@@ -274,7 +274,7 @@ const TemplateDesigner = () => {
                   </div>
                 ))}
                 
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={importTemplate}>
                   <Upload className="w-4 h-4 mr-2" />
                   Import Template
                 </Button>
