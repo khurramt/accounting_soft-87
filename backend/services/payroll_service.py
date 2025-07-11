@@ -387,7 +387,7 @@ class PayrollService:
         
         return total_deductions
     
-    def create_payroll_run(self, company_id: str, payroll_run_data: PayrollRunCreate, created_by: str) -> PayrollRun:
+    async def create_payroll_run(self, company_id: str, payroll_run_data: PayrollRunCreate, created_by: str) -> PayrollRun:
         """Create a new payroll run"""
         
         payroll_run = PayrollRun(
@@ -402,8 +402,8 @@ class PayrollService:
         )
         
         self.db.add(payroll_run)
-        self.db.commit()
-        self.db.refresh(payroll_run)
+        await self.db.commit()
+        await self.db.refresh(payroll_run)
         
         return payroll_run
     
