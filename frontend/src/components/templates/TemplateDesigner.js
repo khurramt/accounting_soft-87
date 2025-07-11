@@ -312,16 +312,38 @@ const TemplateDesigner = () => {
     }
   };
 
-  const duplicateTemplate = () => {
-    const template = templates.find(t => t.id === selectedTemplate);
-    const newTemplate = {
-      ...template,
-      id: `${template.id}_copy_${Date.now()}`,
-      name: `${template.name} (Copy)`,
-      isDefault: false
-    };
-    setTemplates([...templates, newTemplate]);
-    alert('Template duplicated successfully!');
+  const duplicateTemplate = async () => {
+    try {
+      setLoading(true);
+      
+      const template = templates.find(t => t.id === selectedTemplate);
+      if (!template) {
+        alert('Template not found');
+        return;
+      }
+      
+      const newTemplate = {
+        name: `${template.name || 'Template'} (Copy)`,
+        subject: `${template.subject || 'Document Template'} (Copy)`,
+        body: template.body || JSON.stringify(templateSettings),
+        category: 'document',
+        template_type: 'duplicate',
+        variables: customFields,
+        is_active: true
+      };
+      
+      const response = await templateService.createTemplate(currentCompany.id, newTemplate);
+      
+      // Refresh templates list
+      await loadTemplates();
+      
+      alert('Template duplicated successfully!');
+    } catch (error) {
+      console.error('Error duplicating template:', error);
+      alert(`Failed to duplicate template: ${error.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const importTemplate = async () => {
