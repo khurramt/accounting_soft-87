@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { mockEmployees } from "../../data/mockData";
+import { payrollService, payrollUtils } from "../../services/payrollService";
+import { useCompany } from "../../contexts/CompanyContext";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
@@ -34,7 +35,8 @@ import {
   Archive,
   UserPlus,
   ClipboardList,
-  Briefcase
+  Briefcase,
+  Loader2
 } from "lucide-react";
 
 const PayrollCenter = () => {
