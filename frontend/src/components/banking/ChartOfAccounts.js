@@ -250,7 +250,7 @@ const ChartOfAccounts = () => {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">
-              {mockAccounts.filter(account => account.type === "Bank").length}
+              {accountStats.bankAccounts}
             </div>
             <p className="text-sm text-gray-600">Bank Accounts</p>
           </CardContent>
@@ -258,7 +258,7 @@ const ChartOfAccounts = () => {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">
-              ${mockAccounts.filter(account => account.type === "Bank").reduce((sum, account) => sum + account.balance, 0).toFixed(2)}
+              {bankingUtils.formatCurrency(accountStats.totalBankBalance)}
             </div>
             <p className="text-sm text-gray-600">Total Bank Balance</p>
           </CardContent>
@@ -266,15 +266,15 @@ const ChartOfAccounts = () => {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-purple-600">
-              ${mockAccounts.filter(account => account.type === "Accounts Receivable").reduce((sum, account) => sum + account.balance, 0).toFixed(2)}
+              {bankingUtils.formatCurrency(accountStats.totalAssets)}
             </div>
-            <p className="text-sm text-gray-600">Accounts Receivable</p>
+            <p className="text-sm text-gray-600">Total Assets</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-600">
-              {mockAccounts.length}
+            <div className="text-2xl font-bold text-orange-600">
+              {accountStats.totalAccounts}
             </div>
             <p className="text-sm text-gray-600">Total Accounts</p>
           </CardContent>
