@@ -28,7 +28,8 @@ import {
 
 const ReportCustomizer = () => {
   const [selectedReport, setSelectedReport] = useState("profit-loss");
-  const [reportSettings, setReportSettings] = useState({
+  
+  const initialReportSettings = {
     dateRange: "this-month",
     customStartDate: "",
     customEndDate: "",
@@ -46,7 +47,9 @@ const ReportCustomizer = () => {
     groupBy: "account",
     sortBy: "default",
     includeInactive: false
-  });
+  };
+  
+  const [reportSettings, setReportSettings] = useState(initialReportSettings);
 
   const reportTypes = [
     { id: "profit-loss", name: "Profit & Loss", icon: BarChart3 },
