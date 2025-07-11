@@ -312,6 +312,15 @@ const InventoryCenter = () => {
           <p className="text-gray-600">Manage your inventory items and stock levels</p>
         </div>
         <div className="flex space-x-2">
+          <Button
+            onClick={refreshData}
+            disabled={refreshing}
+            variant="outline"
+            className="flex items-center"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
           <Button onClick={exportInventory} variant="outline">
             <Download className="w-4 h-4 mr-2" />
             Export
@@ -330,7 +339,7 @@ const InventoryCenter = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Items</p>
-                <p className="text-2xl font-bold text-gray-900">{inventoryItems.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{inventoryOverview.totalItems || inventoryItems.length}</p>
               </div>
               <Package className="w-8 h-8 text-blue-600" />
             </div>
@@ -343,7 +352,7 @@ const InventoryCenter = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Value</p>
                 <p className="text-2xl font-bold text-green-600">
-                  ${getTotalInventoryValue().toLocaleString()}
+                  {inventoryUtils.formatCurrency(getTotalInventoryValue())}
                 </p>
               </div>
               <TrendingUp className="w-8 h-8 text-green-600" />
@@ -356,7 +365,7 @@ const InventoryCenter = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Low Stock</p>
-                <p className="text-2xl font-bold text-yellow-600">{getLowStockItems().length}</p>
+                <p className="text-2xl font-bold text-yellow-600">{typeof getLowStockItems() === 'number' ? getLowStockItems() : getLowStockItems().length}</p>
               </div>
               <AlertTriangle className="w-8 h-8 text-yellow-600" />
             </div>
@@ -368,7 +377,7 @@ const InventoryCenter = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Out of Stock</p>
-                <p className="text-2xl font-bold text-red-600">{getOutOfStockItems().length}</p>
+                <p className="text-2xl font-bold text-red-600">{typeof getOutOfStockItems() === 'number' ? getOutOfStockItems() : getOutOfStockItems().length}</p>
               </div>
               <TrendingDown className="w-8 h-8 text-red-600" />
             </div>
