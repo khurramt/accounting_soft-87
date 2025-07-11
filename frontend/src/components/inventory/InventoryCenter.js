@@ -167,12 +167,7 @@ const InventoryCenter = () => {
   });
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'In Stock': return 'success';
-      case 'Low Stock': return 'default';
-      case 'Out of Stock': return 'destructive';
-      default: return 'secondary';
-    }
+    return inventoryUtils.getStatusColor(status);
   };
 
   const getStatusIcon = (item) => {
@@ -182,32 +177,132 @@ const InventoryCenter = () => {
   };
 
   const getTotalInventoryValue = () => {
-    return inventoryItems.reduce((total, item) => total + item.totalValue, 0);
+    return inventoryOverview.totalValue || inventoryItems.reduce((total, item) => total + item.totalValue, 0);
   };
 
   const getLowStockItems = () => {
-    return inventoryItems.filter(item => item.quantityOnHand <= item.reorderPoint);
+    return inventoryOverview.lowStockItems || inventoryItems.filter(item => item.quantityOnHand <= item.reorderPoint);
   };
 
   const getOutOfStockItems = () => {
-    return inventoryItems.filter(item => item.quantityOnHand === 0);
+    return inventoryOverview.outOfStockItems || inventoryItems.filter(item => item.quantityOnHand === 0);
   };
 
-  const adjustQuantity = (itemId) => {
-    alert(`Opening quantity adjustment for item ${itemId}...`);
+  const adjustQuantity = async (itemId) => {
+    try {
+      const quantity = prompt('Enter adjustment quantity (positive for increase, negative for decrease):');
+      if (quantity === null || quantity === '') return;
+      
+      const adjustmentQuantity = parseInt(quantity);
+      if (isNaN(adjustmentQuantity)) {
+        alert('Please enter a valid number');
+        return;
+      }
+      
+      await inventoryService.createInventoryAdjustment(currentCompany.id, {
+        item_id: itemId,
+        quantity: adjustmentQuantity,
+        reason: 'Manual adjustment',
+        adjustment_date: new Date().toISOString()
+      });
+      
+      alert('Inventory adjustment created successfully!');
+      await refreshData();
+    } catch (err) {
+      console.error('Error creating inventory adjustment:', err);
+      alert('Failed to create inventory adjustment. Please try again.');
+    }
   };
 
-  const reorderItem = (itemId) => {
-    alert(`Creating purchase order for item ${itemId}...`);
+  const reorderItem = async (itemId) => {
+    try {
+      const item = inventoryItems.find(i => i.id === itemId);
+      if (!item) return;
+      
+      const reorderQuantity = inventoryUtils.calculateReorderQuantity(
+        item.maxStock,
+        item.quantityOnHand,
+        item.reorderPoint
+      );
+      
+      if (reorderQuantity > 0) {
+        alert(`Recommended reorder quantity: ${reorderQuantity} units\nThis would bring inventory to maximum stock level.`);
+        // In a real implementation, this would create a purchase order
+      } else {
+        alert('Item is above reorder point. No reorder needed.');
+      }
+    } catch (err) {
+      console.error('Error calculating reorder quantity:', err);
+      alert('Failed to calculate reorder quantity. Please try again.');
+    }
   };
 
-  const exportInventory = () => {
-    alert('Exporting inventory data...');
+  const exportInventory = async () => {
+    try {
+      const data = await inventoryService.exportInventory(currentCompany.id);
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `inventory_${currentCompany.name}_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error exporting inventory:', err);
+      alert('Failed to export inventory. Please try again.');
+    }
   };
 
-  const runInventoryReport = () => {
-    alert('Generating inventory valuation report...');
+  const runInventoryReport = async () => {
+    try {
+      await inventoryService.generateInventoryReport(currentCompany.id, 'valuation');
+      alert('Inventory valuation report generated successfully!');
+    } catch (err) {
+      console.error('Error generating inventory report:', err);
+      alert('Failed to generate inventory report. Please try again.');
+    }
   };
+
+  const handleImportInventory = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    try {
+      await inventoryService.importInventory(currentCompany.id, file);
+      alert('Inventory imported successfully!');
+      await refreshData();
+    } catch (err) {
+      console.error('Error importing inventory:', err);
+      alert('Failed to import inventory. Please try again.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading inventory data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">Error: {error}</div>
+          <Button onClick={loadInventoryData} className="bg-blue-600 hover:bg-blue-700">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
