@@ -428,7 +428,7 @@ const PayrollCenter = () => {
                         Pay Date: {payroll.payDate} • {payroll.employees} employees
                       </div>
                       <div className="text-sm text-gray-600">
-                        Estimated: {formatCurrency(payroll.estimatedGross)}
+                        Estimated: {payrollUtils.formatCurrency(payroll.estimatedGross)}
                       </div>
                     </div>
                     <div className="text-right">
