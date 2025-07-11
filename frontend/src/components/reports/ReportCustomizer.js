@@ -144,7 +144,7 @@ const ReportCustomizer = () => {
           <p className="text-gray-600 mt-1">Customize and generate detailed financial reports</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setReportSettings({})}>
+          <Button variant="outline" onClick={resetToDefaults}>
             <RotateCcw className="w-4 h-4 mr-2" />
             Reset
           </Button>
