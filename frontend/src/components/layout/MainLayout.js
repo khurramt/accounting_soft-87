@@ -30,7 +30,10 @@ import {
   DollarSign,
   Clock,
   FileText,
-  ChevronDown
+  ChevronDown,
+  Mail,
+  MessageSquare,
+  Webhook
 } from "lucide-react";
 
 const MainLayout = () => {
