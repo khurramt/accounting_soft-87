@@ -47,6 +47,12 @@ INVOICE_ID = None
 BILL_ID = None
 PAYMENT_ID = None
 
+# Global variables for communication tests
+EMAIL_TEMPLATE_ID = None
+WEBHOOK_ID = None
+NOTIFICATION_ID = None
+PURCHASE_ORDER_ID = None
+
 # Custom JSON encoder to handle decimal values
 class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
