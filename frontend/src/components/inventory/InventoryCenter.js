@@ -226,14 +226,33 @@ const InventoryCenter = () => {
       );
       
       if (reorderQuantity > 0) {
-        alert(`Recommended reorder quantity: ${reorderQuantity} units\nThis would bring inventory to maximum stock level.`);
-        // In a real implementation, this would create a purchase order
+        // Create a purchase order for the reorder quantity
+        const purchaseOrderData = {
+          vendor_id: item.preferredVendor || null,
+          status: 'draft',
+          order_date: new Date().toISOString().split('T')[0],
+          line_items: [{
+            item_id: itemId,
+            quantity: reorderQuantity,
+            unit_cost: item.unitCost || 0,
+            description: `Reorder for ${item.name}`
+          }],
+          notes: `Automatic reorder created for ${item.name} - Stock level: ${item.quantityOnHand}, Reorder point: ${item.reorderPoint}`
+        };
+        
+        // Use the purchase order service to create the order
+        const response = await inventoryService.createPurchaseOrder(currentCompany.id, purchaseOrderData);
+        
+        alert(`Purchase order created successfully!\nPO Number: ${response.po_number}\nReorder quantity: ${reorderQuantity} units`);
+        
+        // Refresh inventory data
+        await loadInventoryData();
       } else {
         alert('Item is above reorder point. No reorder needed.');
       }
     } catch (err) {
-      console.error('Error calculating reorder quantity:', err);
-      alert('Failed to calculate reorder quantity. Please try again.');
+      console.error('Error creating purchase order:', err);
+      alert(`Failed to create purchase order: ${err.message || 'Please try again.'}`);
     }
   };
 
