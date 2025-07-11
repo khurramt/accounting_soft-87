@@ -486,13 +486,13 @@ const InventoryCenter = () => {
                             item.quantityOnHand <= item.reorderPoint ? 'text-yellow-600' :
                             'text-green-600'
                           }`}>
-                            {item.quantityOnHand}
+                            {inventoryUtils.formatQuantity(item.quantityOnHand)}
                           </span>
                         </td>
-                        <td className="p-3">{item.reorderPoint}</td>
-                        <td className="p-3">${item.unitCost.toFixed(2)}</td>
-                        <td className="p-3">${item.unitPrice.toFixed(2)}</td>
-                        <td className="p-3 font-medium">${item.totalValue.toFixed(2)}</td>
+                        <td className="p-3">{inventoryUtils.formatQuantity(item.reorderPoint)}</td>
+                        <td className="p-3">{inventoryUtils.formatCurrency(item.unitCost)}</td>
+                        <td className="p-3">{inventoryUtils.formatCurrency(item.unitPrice)}</td>
+                        <td className="p-3 font-medium">{inventoryUtils.formatCurrency(item.totalValue)}</td>
                         <td className="p-3">
                           <Badge variant={getStatusColor(item.status)}>
                             {item.status}
