@@ -512,7 +512,12 @@ const UserManagement = () => {
           <DialogHeader>
             <DialogTitle>Role Management</DialogTitle>
           </DialogHeader>
-          <RoleManager roles={roles} setRoles={setRoles} availablePermissions={availablePermissions} />
+          <RoleManager 
+            roles={roles} 
+            setRoles={setRoles} 
+            availablePermissions={availablePermissions} 
+            currentCompany={currentCompany}
+          />
         </DialogContent>
       </Dialog>
     </div>
