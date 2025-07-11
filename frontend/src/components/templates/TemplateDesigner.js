@@ -141,6 +141,85 @@ const TemplateDesigner = () => {
     alert('Template duplicated successfully!');
   };
 
+  const importTemplate = () => {
+    // Create a file input element to trigger file selection
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,.xml,.html';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        // Here you would typically read the file and process it
+        console.log('Selected file:', file.name);
+        alert(`Importing template: ${file.name}`);
+        // TODO: Implement actual file processing logic
+      }
+    };
+    input.click();
+  };
+
+  const uploadLogo = () => {
+    // Create a file input element to trigger logo upload
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          handleSettingChange('companyLogo', event.target.result);
+          alert('Logo uploaded successfully!');
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  };
+
+  const resetToDefault = () => {
+    if (window.confirm('Are you sure you want to reset all settings to default? This action cannot be undone.')) {
+      setTemplateSettings({
+        companyLogo: null,
+        logoPosition: 'top-left',
+        logoSize: 'medium',
+        colorScheme: 'blue',
+        fontFamily: 'arial',
+        fontSize: 'medium',
+        headerBgColor: '#3B82F6',
+        headerTextColor: '#FFFFFF',
+        bodyTextColor: '#374151',
+        borderColor: '#E5E7EB',
+        showCompanyAddress: true,
+        showPaymentTerms: true,
+        showNotes: true,
+        showSignature: false,
+        customMessage: '',
+        footerText: 'Thank you for your business!'
+      });
+      alert('Template settings reset to default!');
+    }
+  };
+
+  // Text formatting handlers
+  const handleTextFormat = (format) => {
+    // This would typically interact with a rich text editor
+    alert(`Applied ${format} formatting`);
+  };
+
+  const handleTextAlign = (alignment) => {
+    // This would typically interact with a rich text editor
+    alert(`Applied ${alignment} alignment`);
+  };
+
+  const handleUndo = () => {
+    alert('Undo last action');
+  };
+
+  const handleRedo = () => {
+    alert('Redo last action');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
