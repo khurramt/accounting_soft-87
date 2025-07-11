@@ -357,7 +357,7 @@ const PayrollCenter = () => {
             <Calculator className="w-4 h-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(payrollSummary.quarterlyPayrollTax)}</div>
+            <div className="text-2xl font-bold">{payrollUtils.formatCurrency(payrollSummary.quarterlyPayrollTax)}</div>
             <p className="text-xs text-muted-foreground">
               {payrollSummary.overduePayrollTax === 0 ? 'No overdue taxes' : `${payrollSummary.overduePayrollTax} overdue`}
             </p>
