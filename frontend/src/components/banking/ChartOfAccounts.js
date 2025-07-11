@@ -85,25 +85,50 @@ const ChartOfAccounts = () => {
   });
 
   const getTypeColor = (type) => {
-    switch (type) {
-      case "Bank":
-        return "bg-blue-100 text-blue-800";
-      case "Accounts Receivable":
-        return "bg-green-100 text-green-800";
-      case "Fixed Asset":
-        return "bg-purple-100 text-purple-800";
-      case "Accounts Payable":
-        return "bg-red-100 text-red-800";
-      case "Equity":
-        return "bg-orange-100 text-orange-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+    return bankingUtils.getAccountTypeColor(type);
   };
 
   const formatBalance = (balance) => {
-    return balance >= 0 ? `$${balance.toFixed(2)}` : `($${Math.abs(balance).toFixed(2)})`;
+    return bankingUtils.formatCurrency(balance);
   };
+
+  // Calculate account statistics
+  const accountStats = {
+    bankAccounts: accounts.filter(account => account.type === "Bank").length,
+    totalBankBalance: accounts.filter(account => account.type === "Bank").reduce((sum, account) => sum + (account.balance || 0), 0),
+    totalAssets: accounts.filter(account => account.type === "Fixed Asset").reduce((sum, account) => sum + (account.balance || 0), 0),
+    totalLiabilities: accounts.filter(account => account.type === "Accounts Payable").reduce((sum, account) => sum + (account.balance || 0), 0),
+    totalAccounts: accounts.length
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <span className="ml-2 text-gray-600">Loading accounts...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <div className="text-red-600 mb-4">Error: {error}</div>
+        <Button onClick={handleRefresh} variant="outline">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  if (!currentCompany) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-600">Please select a company to view accounts</div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
