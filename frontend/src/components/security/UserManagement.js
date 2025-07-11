@@ -32,6 +32,10 @@ const UserManagement = () => {
       setLoading(true);
       setError(null);
       
+      // Load company users
+      const companyUsers = await securityService.getCompanyUsers(currentCompany.id);
+      setUsers(companyUsers || []);
+      
       // Load roles
       const rolesData = await securityService.getRoles(currentCompany.id, {
         page: 1,
@@ -39,15 +43,13 @@ const UserManagement = () => {
       });
       setRoles(rolesData.items || []);
       
-      // Load security logs to get user activity information
-      const securityLogsData = await securityService.getSecurityLogs(currentCompany.id, {
-        page: 1,
-        page_size: 100,
-        event_type: 'login'
-      });
-      
-      // Process security logs to extract user information
-      const userActivityMap = {};
+    } catch (err) {
+      console.error('Error loading user management data:', err);
+      setError(err.message || 'Failed to load user management data');
+    } finally {
+      setLoading(false);
+    }
+  };
       securityLogsData.items?.forEach(log => {
         if (log.user_id && log.details) {
           const userId = log.user_id;
