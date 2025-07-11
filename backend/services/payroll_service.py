@@ -570,13 +570,16 @@ class PayrollService:
         
         return payroll_run
     
-    def void_paycheck(self, paycheck_id: str, company_id: str, reason: str) -> Paycheck:
+    async def void_paycheck(self, paycheck_id: str, company_id: str, reason: str) -> Paycheck:
         """Void a paycheck"""
         
-        paycheck = self.db.query(Paycheck).join(PayrollRun).filter(
-            Paycheck.paycheck_id == paycheck_id,
-            PayrollRun.company_id == company_id
-        ).first()
+        result = await self.db.execute(
+            select(Paycheck).join(PayrollRun).filter(
+                Paycheck.paycheck_id == paycheck_id,
+                PayrollRun.company_id == company_id
+            )
+        )
+        paycheck = result.scalars().first()
         
         if not paycheck:
             raise ValueError("Paycheck not found")
@@ -588,7 +591,7 @@ class PayrollService:
         paycheck.void_reason = reason
         paycheck.voided_at = datetime.utcnow()
         
-        self.db.commit()
-        self.db.refresh(paycheck)
+        await self.db.commit()
+        await self.db.refresh(paycheck)
         
         return paycheck
