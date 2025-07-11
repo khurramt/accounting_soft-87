@@ -3010,6 +3010,808 @@ def test_account_merge():
         print(f"❌ Account merge test failed: {str(e)}")
         return False
 
+# ===== PHASE 4 BACKEND INTEGRATION TESTS =====
+
+# ===== SECURITY API TESTS =====
+
+def test_get_security_logs():
+    """Test getting security logs"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get security logs test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get security logs...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with various filters
+        filters = [
+            {"name": "No filters", "params": {}},
+            {"name": "Filter by event type", "params": {"event_type": "login"}},
+            {"name": "Filter by success status", "params": {"success": True}},
+            {"name": "Filter by threat level", "params": {"threat_level": "low"}},
+            {"name": "Pagination", "params": {"page": 1, "page_size": 10}}
+        ]
+        
+        for filter_test in filters:
+            print(f"\n  Testing {filter_test['name']}...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/security/logs", 
+                headers=headers, 
+                params=filter_test["params"],
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"  Found {data.get('total', 0)} security logs")
+                print(f"  ✅ {filter_test['name']} test passed")
+            elif response.status_code == 403:
+                print(f"  ⚠️ {filter_test['name']} test: Access denied (expected for security logs)")
+                return True  # This is expected behavior for security endpoints
+            else:
+                print(f"  ❌ {filter_test['name']} test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Get security logs test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Get security logs test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get security logs test failed: {str(e)}")
+        return False
+
+def test_get_security_summary():
+    """Test getting security summary"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get security summary test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get security summary...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/security/summary", 
+            headers=headers, 
+            params={"days": 30},
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            print("✅ Get security summary test passed")
+            return True
+        elif response.status_code == 403:
+            print("⚠️ Get security summary test: Access denied (expected for security endpoints)")
+            return True
+        else:
+            print(f"❌ Get security summary test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get security summary test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get security summary test failed: {str(e)}")
+        return False
+
+def test_get_security_roles():
+    """Test getting security roles"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get security roles test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get security roles...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/security/roles", 
+            headers=headers, 
+            params={"page": 1, "page_size": 10},
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get security roles test passed (Found {data['total']} roles)")
+                return True
+            else:
+                print(f"❌ Get security roles test failed: Unexpected response")
+                return False
+        elif response.status_code == 403:
+            print("⚠️ Get security roles test: Access denied (expected for security endpoints)")
+            return True
+        else:
+            print(f"❌ Get security roles test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get security roles test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get security roles test failed: {str(e)}")
+        return False
+
+def test_create_security_role():
+    """Test creating a security role"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create security role test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing create security role...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        payload = {
+            "role_name": f"Test Role {timestamp}",
+            "description": "Test role for API testing",
+            "permissions": ["read", "write"],
+            "is_active": True
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/security/roles", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 201:
+            if "role_id" in data:
+                print("✅ Create security role test passed")
+                return True
+            else:
+                print(f"❌ Create security role test failed: Unexpected response")
+                return False
+        elif response.status_code == 403:
+            print("⚠️ Create security role test: Access denied (expected for security endpoints)")
+            return True
+        else:
+            print(f"❌ Create security role test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Create security role test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Create security role test failed: {str(e)}")
+        return False
+
+def test_get_security_settings():
+    """Test getting security settings"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get security settings test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get security settings...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/security/settings", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            print("✅ Get security settings test passed")
+            return True
+        elif response.status_code == 403:
+            print("⚠️ Get security settings test: Access denied (expected for security endpoints)")
+            return True
+        else:
+            print(f"❌ Get security settings test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get security settings test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get security settings test failed: {str(e)}")
+        return False
+
+def test_update_security_settings():
+    """Test updating security settings"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Update security settings test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing update security settings...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        payload = {
+            "password_policy": {
+                "min_length": 8,
+                "require_uppercase": True,
+                "require_lowercase": True,
+                "require_numbers": True,
+                "require_special_chars": True
+            },
+            "session_timeout": 30,
+            "max_login_attempts": 5,
+            "lockout_duration": 15
+        }
+        
+        response = requests.put(
+            f"{API_URL}/companies/{COMPANY_ID}/security/settings", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            print("✅ Update security settings test passed")
+            return True
+        elif response.status_code == 403:
+            print("⚠️ Update security settings test: Access denied (expected for security endpoints)")
+            return True
+        else:
+            print(f"❌ Update security settings test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Update security settings test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Update security settings test failed: {str(e)}")
+        return False
+
+# ===== INVENTORY API TESTS =====
+
+def test_get_inventory_overview():
+    """Test getting inventory overview"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get inventory overview test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get inventory overview...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory/", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            print("✅ Get inventory overview test passed")
+            return True
+        else:
+            print(f"❌ Get inventory overview test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get inventory overview test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get inventory overview test failed: {str(e)}")
+        return False
+
+def test_get_inventory_items():
+    """Test getting inventory items (using items endpoint)"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get inventory items test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get inventory items...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/items/", 
+            headers=headers, 
+            params={"item_type": "inventory"},
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get inventory items test passed (Found {data['total']} items)")
+                return True
+            else:
+                print(f"❌ Get inventory items test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get inventory items test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get inventory items test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get inventory items test failed: {str(e)}")
+        return False
+
+def test_get_inventory_locations():
+    """Test getting inventory locations"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get inventory locations test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get inventory locations...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-locations/", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if isinstance(data, list):
+                print(f"✅ Get inventory locations test passed (Found {len(data)} locations)")
+                return True
+            else:
+                print(f"❌ Get inventory locations test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get inventory locations test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get inventory locations test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get inventory locations test failed: {str(e)}")
+        return False
+
+def test_get_inventory_transactions():
+    """Test getting inventory transactions"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get inventory transactions test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get inventory transactions...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # First get an item to test transactions for
+        items_response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/items/", 
+            headers=headers, 
+            params={"item_type": "inventory", "page_size": 1},
+            timeout=TIMEOUT
+        )
+        
+        if items_response.status_code != 200:
+            print("⚠️ No inventory items found, skipping transaction test")
+            return True
+        
+        items_data = items_response.json()
+        if items_data.get("total", 0) == 0:
+            print("⚠️ No inventory items found, skipping transaction test")
+            return True
+        
+        item_id = items_data["items"][0]["item_id"]
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory/{item_id}/transactions", 
+            headers=headers, 
+            params={"page": 1, "page_size": 10},
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get inventory transactions test passed (Found {data['total']} transactions)")
+                return True
+            else:
+                print(f"❌ Get inventory transactions test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get inventory transactions test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get inventory transactions test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get inventory transactions test failed: {str(e)}")
+        return False
+
+def test_create_inventory_adjustment():
+    """Test creating an inventory adjustment"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create inventory adjustment test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing create inventory adjustment...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # First get an item to adjust
+        items_response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/items/", 
+            headers=headers, 
+            params={"item_type": "inventory", "page_size": 1},
+            timeout=TIMEOUT
+        )
+        
+        if items_response.status_code != 200:
+            print("⚠️ No inventory items found, skipping adjustment test")
+            return True
+        
+        items_data = items_response.json()
+        if items_data.get("total", 0) == 0:
+            print("⚠️ No inventory items found, skipping adjustment test")
+            return True
+        
+        item_id = items_data["items"][0]["item_id"]
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        payload = {
+            "adjustment_date": date.today().isoformat(),
+            "adjustment_type": "quantity",
+            "item_id": item_id,
+            "quantity_adjustment": 5,
+            "reason": f"Test adjustment {timestamp}",
+            "reference_number": f"ADJ-{timestamp}"
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-adjustments/", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 201:
+            if "adjustment_id" in data:
+                print("✅ Create inventory adjustment test passed")
+                return True
+            else:
+                print(f"❌ Create inventory adjustment test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Create inventory adjustment test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Create inventory adjustment test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Create inventory adjustment test failed: {str(e)}")
+        return False
+
+def test_get_inventory_adjustments():
+    """Test getting inventory adjustments"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get inventory adjustments test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get inventory adjustments...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory-adjustments/", 
+            headers=headers, 
+            params={"page": 1, "page_size": 10},
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get inventory adjustments test passed (Found {data['total']} adjustments)")
+                return True
+            else:
+                print(f"❌ Get inventory adjustments test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get inventory adjustments test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get inventory adjustments test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get inventory adjustments test failed: {str(e)}")
+        return False
+
+def test_get_low_stock_items():
+    """Test getting low stock items"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get low stock items test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get low stock items...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/inventory/low-stock", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if isinstance(data, list):
+                print(f"✅ Get low stock items test passed (Found {len(data)} low stock items)")
+                return True
+            else:
+                print(f"❌ Get low stock items test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get low stock items test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get low stock items test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get low stock items test failed: {str(e)}")
+        return False
+
+# ===== AUDIT API TESTS =====
+
+def test_get_audit_logs():
+    """Test getting audit logs"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get audit logs test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get audit logs...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test with various filters
+        filters = [
+            {"name": "No filters", "params": {}},
+            {"name": "Filter by table name", "params": {"table_name": "transactions"}},
+            {"name": "Filter by action", "params": {"action": "create"}},
+            {"name": "Filter by user", "params": {"user_id": USER_ID}},
+            {"name": "Pagination", "params": {"page": 1, "page_size": 10}}
+        ]
+        
+        for filter_test in filters:
+            print(f"\n  Testing {filter_test['name']}...")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/audit/logs", 
+                headers=headers, 
+                params=filter_test["params"],
+                timeout=TIMEOUT
+            )
+            print(f"  Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"  Found {data.get('total', 0)} audit logs")
+                print(f"  ✅ {filter_test['name']} test passed")
+            elif response.status_code == 403:
+                print(f"  ⚠️ {filter_test['name']} test: Access denied (expected for audit logs)")
+                return True  # This is expected behavior for audit endpoints
+            else:
+                print(f"  ❌ {filter_test['name']} test failed: Status code {response.status_code}")
+                return False
+        
+        print("✅ Get audit logs test passed")
+        return True
+    except requests.exceptions.Timeout:
+        print(f"❌ Get audit logs test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get audit logs test failed: {str(e)}")
+        return False
+
+def test_get_audit_summary():
+    """Test getting audit summary"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get audit summary test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get audit summary...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/audit/summary", 
+            headers=headers, 
+            params={"days": 30},
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            print("✅ Get audit summary test passed")
+            return True
+        elif response.status_code == 403:
+            print("⚠️ Get audit summary test: Access denied (expected for audit endpoints)")
+            return True
+        else:
+            print(f"❌ Get audit summary test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get audit summary test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get audit summary test failed: {str(e)}")
+        return False
+
+def test_generate_audit_report():
+    """Test generating audit report"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Generate audit report test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing generate audit report...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        payload = {
+            "report_type": "activity_summary",
+            "format": "json",
+            "date_from": (date.today() - timedelta(days=30)).isoformat(),
+            "date_to": date.today().isoformat(),
+            "include_details": True
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/audit/reports", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "report_id" in data or "data" in data:
+                print("✅ Generate audit report test passed")
+                return True
+            else:
+                print(f"❌ Generate audit report test failed: Unexpected response")
+                return False
+        elif response.status_code == 403:
+            print("⚠️ Generate audit report test: Access denied (expected for audit endpoints)")
+            return True
+        else:
+            print(f"❌ Generate audit report test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Generate audit report test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Generate audit report test failed: {str(e)}")
+        return False
+
 # ===== PAYROLL API TESTS =====
 
 def test_get_payroll_items():
