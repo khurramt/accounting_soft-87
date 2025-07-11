@@ -141,6 +141,14 @@ const AppRouter = () => {
         {/* Items & Inventory */}
         <Route path="items" element={<ItemsList />} />
         <Route path="inventory" element={<InventoryCenter />} />
+        <Route path="purchase-orders" element={<PurchaseOrderManagement />} />
+        
+        {/* Communication */}
+        <Route path="email" element={<EmailManagement />} />
+        <Route path="sms" element={<SMSManagement />} />
+        <Route path="webhooks" element={<WebhookManagement />} />
+        <Route path="notifications" element={<NotificationCenter />} />
+        <Route path="notification-preferences" element={<NotificationPreferences />} />
         
         {/* Banking Routes */}
         <Route path="banking" element={<Navigate to="/accounts" replace />} />
