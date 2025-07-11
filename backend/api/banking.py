@@ -24,7 +24,7 @@ from schemas.banking_schemas import (
     BankInstitutionListResponse, FileUploadResponse
 )
 
-router = APIRouter(prefix="/api", tags=["banking"])
+router = APIRouter(tags=["banking"])
 logger = logging.getLogger(__name__)
 
 
