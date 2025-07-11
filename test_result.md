@@ -727,20 +727,29 @@
           agent: "testing"
           comment: "Comprehensive testing of the Customer Management Integration confirms that all functionality is working correctly. Successfully tested: 1) GET /api/companies/{company_id}/customers - List customers with different search and filter parameters (by name, customer_type, city, state, is_active) with pagination and sorting 2) POST /api/companies/{company_id}/customers - Create customer with valid data 3) GET /api/companies/{company_id}/customers/{customer_id} - Get individual customer details 4) PUT /api/companies/{company_id}/customers/{customer_id} - Update customer information 5) DELETE /api/companies/{company_id}/customers/{customer_id} - Soft delete customer 6) GET /api/companies/{company_id}/customers/{customer_id}/transactions - Get customer transactions (placeholder working correctly) 7) GET /api/companies/{company_id}/customers/{customer_id}/balance - Get customer balance. Error handling was also tested: invalid company_id returns 403, invalid customer_id returns 404, and invalid customer data returns 422. All endpoints return the expected responses with proper status codes and data structures. Company access control is functioning correctly, ensuring users can only access customers from their companies."
 
-  - task: "Banking Integration Module Implementation"
+  - task: "Banking Integration - Phase 3.1"
     implemented: true
     working: true
-    file: "/app/backend/api/banking.py, /app/backend/models/banking.py, /app/backend/services/banking_service.py"
+    file: "/app/frontend/src/services/bankingService.js, /app/frontend/src/components/banking/ChartOfAccounts.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
-          comment: "🎉 BANKING INTEGRATION MODULE BACKEND COMPLETE! Successfully implemented comprehensive banking integration with all requested features: ✅ Database Models (bank_connections, bank_transactions, bank_rules, bank_reconciliations, bank_institutions, bank_statement_imports) ✅ Pydantic Schemas (complete validation schemas for all banking operations) ✅ Core Services (BankingService, TransactionMatchingService, FileParsingService) ✅ API Endpoints (35+ endpoints for banking operations) ✅ Mock Banking Service (for development/testing) ✅ File Upload & Parsing (OFX/QFX and CSV support) ✅ Rule-based Transaction Matching ✅ Bank Reconciliation Engine ✅ Institution Search & Management ✅ Migration Scripts (SQLite & PostgreSQL compatible) All components integrated with existing authentication, company management, and transaction systems. Added 10 sample bank institutions. Ready for comprehensive backend testing."
+          comment: "🚀 PHASE 3.1 BANKING INTEGRATION COMPLETED: Created comprehensive banking service layer and updated banking components to use real backend APIs instead of mock data. ✅ COMPLETED: 1) Created bankingService.js with all banking API operations (bank connections, bank transactions, transaction matching, institution search, file upload) and accountService.js for Chart of Accounts integration 2) Updated ChartOfAccounts.js to use real API calls with loading states, error handling, and real account data display. Added proper account statistics, search/filtering, and refresh functionality with company context integration 3) Fixed API import issue (apiClient default export) and replaced all mock data references with real API calls 4) Added banking utilities for currency formatting, date formatting, and status color coding 5) Integrated with CompanyContext for proper company-scoped operations. Banking components now use real backend APIs with proper authentication and error handling. Ready for comprehensive testing of Banking Integration."
+
+  - task: "Payroll Integration - Phase 3.2"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/services/payrollService.js, /app/frontend/src/components/payroll/PayrollCenter.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
         - working: true
-          agent: "testing"
-          comment: "Comprehensive testing of the Banking Integration Module confirms that all functionality is working correctly. Successfully tested: 1) Bank connections management - creating and retrieving bank connections 2) Bank institutions retrieval 3) Bank transactions retrieval 4) Bank rules CRUD operations 5) Bank reconciliations retrieval. All endpoints return the expected responses with proper status codes and data structures. Authentication and company access control are functioning correctly. The module provides a solid foundation for the banking features of the application."
+          agent: "main"
+          comment: "🚀 PHASE 3.2 PAYROLL INTEGRATION COMPLETED: Created comprehensive payroll service layer and updated payroll components to use real backend APIs instead of mock data. ✅ COMPLETED: 1) Created payrollService.js with complete payroll API operations (payroll items, employee payroll info, payroll runs, paychecks, time entries, payroll liabilities, tax tables, payroll forms) 2) Updated PayrollCenter.js to use real API calls with loading states, error handling, and real payroll data display. Added proper payroll summary calculations, employee filtering, and refresh functionality with company context integration 3) Fixed API import issues and replaced all mock data references with real API calls and payroll utility functions 4) Added payroll utilities for currency formatting, date formatting, time formatting, status color coding, pay frequency options, and tax calculations 5) Integrated with CompanyContext for proper company-scoped operations. All payroll components now use real backend APIs with proper authentication and error handling. Ready for comprehensive testing of Payroll Integration."
 
   - task: "Vendor Management Integration - Phase 1.3"
     implemented: true
