@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Get backend URL from environment - force HTTPS for production
-let API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'https://e58bbb72-f425-4ccc-88e1-e0255fcbc23d.preview.emergentagent.com';
+let API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'https://2068fb5e-25f1-4ade-bf1a-4f70277ac1b2.preview.emergentagent.com';
 
 // Comprehensive HTTPS enforcement
 const enforceHttps = (url) => {
@@ -20,7 +20,7 @@ if (isProductionOrHTTPS) {
   
   // Additional safety check - if the URL somehow doesn't start with https, force it
   if (!API_BASE_URL.startsWith('https:')) {
-    API_BASE_URL = 'https://e58bbb72-f425-4ccc-88e1-e0255fcbc23d.preview.emergentagent.com';
+    API_BASE_URL = 'https://2068fb5e-25f1-4ade-bf1a-4f70277ac1b2.preview.emergentagent.com';
   }
 }
 
