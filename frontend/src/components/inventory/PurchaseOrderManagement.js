@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCompany } from '../../contexts/CompanyContext';
 import { purchaseOrderService } from '../../services/purchaseOrderService';
-import { vendorService } from '../../services/vendorService';
+import vendorService from '../../services/vendorService';
 import { itemService } from '../../services/itemService';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
