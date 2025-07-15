@@ -81,11 +81,15 @@ async def get_transactions(
                 detail="Access denied to this company"
             )
         
-        # If recent=true, limit to 10 most recent transactions
+        # If recent=true, limit to 10 most recent transactions and optimize with date range
         if recent:
             page_size = min(page_size, 10)
             sort_by = "created_at"
             sort_order = "desc"
+            # For recent transactions, only look at the last 30 days to improve performance
+            from datetime import datetime, timedelta
+            if not start_date:
+                start_date = (datetime.now() - timedelta(days=30)).date()
         
         filters = TransactionSearchFilters(
             search=search,
