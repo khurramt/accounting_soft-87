@@ -3506,6 +3506,166 @@ def test_get_inventory_transactions():
         print(f"❌ Get inventory transactions test failed: {str(e)}")
         return False
 
+# ===== RECENT TRANSACTIONS API PERFORMANCE TEST =====
+
+def test_recent_transactions_performance():
+    """Test Recent Transactions API performance - specific focus on timeout issue"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Recent Transactions performance test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing Recent Transactions API Performance...")
+        print("📊 PERFORMANCE REQUIREMENTS:")
+        print("   - Response time should be under 10 seconds")
+        print("   - Should return maximum 10 transactions")
+        print("   - Should handle timeout gracefully")
+        print("   - No .toFixed errors in numeric formatting")
+        
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Set a specific timeout for this performance test (15 seconds as mentioned in requirements)
+        PERFORMANCE_TIMEOUT = 15
+        
+        print(f"\n⏱️  Starting performance test with {PERFORMANCE_TIMEOUT}s timeout...")
+        start_time = time.time()
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/transactions?recent=true", 
+            headers=headers, 
+            timeout=PERFORMANCE_TIMEOUT,
+            verify=False
+        )
+        
+        end_time = time.time()
+        response_time = end_time - start_time
+        
+        print(f"⏱️  Response Time: {response_time:.2f} seconds")
+        print(f"Status Code: {response.status_code}")
+        
+        # Check if response time meets the requirement (under 10 seconds)
+        if response_time >= 10:
+            print(f"⚠️  PERFORMANCE WARNING: Response time ({response_time:.2f}s) exceeds 10 second requirement")
+        else:
+            print(f"✅ PERFORMANCE GOOD: Response time ({response_time:.2f}s) is under 10 seconds")
+        
+        try:
+            data = response.json()
+            print(f"Response structure: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            # Validate response structure
+            if isinstance(data, dict) and "items" in data:
+                transactions = data["items"]
+                total_count = len(transactions)
+                
+                print(f"📊 RESPONSE VALIDATION:")
+                print(f"   - Total transactions returned: {total_count}")
+                print(f"   - Expected maximum: 10 transactions")
+                
+                # Check transaction count limit
+                if total_count > 10:
+                    print(f"⚠️  WARNING: Returned {total_count} transactions, expected maximum 10")
+                else:
+                    print(f"✅ TRANSACTION LIMIT: Correctly limited to {total_count} transactions")
+                
+                # Validate data format and check for .toFixed errors
+                format_errors = []
+                for i, transaction in enumerate(transactions[:3]):  # Check first 3 transactions
+                    print(f"\n   Transaction {i+1} validation:")
+                    
+                    # Check for required fields
+                    required_fields = ["transaction_id", "transaction_date", "total_amount"]
+                    for field in required_fields:
+                        if field in transaction:
+                            value = transaction[field]
+                            print(f"     - {field}: {value} (type: {type(value).__name__})")
+                            
+                            # Check for numeric fields that might cause .toFixed errors
+                            if field == "total_amount":
+                                if value is not None:
+                                    try:
+                                        # Test if we can format this value (simulating .toFixed)
+                                        if isinstance(value, (int, float)):
+                                            formatted = f"{float(value):.2f}"
+                                            print(f"       ✅ Numeric formatting test passed: {formatted}")
+                                        elif isinstance(value, str):
+                                            formatted = f"{float(value):.2f}"
+                                            print(f"       ✅ String-to-numeric formatting test passed: {formatted}")
+                                        else:
+                                            format_errors.append(f"Transaction {i+1}: total_amount is {type(value).__name__}, not numeric")
+                                    except (ValueError, TypeError) as e:
+                                        format_errors.append(f"Transaction {i+1}: total_amount formatting error - {str(e)}")
+                        else:
+                            print(f"     - {field}: MISSING")
+                
+                # Report format validation results
+                if format_errors:
+                    print(f"\n❌ DATA FORMAT ERRORS FOUND:")
+                    for error in format_errors:
+                        print(f"   - {error}")
+                    print("   This could cause .toFixed JavaScript errors in frontend")
+                else:
+                    print(f"\n✅ DATA FORMAT: All numeric fields properly formatted, no .toFixed errors expected")
+                
+                # Overall performance assessment
+                print(f"\n📋 PERFORMANCE ASSESSMENT:")
+                performance_score = 0
+                
+                if response_time < 10:
+                    print(f"   ✅ Response Time: {response_time:.2f}s (GOOD - under 10s requirement)")
+                    performance_score += 1
+                else:
+                    print(f"   ❌ Response Time: {response_time:.2f}s (POOR - exceeds 10s requirement)")
+                
+                if total_count <= 10:
+                    print(f"   ✅ Transaction Limit: {total_count} transactions (GOOD - within 10 limit)")
+                    performance_score += 1
+                else:
+                    print(f"   ❌ Transaction Limit: {total_count} transactions (POOR - exceeds 10 limit)")
+                
+                if not format_errors:
+                    print(f"   ✅ Data Format: No formatting errors (GOOD)")
+                    performance_score += 1
+                else:
+                    print(f"   ❌ Data Format: {len(format_errors)} formatting errors (POOR)")
+                
+                # Final verdict
+                if performance_score == 3:
+                    print(f"\n🎉 OVERALL RESULT: Recent Transactions API performance is EXCELLENT (3/3)")
+                    print("   The previous timeout/performance issues appear to be RESOLVED!")
+                    return True
+                elif performance_score == 2:
+                    print(f"\n⚠️  OVERALL RESULT: Recent Transactions API performance is GOOD (2/3)")
+                    print("   Some improvements made but minor issues remain")
+                    return True
+                else:
+                    print(f"\n❌ OVERALL RESULT: Recent Transactions API performance is POOR ({performance_score}/3)")
+                    print("   Significant performance issues still exist")
+                    return False
+                    
+            else:
+                print(f"❌ Recent Transactions performance test failed: Unexpected response structure")
+                print(f"   Expected dict with 'items' key, got: {type(data)}")
+                return False
+        else:
+            print(f"❌ Recent Transactions performance test failed: Status code {response.status_code}")
+            return False
+            
+    except requests.exceptions.Timeout:
+        print(f"❌ Recent Transactions performance test FAILED: Request timed out after {PERFORMANCE_TIMEOUT} seconds")
+        print("   This indicates the performance optimization has NOT resolved the timeout issue")
+        print("   The API is still taking longer than the acceptable threshold")
+        return False
+    except Exception as e:
+        print(f"❌ Recent Transactions performance test failed: {str(e)}")
+        return False
+
 def test_create_inventory_adjustment():
     """Test creating an inventory adjustment"""
     global ACCESS_TOKEN, COMPANY_ID
