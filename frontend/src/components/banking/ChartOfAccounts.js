@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { accountService, bankingUtils } from "../../services/bankingService";
+import { bankingService as accountService, bankingUtils } from "../../services/bankingService";
 import { useCompany } from "../../contexts/CompanyContext";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
