@@ -99,9 +99,11 @@ class TransactionService(BaseListService):
         # For recent transactions, optimize the query by only loading essential relationships
         if filters.page_size <= 10 and filters.sort_by == "created_at":
             # This is likely a recent transactions request, use optimized query
+            # Load lines for recent transactions too to prevent greenlet issues
             query = select(Transaction).where(
                 Transaction.company_id == company_id
             ).options(
+                selectinload(Transaction.lines),
                 selectinload(Transaction.customer),
                 selectinload(Transaction.vendor)
             )
