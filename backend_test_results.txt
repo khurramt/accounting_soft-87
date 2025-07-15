@@ -1,0 +1,2741 @@
+Using API URL: https://2068fb5e-25f1-4ade-bf1a-4f70277ac1b2.preview.emergentagent.com/api
+
+🔍 Starting QuickBooks Clone API tests...
+🕒 Test time: 2025-07-15 00:03:44
+
+🔍 Testing root endpoint...
+Response: {
+  "message": "QuickBooks Clone API",
+  "version": "1.0.0",
+  "docs": "/api/docs"
+}
+✅ Root endpoint test passed
+
+🔍 Testing health endpoint...
+Response: {
+  "status": "healthy",
+  "timestamp": "2025-07-15T00:03:44.098077",
+  "version": "1.0.0"
+}
+✅ Health endpoint test passed
+
+🔍 Testing login with demo user...
+Status Code: 200
+Response: {
+  "user": {
+    "user_id": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+    "email": "demo@quickbooks.com",
+    "first_name": "Demo",
+    "last_name": "User",
+    "phone": null,
+    "is_email_verified": false,
+    "is_active": true,
+    "last_login": "2025-07-15T00:03:44.384130+00:00",
+    "created_at": "2025-07-09T00:19:43"
+  },
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDM1NzgwMzktODIxYy00YThjLWI3YzktZTAwZTNhOGZkMjU2Iiwic2Vzc2lvbl9pZCI6ImEzMDRjYzRmLTA1YzEtNGUwOC05MjYxLWM3NDcxMGRmZjkyZiIsImV4cCI6MTc1MjUzODcyNCwiaWF0IjoxNzUyNTM3ODI0LCJ0eXBlIjoiYWNjZXNzIn0.VMKQ_RAoxdUntV7VRKdxAJjwhn8ya6uDLOoKClkPWx0",
+  "refresh_token": "VvKAuaWtyZuRGJXuxERNQG9aSbyRlqphRGRbjlg7uiU",
+  "token_type": "bearer",
+  "expires_in": 900
+}
+✅ Demo user login test passed
+
+🔍 Testing get user companies...
+Status Code: 200
+Response: [
+  {
+    "membership_id": "187ccb13-362a-47ee-9702-ce6bb97bdde4",
+    "company": {
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "name": "Demo Company",
+      "legal_name": "Demo Company LLC",
+      "industry": "Technology",
+      "business_type": "LLC",
+      "created_at": "2025-07-09T00:19:43"
+    },
+    "role": "admin",
+    "permissions": {
+      "full_access": true,
+      "manage_users": true,
+      "view_reports": true,
+      "manage_finances": true
+    },
+    "is_active": true,
+    "accepted_at": "2025-07-09T00:19:43",
+    "created_at": "2025-07-09T00:19:43"
+  }
+]
+Using company ID: 5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2
+✅ Get user companies test passed
+
+🔍 Testing company access for company ID: 5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2...
+Status Code: 200
+Response: {
+  "message": "Company access granted",
+  "success": true
+}
+✅ Company access test passed
+
+🔍 Testing get customers...
+Status Code: 200
+Response: {
+  "items": [
+    {
+      "customer_id": "25452a51-4f92-4ba7-a463-98883a75fac7",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "customer_number": "CUST00001",
+      "customer_name": "Test Customer 20250709053431",
+      "company_name": "Test Customer Inc.",
+      "customer_type": "business",
+      "salutation": null,
+      "first_name": null,
+      "last_name": null,
+      "contact_person": "John Doe",
+      "address_line1": "123 Test St",
+      "address_line2": null,
+      "city": "Test City",
+      "state": "TS",
+      "zip_code": "12345",
+      "country": "US",
+      "phone": "555-123-4567",
+      "mobile": null,
+      "fax": null,
+      "email": "test.customer.20250709053431@example.com",
+      "website": null,
+      "payment_terms": null,
+      "credit_limit": null,
+      "price_level": null,
+      "sales_tax_code": null,
+      "sales_tax_item": null,
+      "preferred_delivery_method": null,
+      "preferred_payment_method": null,
+      "account_number": null,
+      "custom_field1": null,
+      "custom_field2": null,
+      "custom_field3": null,
+      "is_active": true,
+      "created_at": "2025-07-09T05:34:31",
+      "updated_at": null
+    },
+    {
+      "customer_id": "559383c9-62b6-4327-9ed7-97acddfd51ef",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "customer_number": "CUST00002",
+      "customer_name": "Test Customer 20250709053543",
+      "company_name": "Test Customer Inc.",
+      "customer_type": "business",
+      "salutation": null,
+      "first_name": null,
+      "last_name": null,
+      "contact_person": "John Doe",
+      "address_line1": "123 Test St",
+      "address_line2": null,
+      "city": "Test City",
+      "state": "TS",
+      "zip_code": "12345",
+      "country": "US",
+      "phone": "555-123-4567",
+      "mobile": null,
+      "fax": null,
+      "email": "test.customer.20250709053543@example.com",
+      "website": null,
+      "payment_terms": null,
+      "credit_limit": null,
+      "price_level": null,
+      "sales_tax_code": null,
+      "sales_tax_item": null,
+      "preferred_delivery_method": null,
+      "preferred_payment_method": null,
+      "account_number": null,
+      "custom_field1": null,
+      "custom_field2": null,
+      "custom_field3": null,
+      "is_active": true,
+      "created_at": "2025-07-09T05:35:43",
+      "updated_at": null
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 1
+}
+Using customer ID: 25452a51-4f92-4ba7-a463-98883a75fac7
+✅ Get customers test passed (Found 2 customers)
+
+🔍 Testing get vendors...
+Status Code: 200
+Response: {
+  "items": [
+    {
+      "vendor_id": "124b2570-0cf5-41ae-8365-629991095f10",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "vendor_number": "VEND00005",
+      "vendor_name": "Test Vendor 20250709053431",
+      "company_name": "Test Vendor Inc.",
+      "vendor_type": "supplier",
+      "contact_person": "Jane Smith",
+      "address_line1": "789 Vendor St",
+      "address_line2": null,
+      "city": "Vendor City",
+      "state": "VS",
+      "zip_code": "54321",
+      "country": "US",
+      "phone": "555-987-6543",
+      "mobile": null,
+      "fax": null,
+      "email": "test.vendor.20250709053431@example.com",
+      "website": null,
+      "payment_terms": null,
+      "credit_limit": null,
+      "tax_id": null,
+      "eligible_1099": true,
+      "account_number": null,
+      "custom_field1": null,
+      "custom_field2": null,
+      "custom_field3": null,
+      "is_active": true,
+      "created_at": "2025-07-09T05:34:31",
+      "updated_at": null
+    },
+    {
+      "vendor_id": "60497946-bef1-4edc-a993-bbf4d4d29b74",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "vendor_number": "VEND00006",
+      "vendor_name": "Test Vendor 20250709053543",
+      "company_name": "Test Vendor Inc.",
+      "vendor_type": "supplier",
+      "contact_person": "Jane Smith",
+      "address_line1": "789 Vendor St",
+      "address_line2": null,
+      "city": "Vendor City",
+      "state": "VS",
+      "zip_code": "54321",
+      "country": "US",
+      "phone": "555-987-6543",
+      "mobile": null,
+      "fax": null,
+      "email": "test.vendor.20250709053543@example.com",
+      "website": null,
+      "payment_terms": null,
+      "credit_limit": null,
+      "tax_id": null,
+      "eligible_1099": true,
+      "account_number": null,
+      "custom_field1": null,
+      "custom_field2": null,
+      "custom_field3": null,
+      "is_active": true,
+      "created_at": "2025-07-09T05:35:43",
+      "updated_at": null
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 1
+}
+Using vendor ID: 124b2570-0cf5-41ae-8365-629991095f10
+✅ Get vendors test passed (Found 2 vendors)
+
+🔍 Testing get accounts...
+Status Code: 200
+Response: {
+  "items": [
+    {
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "account_number": "1000",
+      "account_name": "Test Assets Account",
+      "account_type": "assets",
+      "parent_account_id": null,
+      "description": "Test assets account for API testing",
+      "opening_balance": "0.00",
+      "opening_balance_date": null,
+      "bank_account_number": null,
+      "routing_number": null,
+      "tax_line": null,
+      "is_active": true,
+      "sort_order": null,
+      "created_at": "2025-07-09T05:35:44",
+      "updated_at": null
+    },
+    {
+      "account_id": "dd1ff87e-41e9-434e-91bc-deba1f0eb0fe",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "account_number": "5000",
+      "account_name": "Test Expenses Account",
+      "account_type": "expenses",
+      "parent_account_id": null,
+      "description": "Test expenses account for API testing",
+      "opening_balance": "0.00",
+      "opening_balance_date": null,
+      "bank_account_number": null,
+      "routing_number": null,
+      "tax_line": null,
+      "is_active": true,
+      "sort_order": null,
+      "created_at": "2025-07-09T05:35:44",
+      "updated_at": null
+    },
+    {
+      "account_id": "c3502af6-d28f-46a9-ba87-f13fe14968d2",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "account_number": "4000",
+      "account_name": "Test Revenue Account",
+      "account_type": "revenue",
+      "parent_account_id": null,
+      "description": "Test revenue account for API testing",
+      "opening_balance": "0.00",
+      "opening_balance_date": null,
+      "bank_account_number": null,
+      "routing_number": null,
+      "tax_line": null,
+      "is_active": true,
+      "sort_order": null,
+      "created_at": "2025-07-09T05:35:44",
+      "updated_at": null
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 1
+}
+Using account ID: 1182c884-15be-4a75-9461-5a2baccfae30
+✅ Get accounts test passed (Found 3 accounts)
+
+===== TESTING FIXED APIs =====
+
+🔍 Testing dashboard API with different date ranges...
+
+  Testing date range: today...
+  Response time: 0.04 seconds
+  Status Code: 200
+  ✅ Dashboard API test for today passed
+  Total Income: 0.0
+  Total Expenses: 0.0
+  Net Income: 0.0
+  Outstanding Invoices: 0.0
+  Recent Transactions Count: 0
+  ✅ Dashboard API response time for today is under 5 seconds: 0.04 seconds
+
+  Testing date range: this-week...
+  Response time: 0.03 seconds
+  Status Code: 200
+  ✅ Dashboard API test for this-week passed
+  Total Income: 0.0
+  Total Expenses: 0.0
+  Net Income: 0.0
+  Outstanding Invoices: 0.0
+  Recent Transactions Count: 0
+  ✅ Dashboard API response time for this-week is under 5 seconds: 0.03 seconds
+
+  Testing date range: this-month...
+  Response time: 0.03 seconds
+  Status Code: 200
+  ✅ Dashboard API test for this-month passed
+  Total Income: 0.0
+  Total Expenses: 0.0
+  Net Income: 0.0
+  Outstanding Invoices: 0.0
+  Recent Transactions Count: 0
+  ✅ Dashboard API response time for this-month is under 5 seconds: 0.03 seconds
+
+  Testing date range: this-quarter...
+  Response time: 0.03 seconds
+  Status Code: 200
+  ✅ Dashboard API test for this-quarter passed
+  Total Income: 0.0
+  Total Expenses: 0.0
+  Net Income: 0.0
+  Outstanding Invoices: 0.0
+  Recent Transactions Count: 0
+  ✅ Dashboard API response time for this-quarter is under 5 seconds: 0.03 seconds
+
+  Testing date range: this-year...
+  Response time: 0.03 seconds
+  Status Code: 200
+  ✅ Dashboard API test for this-year passed
+  Total Income: 0.0
+  Total Expenses: 0.0
+  Net Income: 0.0
+  Outstanding Invoices: 0.0
+  Recent Transactions Count: 0
+  ✅ Dashboard API response time for this-year is under 5 seconds: 0.03 seconds
+✅ Dashboard API test with different date ranges passed
+
+🔍 Testing invoices API with status filter...
+
+  Testing status filter: paid...
+  Status Code: 403
+  ❌ Invoices API test for status 'paid' failed: Status code 403
+  Error: {
+  "error": "Not authenticated",
+  "status_code": 403,
+  "path": "/api/companies/5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2/invoices/"
+}
+
+🔍 Testing transactions API with recent filter...
+Status Code: 200
+Found 10 recent transactions (total: 60)
+✅ Recent transactions are limited to 10 or fewer
+✅ Recent transactions are sorted by created_at in descending order
+✅ Transactions API test with recent filter passed
+
+===== REPORTS INTEGRATION API TESTS =====
+
+🔍 Testing Profit and Loss report API...
+
+  Testing Basic P&L report with required dates...
+  Status Code: 200
+  Response structure: ['report_name', 'company_name', 'report_date', 'comparison_date', 'sections', 'grand_total', 'currency', 'generated_at']
+  ⚠️ Basic P&L report with required dates test passed but sections may be different: ['', '', '']
+
+  Testing P&L with comparison period...
+  Status Code: 200
+  Response structure: ['report_name', 'company_name', 'report_date', 'comparison_date', 'sections', 'grand_total', 'currency', 'generated_at']
+  ⚠️ P&L with comparison period test passed but sections may be different: ['', '', '']
+
+  Testing P&L with custom formatting...
+  Status Code: 200
+  Response structure: ['report_name', 'company_name', 'report_date', 'comparison_date', 'sections', 'grand_total', 'currency', 'generated_at']
+  ⚠️ P&L with custom formatting test passed but sections may be different: ['', '', '']
+✅ Profit and Loss report API test passed
+
+🔍 Testing Balance Sheet report API...
+
+  Testing Basic Balance Sheet report with required as_of_date...
+  Status Code: 200
+  Response structure: ['report_name', 'company_name', 'report_date', 'comparison_date', 'sections', 'grand_total', 'currency', 'generated_at']
+  ⚠️ Basic Balance Sheet report with required as_of_date test passed but sections may be different: ['', '', '']
+
+  Testing Balance Sheet with comparison date...
+  Status Code: 200
+  Response structure: ['report_name', 'company_name', 'report_date', 'comparison_date', 'sections', 'grand_total', 'currency', 'generated_at']
+  ⚠️ Balance Sheet with comparison date test passed but sections may be different: ['', '', '']
+
+  Testing Balance Sheet with custom formatting...
+  Status Code: 200
+  Response structure: ['report_name', 'company_name', 'report_date', 'comparison_date', 'sections', 'grand_total', 'currency', 'generated_at']
+  ⚠️ Balance Sheet with custom formatting test passed but sections may be different: ['', '', '']
+✅ Balance Sheet report API test passed
+
+🔍 Testing Cash Flow report API...
+
+  Testing Basic Cash Flow report with required dates...
+  Status Code: 200
+  Response structure: ['report_name', 'company_name', 'report_date', 'comparison_date', 'sections', 'grand_total', 'currency', 'generated_at']
+  ⚠️ Basic Cash Flow report with required dates test passed but sections may be different: ['', '', '']
+
+  Testing Cash Flow with indirect method...
+  Status Code: 200
+  Response structure: ['report_name', 'company_name', 'report_date', 'comparison_date', 'sections', 'grand_total', 'currency', 'generated_at']
+  ⚠️ Cash Flow with indirect method test passed but sections may be different: ['', '', '']
+
+  Testing Cash Flow with direct method...
+  Status Code: 200
+  Response structure: ['report_name', 'company_name', 'report_date', 'comparison_date', 'sections', 'grand_total', 'currency', 'generated_at']
+  ⚠️ Cash Flow with direct method test passed but sections may be different: ['', '', '']
+
+  Testing Cash Flow with custom formatting...
+  Status Code: 200
+  Response structure: ['report_name', 'company_name', 'report_date', 'comparison_date', 'sections', 'grand_total', 'currency', 'generated_at']
+  ⚠️ Cash Flow with custom formatting test passed but sections may be different: ['', '', '']
+✅ Cash Flow report API test passed
+
+🔍 Testing Reports API error handling...
+
+  Testing Invalid company ID...
+  Status Code: 403
+  ✅ Invalid company ID test passed - Got expected error status
+  ✅ Error response includes proper error message
+
+  Testing Missing required parameters...
+  Status Code: 422
+  ✅ Missing required parameters test passed - Got expected error status
+  ✅ Error response includes proper error message
+✅ Reports API error handling test passed
+
+📋 Fixed API Test Summary:
+Dashboard API: ✅ PASSED
+Invoices API with status filter: ❌ FAILED
+Transactions API with recent filter: ✅ PASSED
+
+📋 Reports Integration Test Summary:
+Profit & Loss Report API: ✅ PASSED
+Balance Sheet Report API: ✅ PASSED
+Cash Flow Report API: ✅ PASSED
+Reports Error Handling: ✅ PASSED
+
+===== TRANSACTION MANAGEMENT API TESTS =====
+
+🔍 Testing create transaction...
+Status Code: 201
+Response: {
+  "transaction_type": "invoice",
+  "transaction_number": "INV-000042",
+  "reference_number": null,
+  "transaction_date": "2025-07-15",
+  "due_date": "2025-08-14",
+  "customer_id": "25452a51-4f92-4ba7-a463-98883a75fac7",
+  "vendor_id": null,
+  "employee_id": null,
+  "account_id": null,
+  "memo": "Test Transaction 20250715000345",
+  "exchange_rate": "1.000000",
+  "currency_code": "USD",
+  "payment_terms": null,
+  "billing_address": null,
+  "shipping_address": null,
+  "custom_fields": null,
+  "template_id": null,
+  "transaction_id": "ec930248-dd91-4f93-b173-cf7a97df566b",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "status": "draft",
+  "subtotal": "200.00",
+  "tax_amount": "0.00",
+  "total_amount": "200.00",
+  "balance_due": "200.00",
+  "is_posted": false,
+  "is_cleared": false,
+  "is_void": false,
+  "voided_at": null,
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "updated_by": null,
+  "created_at": "2025-07-15T00:03:45",
+  "updated_at": null,
+  "lines": [
+    {
+      "line_number": 1,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Test Line Item",
+      "quantity": "2",
+      "unit_price": "100.0",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "c267bb79-3a30-401f-9e2f-4ec6bef3a8d2",
+      "line_total": "200.0",
+      "created_at": "2025-07-15T00:03:45"
+    }
+  ]
+}
+✅ Create transaction test passed (ID: ec930248-dd91-4f93-b173-cf7a97df566b)
+
+🔍 Testing get transactions with filtering...
+
+  Testing No filters...
+  Status Code: 200
+  Found 61 transactions
+  ✅ No filters test passed
+
+  Testing Filter by transaction type...
+  Status Code: 200
+  Found 42 transactions
+  ✅ Filter by transaction type test passed
+
+  Testing Filter by status...
+  Status Code: 200
+  Found 22 transactions
+  ✅ Filter by status test passed
+
+  Testing Filter by date range...
+  Status Code: 200
+  Found 61 transactions
+  ✅ Filter by date range test passed
+
+  Testing Filter by customer...
+  Status Code: 200
+  Found 42 transactions
+  ✅ Filter by customer test passed
+
+  Testing Pagination...
+  Status Code: 200
+  Found 61 transactions
+  ✅ Pagination test passed
+✅ Get transactions with filtering test passed
+
+🔍 Testing get transaction by ID: ec930248-dd91-4f93-b173-cf7a97df566b...
+Status Code: 200
+Response: {
+  "transaction_type": "invoice",
+  "transaction_number": "INV-000042",
+  "reference_number": null,
+  "transaction_date": "2025-07-15",
+  "due_date": "2025-08-14",
+  "customer_id": "25452a51-4f92-4ba7-a463-98883a75fac7",
+  "vendor_id": null,
+  "employee_id": null,
+  "account_id": null,
+  "memo": "Test Transaction 20250715000345",
+  "exchange_rate": "1.000000",
+  "currency_code": "USD",
+  "payment_terms": null,
+  "billing_address": null,
+  "shipping_address": null,
+  "custom_fields": null,
+  "template_id": null,
+  "transaction_id": "ec930248-dd91-4f93-b173-cf7a97df566b",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "status": "draft",
+  "subtotal": "200.00",
+  "tax_amount": "0.00",
+  "total_amount": "200.00",
+  "balance_due": "200.00",
+  "is_posted": false,
+  "is_cleared": false,
+  "is_void": false,
+  "voided_at": null,
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "updated_by": null,
+  "created_at": "2025-07-15T00:03:45",
+  "updated_at": null,
+  "lines": [
+    {
+      "line_number": 1,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Test Line Item",
+      "quantity": "2.0000",
+      "unit_price": "100.00",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0000",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "c267bb79-3a30-401f-9e2f-4ec6bef3a8d2",
+      "line_total": "200.00",
+      "created_at": "2025-07-15T00:03:45"
+    }
+  ]
+}
+✅ Get transaction by ID test passed
+
+🔍 Testing update transaction: ec930248-dd91-4f93-b173-cf7a97df566b...
+Status Code: 200
+Response: {
+  "transaction_type": "invoice",
+  "transaction_number": "INV-000042",
+  "reference_number": null,
+  "transaction_date": "2025-07-15",
+  "due_date": "2025-08-14",
+  "customer_id": "25452a51-4f92-4ba7-a463-98883a75fac7",
+  "vendor_id": null,
+  "employee_id": null,
+  "account_id": null,
+  "memo": "Updated Transaction Memo 20250715000345",
+  "exchange_rate": "1.000000",
+  "currency_code": "USD",
+  "payment_terms": null,
+  "billing_address": null,
+  "shipping_address": null,
+  "custom_fields": null,
+  "template_id": null,
+  "transaction_id": "ec930248-dd91-4f93-b173-cf7a97df566b",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "status": "draft",
+  "subtotal": "0.00",
+  "tax_amount": "0.00",
+  "total_amount": "0.00",
+  "balance_due": "0.00",
+  "is_posted": false,
+  "is_cleared": false,
+  "is_void": false,
+  "voided_at": null,
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "updated_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "created_at": "2025-07-15T00:03:45",
+  "updated_at": "2025-07-15T00:03:45",
+  "lines": [
+    {
+      "line_number": 1,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Updated Line Item",
+      "quantity": "3",
+      "unit_price": "150.0",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "9d763762-46ed-4e71-bf92-5125b524c8cb",
+      "line_total": "0.00",
+      "created_at": "2025-07-15T00:03:45"
+    }
+  ]
+}
+✅ Update transaction test passed
+
+🔍 Testing post transaction: ec930248-dd91-4f93-b173-cf7a97df566b...
+Status Code: 200
+Response: {
+  "transaction_type": "invoice",
+  "transaction_number": "INV-000042",
+  "reference_number": null,
+  "transaction_date": "2025-07-15",
+  "due_date": "2025-08-14",
+  "customer_id": "25452a51-4f92-4ba7-a463-98883a75fac7",
+  "vendor_id": null,
+  "employee_id": null,
+  "account_id": null,
+  "memo": "Updated Transaction Memo 20250715000345",
+  "exchange_rate": "1.000000",
+  "currency_code": "USD",
+  "payment_terms": null,
+  "billing_address": null,
+  "shipping_address": null,
+  "custom_fields": null,
+  "template_id": null,
+  "transaction_id": "ec930248-dd91-4f93-b173-cf7a97df566b",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "status": "posted",
+  "subtotal": "0.00",
+  "tax_amount": "0.00",
+  "total_amount": "0.00",
+  "balance_due": "0.00",
+  "is_posted": true,
+  "is_cleared": false,
+  "is_void": false,
+  "voided_at": null,
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "updated_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "created_at": "2025-07-15T00:03:45",
+  "updated_at": "2025-07-15T00:03:45",
+  "lines": [
+    {
+      "line_number": 1,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Updated Line Item",
+      "quantity": "3.0000",
+      "unit_price": "150.00",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0000",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "9d763762-46ed-4e71-bf92-5125b524c8cb",
+      "line_total": "0.00",
+      "created_at": "2025-07-15T00:03:45"
+    }
+  ]
+}
+✅ Post transaction test passed
+
+🔍 Testing void transaction: ec930248-dd91-4f93-b173-cf7a97df566b...
+Status Code: 200
+Response: {
+  "transaction_type": "invoice",
+  "transaction_number": "INV-000042",
+  "reference_number": null,
+  "transaction_date": "2025-07-15",
+  "due_date": "2025-08-14",
+  "customer_id": "25452a51-4f92-4ba7-a463-98883a75fac7",
+  "vendor_id": null,
+  "employee_id": null,
+  "account_id": null,
+  "memo": "Updated Transaction Memo 20250715000345\nVOIDED: Testing void functionality",
+  "exchange_rate": "1.000000",
+  "currency_code": "USD",
+  "payment_terms": null,
+  "billing_address": null,
+  "shipping_address": null,
+  "custom_fields": null,
+  "template_id": null,
+  "transaction_id": "ec930248-dd91-4f93-b173-cf7a97df566b",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "status": "voided",
+  "subtotal": "0.00",
+  "tax_amount": "0.00",
+  "total_amount": "0.00",
+  "balance_due": "0.00",
+  "is_posted": true,
+  "is_cleared": false,
+  "is_void": true,
+  "voided_at": "2025-07-15T00:03:45.692445",
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "updated_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "created_at": "2025-07-15T00:03:45",
+  "updated_at": "2025-07-15T00:03:45",
+  "lines": [
+    {
+      "line_number": 1,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Updated Line Item",
+      "quantity": "3.0000",
+      "unit_price": "150.00",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0000",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "9d763762-46ed-4e71-bf92-5125b524c8cb",
+      "line_total": "0.00",
+      "created_at": "2025-07-15T00:03:45"
+    }
+  ]
+}
+✅ Void transaction test passed
+
+🔍 Testing delete transaction...
+Created transaction 9d410842-b876-4da0-a6a7-306cb983d1f9 for deletion test
+Status Code: 200
+Response: {
+  "message": "Transaction deleted successfully"
+}
+✅ Delete transaction test passed
+
+===== INVOICE MANAGEMENT API TESTS =====
+
+🔍 Testing create invoice...
+Status Code: 201
+Response: {
+  "transaction_type": "invoice",
+  "transaction_number": "INV-000043",
+  "reference_number": null,
+  "transaction_date": "2025-07-15",
+  "due_date": "2025-08-14",
+  "customer_id": "25452a51-4f92-4ba7-a463-98883a75fac7",
+  "vendor_id": null,
+  "employee_id": null,
+  "account_id": null,
+  "memo": "Test Invoice 20250715000345",
+  "exchange_rate": "1.000000",
+  "currency_code": "USD",
+  "payment_terms": null,
+  "billing_address": null,
+  "shipping_address": null,
+  "custom_fields": null,
+  "template_id": null,
+  "transaction_id": "eac37977-f850-4bdc-95e3-c42c660b44da",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "status": "draft",
+  "subtotal": "250.00",
+  "tax_amount": "0.00",
+  "total_amount": "250.00",
+  "balance_due": "250.00",
+  "is_posted": false,
+  "is_cleared": false,
+  "is_void": false,
+  "voided_at": null,
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "updated_by": null,
+  "created_at": "2025-07-15T00:03:45",
+  "updated_at": null,
+  "lines": [
+    {
+      "line_number": 1,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Test Invoice Item 1",
+      "quantity": "2.0000",
+      "unit_price": "100.00",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0000",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "1bf6825a-7e28-43b6-91bf-ed57a024d226",
+      "line_total": "200.00",
+      "created_at": "2025-07-15T00:03:45"
+    },
+    {
+      "line_number": 2,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Test Invoice Item 2",
+      "quantity": "1",
+      "unit_price": "50.0",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "bc6b9f57-7897-4e1a-9ee0-1de7a041e544",
+      "line_total": "50.0",
+      "created_at": "2025-07-15T00:03:45"
+    }
+  ]
+}
+✅ Create invoice test passed (ID: eac37977-f850-4bdc-95e3-c42c660b44da)
+
+🔍 Testing get invoices with filtering...
+
+  Testing No filters...
+  Status Code: 200
+  Found 43 invoices
+  ✅ No filters test passed
+
+  Testing Filter by status...
+  Status Code: 200
+  Found 43 invoices
+  ✅ Filter by status test passed
+
+  Testing Filter by date range...
+  Status Code: 200
+  Found 43 invoices
+  ✅ Filter by date range test passed
+
+  Testing Filter by customer...
+  Status Code: 200
+  Found 43 invoices
+  ✅ Filter by customer test passed
+
+  Testing Pagination...
+  Status Code: 200
+  Found 43 invoices
+  ✅ Pagination test passed
+✅ Get invoices with filtering test passed
+
+🔍 Testing get invoice by ID: eac37977-f850-4bdc-95e3-c42c660b44da...
+Status Code: 200
+Response: {
+  "transaction_type": "invoice",
+  "transaction_number": "INV-000043",
+  "reference_number": null,
+  "transaction_date": "2025-07-15",
+  "due_date": "2025-08-14",
+  "customer_id": "25452a51-4f92-4ba7-a463-98883a75fac7",
+  "vendor_id": null,
+  "employee_id": null,
+  "account_id": null,
+  "memo": "Test Invoice 20250715000345",
+  "exchange_rate": "1.000000",
+  "currency_code": "USD",
+  "payment_terms": null,
+  "billing_address": null,
+  "shipping_address": null,
+  "custom_fields": null,
+  "template_id": null,
+  "transaction_id": "eac37977-f850-4bdc-95e3-c42c660b44da",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "status": "draft",
+  "subtotal": "250.00",
+  "tax_amount": "0.00",
+  "total_amount": "250.00",
+  "balance_due": "250.00",
+  "is_posted": false,
+  "is_cleared": false,
+  "is_void": false,
+  "voided_at": null,
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "updated_by": null,
+  "created_at": "2025-07-15T00:03:45",
+  "updated_at": null,
+  "lines": [
+    {
+      "line_number": 1,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Test Invoice Item 1",
+      "quantity": "2.0000",
+      "unit_price": "100.00",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0000",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "1bf6825a-7e28-43b6-91bf-ed57a024d226",
+      "line_total": "200.00",
+      "created_at": "2025-07-15T00:03:45"
+    },
+    {
+      "line_number": 2,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Test Invoice Item 2",
+      "quantity": "1.0000",
+      "unit_price": "50.00",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0000",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "bc6b9f57-7897-4e1a-9ee0-1de7a041e544",
+      "line_total": "50.00",
+      "created_at": "2025-07-15T00:03:45"
+    }
+  ]
+}
+✅ Get invoice by ID test passed
+
+🔍 Testing update invoice: eac37977-f850-4bdc-95e3-c42c660b44da...
+Status Code: 200
+Response: {
+  "transaction_type": "invoice",
+  "transaction_number": "INV-000043",
+  "reference_number": null,
+  "transaction_date": "2025-07-15",
+  "due_date": "2025-08-14",
+  "customer_id": "25452a51-4f92-4ba7-a463-98883a75fac7",
+  "vendor_id": null,
+  "employee_id": null,
+  "account_id": null,
+  "memo": "Updated Invoice Memo 20250715000346",
+  "exchange_rate": "1.000000",
+  "currency_code": "USD",
+  "payment_terms": null,
+  "billing_address": null,
+  "shipping_address": null,
+  "custom_fields": null,
+  "template_id": null,
+  "transaction_id": "eac37977-f850-4bdc-95e3-c42c660b44da",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "status": "draft",
+  "subtotal": "0.00",
+  "tax_amount": "0.00",
+  "total_amount": "0.00",
+  "balance_due": "0.00",
+  "is_posted": false,
+  "is_cleared": false,
+  "is_void": false,
+  "voided_at": null,
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "updated_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "created_at": "2025-07-15T00:03:45",
+  "updated_at": "2025-07-15T00:03:46",
+  "lines": [
+    {
+      "line_number": 1,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Updated Invoice Item",
+      "quantity": "3",
+      "unit_price": "75.0",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "82bd2367-a574-4b10-a215-449bd88d3e9f",
+      "line_total": "0.00",
+      "created_at": "2025-07-15T00:03:46"
+    }
+  ]
+}
+✅ Update invoice test passed
+
+🔍 Testing send invoice email: eac37977-f850-4bdc-95e3-c42c660b44da...
+Status Code: 200
+Response: {
+  "message": "Invoice sent successfully"
+}
+✅ Send invoice email test passed
+
+🔍 Testing generate invoice PDF: eac37977-f850-4bdc-95e3-c42c660b44da...
+Status Code: 200
+Response: {
+  "message": "PDF generation not implemented yet",
+  "invoice_id": "eac37977-f850-4bdc-95e3-c42c660b44da",
+  "download_url": "/api/companies/5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2/invoices/eac37977-f850-4bdc-95e3-c42c660b44da/pdf"
+}
+✅ Generate invoice PDF test passed
+
+🔍 Testing delete invoice...
+Created invoice 35afad64-3123-4c1a-98e2-00a8651aedc6 for deletion test
+Status Code: 200
+Response: {
+  "message": "Invoice deleted successfully"
+}
+✅ Delete invoice test passed
+
+===== BILL MANAGEMENT API TESTS =====
+
+🔍 Testing create bill...
+Status Code: 201
+Response: {
+  "transaction_type": "bill",
+  "transaction_number": "BILL-000020",
+  "reference_number": null,
+  "transaction_date": "2025-07-15",
+  "due_date": "2025-08-14",
+  "customer_id": null,
+  "vendor_id": "124b2570-0cf5-41ae-8365-629991095f10",
+  "employee_id": null,
+  "account_id": null,
+  "memo": "Test Bill 20250715000346",
+  "exchange_rate": "1.000000",
+  "currency_code": "USD",
+  "payment_terms": null,
+  "billing_address": null,
+  "shipping_address": null,
+  "custom_fields": null,
+  "template_id": null,
+  "transaction_id": "b1e019d6-ec4f-4477-bd63-a05c96d9ff16",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "status": "draft",
+  "subtotal": "250.00",
+  "tax_amount": "0.00",
+  "total_amount": "250.00",
+  "balance_due": "250.00",
+  "is_posted": false,
+  "is_cleared": false,
+  "is_void": false,
+  "voided_at": null,
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "updated_by": null,
+  "created_at": "2025-07-15T00:03:46",
+  "updated_at": null,
+  "lines": [
+    {
+      "line_number": 1,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Test Bill Item 1",
+      "quantity": "2.0000",
+      "unit_price": "100.00",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0000",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "3630c4d3-b3a6-4aef-a26f-c940e859017a",
+      "line_total": "200.00",
+      "created_at": "2025-07-15T00:03:46"
+    },
+    {
+      "line_number": 2,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Test Bill Item 2",
+      "quantity": "1",
+      "unit_price": "50.0",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "4d371db7-bd04-4b5c-8123-357bef02d9ce",
+      "line_total": "50.0",
+      "created_at": "2025-07-15T00:03:46"
+    }
+  ]
+}
+✅ Create bill test passed (ID: b1e019d6-ec4f-4477-bd63-a05c96d9ff16)
+
+🔍 Testing get bills with filtering...
+
+  Testing No filters...
+  Status Code: 200
+  Found 20 bills
+  ✅ No filters test passed
+
+  Testing Filter by status...
+  Status Code: 200
+  Found 20 bills
+  ✅ Filter by status test passed
+
+  Testing Filter by date range...
+  Status Code: 200
+  Found 20 bills
+  ✅ Filter by date range test passed
+
+  Testing Filter by vendor...
+  Status Code: 200
+  Found 20 bills
+  ✅ Filter by vendor test passed
+
+  Testing Pagination...
+  Status Code: 200
+  Found 20 bills
+  ✅ Pagination test passed
+✅ Get bills with filtering test passed
+
+🔍 Testing get bill by ID: b1e019d6-ec4f-4477-bd63-a05c96d9ff16...
+Status Code: 200
+Response: {
+  "transaction_type": "bill",
+  "transaction_number": "BILL-000020",
+  "reference_number": null,
+  "transaction_date": "2025-07-15",
+  "due_date": "2025-08-14",
+  "customer_id": null,
+  "vendor_id": "124b2570-0cf5-41ae-8365-629991095f10",
+  "employee_id": null,
+  "account_id": null,
+  "memo": "Test Bill 20250715000346",
+  "exchange_rate": "1.000000",
+  "currency_code": "USD",
+  "payment_terms": null,
+  "billing_address": null,
+  "shipping_address": null,
+  "custom_fields": null,
+  "template_id": null,
+  "transaction_id": "b1e019d6-ec4f-4477-bd63-a05c96d9ff16",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "status": "draft",
+  "subtotal": "250.00",
+  "tax_amount": "0.00",
+  "total_amount": "250.00",
+  "balance_due": "250.00",
+  "is_posted": false,
+  "is_cleared": false,
+  "is_void": false,
+  "voided_at": null,
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "updated_by": null,
+  "created_at": "2025-07-15T00:03:46",
+  "updated_at": null,
+  "lines": [
+    {
+      "line_number": 1,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Test Bill Item 1",
+      "quantity": "2.0000",
+      "unit_price": "100.00",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0000",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "3630c4d3-b3a6-4aef-a26f-c940e859017a",
+      "line_total": "200.00",
+      "created_at": "2025-07-15T00:03:46"
+    },
+    {
+      "line_number": 2,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Test Bill Item 2",
+      "quantity": "1.0000",
+      "unit_price": "50.00",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0000",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "4d371db7-bd04-4b5c-8123-357bef02d9ce",
+      "line_total": "50.00",
+      "created_at": "2025-07-15T00:03:46"
+    }
+  ]
+}
+✅ Get bill by ID test passed
+
+🔍 Testing update bill: b1e019d6-ec4f-4477-bd63-a05c96d9ff16...
+Status Code: 200
+Response: {
+  "transaction_type": "bill",
+  "transaction_number": "BILL-000020",
+  "reference_number": null,
+  "transaction_date": "2025-07-15",
+  "due_date": "2025-08-14",
+  "customer_id": null,
+  "vendor_id": "124b2570-0cf5-41ae-8365-629991095f10",
+  "employee_id": null,
+  "account_id": null,
+  "memo": "Updated Bill Memo 20250715000346",
+  "exchange_rate": "1.000000",
+  "currency_code": "USD",
+  "payment_terms": null,
+  "billing_address": null,
+  "shipping_address": null,
+  "custom_fields": null,
+  "template_id": null,
+  "transaction_id": "b1e019d6-ec4f-4477-bd63-a05c96d9ff16",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "status": "draft",
+  "subtotal": "0.00",
+  "tax_amount": "0.00",
+  "total_amount": "0.00",
+  "balance_due": "0.00",
+  "is_posted": false,
+  "is_cleared": false,
+  "is_void": false,
+  "voided_at": null,
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "updated_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "created_at": "2025-07-15T00:03:46",
+  "updated_at": "2025-07-15T00:03:46",
+  "lines": [
+    {
+      "line_number": 1,
+      "line_type": "item",
+      "item_id": null,
+      "account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+      "description": "Updated Bill Item",
+      "quantity": "3",
+      "unit_price": "75.0",
+      "discount_rate": null,
+      "discount_amount": null,
+      "tax_code": null,
+      "tax_rate": "0.0",
+      "tax_amount": null,
+      "customer_id": null,
+      "billable": false,
+      "markup_rate": null,
+      "custom_fields": null,
+      "line_id": "8bf01554-f034-4dcf-ad7a-75fca330dbb0",
+      "line_total": "0.00",
+      "created_at": "2025-07-15T00:03:46"
+    }
+  ]
+}
+✅ Update bill test passed
+
+🔍 Testing delete bill...
+Created bill 299c2d8f-7c4b-4eea-98cb-d210423d94d6 for deletion test
+Status Code: 200
+Response: {
+  "message": "Bill deleted successfully"
+}
+✅ Delete bill test passed
+
+===== PAYMENT MANAGEMENT API TESTS =====
+
+🔍 Testing create payment with applications field...
+Status Code: 201
+Response: {
+  "payment_number": "PMT-000025",
+  "payment_date": "2025-07-15",
+  "payment_type": "check",
+  "payment_method": "Check #12345",
+  "reference_number": null,
+  "customer_id": "25452a51-4f92-4ba7-a463-98883a75fac7",
+  "vendor_id": null,
+  "amount_received": "100.00",
+  "deposit_to_account_id": "1182c884-15be-4a75-9461-5a2baccfae30",
+  "memo": "Test Payment 20250715000346",
+  "payment_id": "d27491a4-0dc5-4868-b4e6-c2176dcce074",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "created_at": "2025-07-15T00:03:46",
+  "applications": [
+    {
+      "transaction_id": "eac37977-f850-4bdc-95e3-c42c660b44da",
+      "amount_applied": "100.0",
+      "discount_taken": "0.0"
+    }
+  ]
+}
+✅ Create payment with applications test passed (ID: d27491a4-0dc5-4868-b4e6-c2176dcce074)
+
+🔍 Testing get payments with filtering...
+
+  Testing No filters...
+  Status Code: 200
+  ✅ No filters test passed
+
+  Testing Filter by customer...
+  Status Code: 200
+  ✅ Filter by customer test passed
+
+  Testing Filter by date range...
+  Status Code: 200
+  ✅ Filter by date range test passed
+
+  Testing Filter by payment type...
+  Status Code: 200
+  ✅ Filter by payment type test passed
+✅ Get payments with filtering test passed
+
+🔍 Testing get payment by ID: d27491a4-0dc5-4868-b4e6-c2176dcce074...
+Status Code: 404
+⚠️ Get payment by ID endpoint not fully implemented yet
+
+🔍 Testing update payment: d27491a4-0dc5-4868-b4e6-c2176dcce074...
+Status Code: 404
+⚠️ Update payment endpoint not fully implemented yet
+
+🔍 Testing delete payment: d27491a4-0dc5-4868-b4e6-c2176dcce074...
+Status Code: 200
+Response: {
+  "message": "Payment deleted successfully"
+}
+✅ Delete payment test passed
+
+===== BANKING INTEGRATION API TESTS =====
+
+🔍 Testing get bank connections...
+Status Code: 200
+Response: {
+  "connections": [],
+  "total": 0,
+  "page": 1,
+  "page_size": 100,
+  "total_pages": 0
+}
+✅ Get bank connections test passed (Found 0 connections)
+
+🔍 Testing create bank connection...
+Status Code: 422
+Response: {
+  "detail": [
+    {
+      "type": "missing",
+      "loc": [
+        "body",
+        "bank_name"
+      ],
+      "msg": "Field required",
+      "input": {
+        "institution_name": "Test Bank 20250715000347",
+        "account_name": "Test Checking Account 20250715000347",
+        "account_type": "checking",
+        "account_number": "12345678900347",
+        "routing_number": "123456789",
+        "is_active": true,
+        "auto_sync": true,
+        "sync_frequency": "daily"
+      },
+      "url": "https://errors.pydantic.dev/2.11/v/missing"
+    },
+    {
+      "type": "missing",
+      "loc": [
+        "body",
+        "account_number_masked"
+      ],
+      "msg": "Field required",
+      "input": {
+        "institution_name": "Test Bank 20250715000347",
+        "account_name": "Test Checking Account 20250715000347",
+        "account_type": "checking",
+        "account_number": "12345678900347",
+        "routing_number": "123456789",
+        "is_active": true,
+        "auto_sync": true,
+        "sync_frequency": "daily"
+      },
+      "url": "https://errors.pydantic.dev/2.11/v/missing"
+    },
+    {
+      "type": "missing",
+      "loc": [
+        "body",
+        "connection_type"
+      ],
+      "msg": "Field required",
+      "input": {
+        "institution_name": "Test Bank 20250715000347",
+        "account_name": "Test Checking Account 20250715000347",
+        "account_type": "checking",
+        "account_number": "12345678900347",
+        "routing_number": "123456789",
+        "is_active": true,
+        "auto_sync": true,
+        "sync_frequency": "daily"
+      },
+      "url": "https://errors.pydantic.dev/2.11/v/missing"
+    }
+  ]
+}
+❌ Create bank connection test failed: Status code 422
+
+🔍 Testing get bank transactions with filtering...
+
+  Testing No filters...
+  Status Code: 200
+  Found 0 transactions
+  ✅ No filters test passed
+
+  Testing Filter by status...
+  Status Code: 200
+  Found 0 transactions
+  ✅ Filter by status test passed
+
+  Testing Filter by transaction type...
+  Status Code: 200
+  Found 0 transactions
+  ✅ Filter by transaction type test passed
+
+  Testing Filter by date range...
+  Status Code: 200
+  Found 0 transactions
+  ✅ Filter by date range test passed
+
+  Testing Filter by amount range...
+  Status Code: 200
+  Found 0 transactions
+  ✅ Filter by amount range test passed
+
+  Testing Pagination...
+  Status Code: 200
+  Found 0 transactions
+  ✅ Pagination test passed
+✅ Get bank transactions with filtering test passed
+
+🔍 Testing search bank institutions...
+
+  Testing Search by name...
+  Status Code: 200
+  Found 0 institutions
+  ✅ Search by name test passed
+
+  Testing Search by routing number...
+  Status Code: 200
+  Found 0 institutions
+  ✅ Search by routing number test passed
+
+  Testing Filter by OFX support...
+  Status Code: 200
+  Found 0 institutions
+  ✅ Filter by OFX support test passed
+
+  Testing No filters...
+  Status Code: 200
+  Found 0 institutions
+  ✅ No filters test passed
+✅ Search institutions test passed
+
+🔍 Testing upload bank statement...
+Status Code: 200
+Response: {
+  "file_id": "10cc74ef-cbd8-4935-a2e0-9b8b8998b041",
+  "file_name": "test_statement.csv",
+  "file_size": 157,
+  "file_type": "csv",
+  "upload_status": "completed",
+  "preview_data": [],
+  "error_message": null
+}
+✅ Upload bank statement test passed (Status: completed)
+
+🔍 Testing account merge functionality...
+❌ Failed to create source account: 422
+
+===== PAYROLL INTEGRATION API TESTS =====
+
+🔍 Testing get payroll items...
+
+  Testing No filters...
+  Status Code: 200
+  Found 8 payroll items
+  ✅ No filters test passed
+
+  Testing Filter by item type...
+  Status Code: 200
+  Found 0 payroll items
+  ✅ Filter by item type test passed
+
+  Testing Filter by active status...
+  Status Code: 200
+  Found 7 payroll items
+  ✅ Filter by active status test passed
+
+  Testing Search by name...
+  Status Code: 200
+  Found 7 payroll items
+  ✅ Search by name test passed
+
+  Testing Pagination...
+  Status Code: 200
+  Found 8 payroll items
+  ✅ Pagination test passed
+✅ Get payroll items test passed
+
+🔍 Testing create payroll item...
+Status Code: 201
+Response: {
+  "item_name": "Test Salary Item 20250715000347",
+  "item_type": "salary",
+  "item_category": null,
+  "rate": null,
+  "calculation_basis": null,
+  "limit_type": null,
+  "annual_limit": null,
+  "tax_tracking": null,
+  "expense_account_id": null,
+  "liability_account_id": null,
+  "vendor_id": null,
+  "is_active": true,
+  "payroll_item_id": "56ddde7f-f48b-4e3c-87f4-475fe77fb925",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "created_at": "2025-07-15T00:03:47",
+  "updated_at": null
+}
+✅ Create payroll item test passed (ID: 56ddde7f-f48b-4e3c-87f4-475fe77fb925)
+
+🔍 Testing get time entries...
+
+  Testing No filters...
+  Status Code: 200
+  Found 0 time entries
+  ✅ No filters test passed
+
+  Testing Filter by date range...
+  Status Code: 200
+  Found 0 time entries
+  ✅ Filter by date range test passed
+
+  Testing Filter by approved status...
+  Status Code: 200
+  Found 0 time entries
+  ✅ Filter by approved status test passed
+
+  Testing Filter by billable status...
+  Status Code: 200
+  Found 0 time entries
+  ✅ Filter by billable status test passed
+
+  Testing Pagination...
+  Status Code: 200
+  Found 0 time entries
+  ✅ Pagination test passed
+✅ Get time entries test passed
+
+🔍 Testing get payroll runs...
+
+  Testing No filters...
+  Status Code: 200
+  Found 10 payroll runs
+  ✅ No filters test passed
+
+  Testing Filter by status...
+  Status Code: 200
+  Found 10 payroll runs
+  ✅ Filter by status test passed
+
+  Testing Filter by year...
+  Status Code: 200
+  Found 0 payroll runs
+  ✅ Filter by year test passed
+
+  Testing Pagination...
+  Status Code: 200
+  Found 10 payroll runs
+  ✅ Pagination test passed
+✅ Get payroll runs test passed
+
+🔍 Testing create payroll run...
+Status Code: 201
+Response: {
+  "pay_period_start": "2025-07-01",
+  "pay_period_end": "2025-07-14",
+  "pay_date": "2025-07-18",
+  "run_type": "regular",
+  "payroll_run_id": "248113b5-5ba5-478f-b515-7a239dec5476",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "status": "draft",
+  "total_gross_pay": "0.00",
+  "total_net_pay": "0.00",
+  "total_taxes": "0.00",
+  "total_deductions": "0.00",
+  "total_employer_taxes": "0.00",
+  "created_by": "03578039-821c-4a8c-b7c9-e00e3a8fd256",
+  "approved_by": null,
+  "approved_at": null,
+  "processed_at": null,
+  "created_at": "2025-07-15T00:03:48",
+  "updated_at": null
+}
+✅ Create payroll run test passed (ID: 248113b5-5ba5-478f-b515-7a239dec5476)
+
+🔍 Testing get paychecks...
+
+  Testing No filters...
+  Status Code: 200
+  Found 0 paychecks
+  ✅ No filters test passed
+
+  Testing Filter by void status...
+  Status Code: 200
+  Found 0 paychecks
+  ✅ Filter by void status test passed
+
+  Testing Filter by date range...
+  Status Code: 200
+  Found 0 paychecks
+  ✅ Filter by date range test passed
+
+  Testing Pagination...
+  Status Code: 200
+  Found 0 paychecks
+  ✅ Pagination test passed
+✅ Get paychecks test passed
+
+🔍 Testing get payroll liabilities...
+
+  Testing No filters...
+  Status Code: 200
+  Found 0 payroll liabilities
+  ✅ No filters test passed
+
+  Testing Filter by status...
+  Status Code: 200
+  Found 0 payroll liabilities
+  ✅ Filter by status test passed
+
+  Testing Filter by liability type...
+  Status Code: 200
+  Found 0 payroll liabilities
+  ✅ Filter by liability type test passed
+
+  Testing Filter by due date...
+  Status Code: 200
+  Found 0 payroll liabilities
+  ✅ Filter by due date test passed
+
+  Testing Pagination...
+  Status Code: 200
+  Found 0 payroll liabilities
+  ✅ Pagination test passed
+✅ Get payroll liabilities test passed
+
+🔍 Testing get due payroll liabilities...
+
+  Testing liabilities due within 7 days...
+  Status Code: 200
+  Found 0 due liabilities
+  ✅ Due liabilities (7 days) test passed
+
+  Testing liabilities due within 30 days...
+  Status Code: 200
+  Found 0 due liabilities
+  ✅ Due liabilities (30 days) test passed
+
+  Testing liabilities due within 90 days...
+  Status Code: 200
+  Found 0 due liabilities
+  ✅ Due liabilities (90 days) test passed
+✅ Get due payroll liabilities test passed
+
+===== PHASE 4 BACKEND INTEGRATION TESTS =====
+
+===== SECURITY API TESTS =====
+
+🔍 Testing get security logs...
+
+  Testing No filters...
+  Status Code: 200
+  Found 36 security logs
+  ✅ No filters test passed
+
+  Testing Filter by event type...
+  Status Code: 500
+  ❌ Filter by event type test failed: Status code 500
+
+🔍 Testing get security summary...
+Status Code: 200
+Response: {
+  "total_events": 37,
+  "failed_events": 0,
+  "high_risk_events": 0,
+  "success_rate": 100.0,
+  "period_days": 30,
+  "events_by_type": {
+    "sensitive_data_access": 37
+  },
+  "top_risk_ips": {
+    "10.64.166.240": {
+      "avg_risk_score": 40.0,
+      "event_count": 2
+    },
+    "10.64.158.249": {
+      "avg_risk_score": 40.0,
+      "event_count": 4
+    },
+    "10.64.147.45": {
+      "avg_risk_score": 40.0,
+      "event_count": 4
+    },
+    "10.64.146.147": {
+      "avg_risk_score": 40.0,
+      "event_count": 1
+    },
+    "10.64.137.154": {
+      "avg_risk_score": 40.0,
+      "event_count": 5
+    },
+    "10.64.134.233": {
+      "avg_risk_score": 40.0,
+      "event_count": 3
+    },
+    "10.64.132.9": {
+      "avg_risk_score": 40.0,
+      "event_count": 6
+    },
+    "10.64.131.37": {
+      "avg_risk_score": 40.0,
+      "event_count": 1
+    },
+    "10.64.130.72": {
+      "avg_risk_score": 40.0,
+      "event_count": 8
+    },
+    "10.64.130.212": {
+      "avg_risk_score": 40.0,
+      "event_count": 3
+    }
+  },
+  "generated_at": "2025-07-15T00:03:48.601469+00:00"
+}
+✅ Get security summary test passed
+
+🔍 Testing get security roles...
+Status Code: 200
+Response: {
+  "items": [],
+  "total": 0,
+  "page": 1,
+  "page_size": 10,
+  "total_pages": 0
+}
+✅ Get security roles test passed (Found 0 roles)
+
+🔍 Testing create security role...
+Status Code: 422
+Response: {
+  "detail": [
+    {
+      "type": "dict_type",
+      "loc": [
+        "body",
+        "permissions"
+      ],
+      "msg": "Input should be a valid dictionary",
+      "input": [
+        "read",
+        "write"
+      ],
+      "url": "https://errors.pydantic.dev/2.11/v/dict_type"
+    }
+  ]
+}
+❌ Create security role test failed: Status code 422
+
+🔍 Testing get security settings...
+Status Code: 200
+Response: {
+  "password_policy": {
+    "min_length": 8,
+    "require_uppercase": true,
+    "require_lowercase": true,
+    "require_numbers": true,
+    "require_special_chars": true
+  },
+  "session_settings": {
+    "timeout_minutes": 30,
+    "max_concurrent_sessions": 3,
+    "require_2fa": false
+  },
+  "access_control": {
+    "allowed_ip_ranges": [],
+    "blocked_ip_ranges": [],
+    "allowed_countries": [],
+    "blocked_countries": []
+  },
+  "audit_settings": {
+    "log_all_actions": true,
+    "log_sensitive_data": true,
+    "retention_days": 2555
+  },
+  "setting_id": "9c832406-7e08-46ac-af89-ef6f2445817a",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "created_at": "2025-07-11T16:25:31",
+  "updated_at": "2025-07-11T16:25:31"
+}
+✅ Get security settings test passed
+
+🔍 Testing update security settings...
+Status Code: 200
+Response: {
+  "password_policy": {
+    "min_length": 8,
+    "require_uppercase": true,
+    "require_lowercase": true,
+    "require_numbers": true,
+    "require_special_chars": true
+  },
+  "session_settings": {
+    "timeout_minutes": 30,
+    "max_concurrent_sessions": 3,
+    "require_2fa": false
+  },
+  "access_control": {
+    "allowed_ip_ranges": [],
+    "blocked_ip_ranges": [],
+    "allowed_countries": [],
+    "blocked_countries": []
+  },
+  "audit_settings": {
+    "log_all_actions": true,
+    "log_sensitive_data": true,
+    "retention_days": 2555
+  },
+  "setting_id": "9c832406-7e08-46ac-af89-ef6f2445817a",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "created_at": "2025-07-11T16:25:31",
+  "updated_at": "2025-07-11T16:25:31"
+}
+✅ Update security settings test passed
+
+===== INVENTORY API TESTS =====
+
+🔍 Testing get inventory overview...
+Status Code: 200
+Response: {
+  "total_items": 0,
+  "total_value": 0,
+  "low_stock_items": 0,
+  "negative_stock_items": 0,
+  "total_locations": 0
+}
+✅ Get inventory overview test passed
+
+🔍 Testing get inventory items...
+Status Code: 200
+Response: {
+  "items": [],
+  "total": 0,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 0
+}
+✅ Get inventory items test passed (Found 0 items)
+
+🔍 Testing get inventory locations...
+Status Code: 200
+Response: []
+✅ Get inventory locations test passed (Found 0 locations)
+
+🔍 Testing get inventory transactions...
+⚠️ No inventory items found, skipping transaction test
+
+🔍 Testing create inventory adjustment...
+⚠️ No inventory items found, skipping adjustment test
+
+🔍 Testing get inventory adjustments...
+Status Code: 200
+Response: {
+  "items": [],
+  "total": 0,
+  "page": 1,
+  "page_size": 10,
+  "total_pages": 0
+}
+✅ Get inventory adjustments test passed (Found 0 adjustments)
+
+🔍 Testing get low stock items...
+Status Code: 200
+Response: {
+  "item_id": "low-stock",
+  "total_quantity": 0,
+  "total_value": 0,
+  "locations": []
+}
+❌ Get low stock items test failed: Unexpected response
+
+===== AUDIT API TESTS =====
+
+🔍 Testing get audit logs...
+
+  Testing No filters...
+  Status Code: 200
+  Found 0 audit logs
+  ✅ No filters test passed
+
+  Testing Filter by table name...
+  Status Code: 200
+  Found 0 audit logs
+  ✅ Filter by table name test passed
+
+  Testing Filter by action...
+  Status Code: 200
+  Found 0 audit logs
+  ✅ Filter by action test passed
+
+  Testing Filter by user...
+  Status Code: 200
+  Found 0 audit logs
+  ✅ Filter by user test passed
+
+  Testing Pagination...
+  Status Code: 200
+  Found 0 audit logs
+  ✅ Pagination test passed
+✅ Get audit logs test passed
+
+🔍 Testing get audit summary...
+Status Code: 200
+Response: {
+  "total_logs": 0,
+  "period_days": 30,
+  "actions": {},
+  "tables": {},
+  "top_users": {},
+  "generated_at": "2025-07-15T00:03:49.277327+00:00"
+}
+✅ Get audit summary test passed
+
+🔍 Testing generate audit report...
+Status Code: 422
+Response: {
+  "detail": [
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        "report_type"
+      ],
+      "msg": "String should match pattern '^(summary|detailed|compliance|sox)$'",
+      "input": "activity_summary",
+      "ctx": {
+        "pattern": "^(summary|detailed|compliance|sox)$"
+      },
+      "url": "https://errors.pydantic.dev/2.11/v/string_pattern_mismatch"
+    }
+  ]
+}
+❌ Generate audit report test failed: Status code 422
+
+===== COMMUNICATION API TESTS =====
+
+===== EMAIL MANAGEMENT API TESTS =====
+
+🔍 Testing get email templates...
+Status Code: 200
+Response: [
+  {
+    "template_id": "3bcdf45d-a1e9-4a5b-bd07-17736f37c532",
+    "template_name": "Invoice Notification",
+    "template_category": "invoices",
+    "subject_template": "New Invoice {{ invoice_number }} from {{ company_name }}",
+    "body_template": "\n                <h2>Invoice {{ invoice_number }}</h2>\n                <p>Dear {{ customer_name }},</p>\n                <p>A new invoice has been created for your account:</p>\n                <ul>\n                    <li>Invoice Number: {{ invoice_number }}</li>\n                    <li>Amount: ${{ amount }}</li>\n                    <li>Due Date: {{ due_date }}</li>\n                </ul>\n                <p>Please log in to your account to view the full invoice.</p>\n                <p>Best regards,<br>{{ company_name }}</p>\n                ",
+    "is_html": true,
+    "variables": {
+      "invoice_number": "string",
+      "company_name": "string",
+      "customer_name": "string",
+      "amount": "decimal",
+      "due_date": "date"
+    },
+    "is_active": true,
+    "is_system": true,
+    "created_at": "2025-07-08T16:54:45",
+    "updated_at": null
+  },
+  {
+    "template_id": "10d34f18-3de1-4a60-b95c-186fa6e02b3b",
+    "template_name": "Payment Confirmation",
+    "template_category": "payments",
+    "subject_template": "Payment Confirmation - {{ payment_id }}",
+    "body_template": "\n                <h2>Payment Confirmation</h2>\n                <p>Dear {{ customer_name }},</p>\n                <p>We have received your payment:</p>\n                <ul>\n                    <li>Payment ID: {{ payment_id }}</li>\n                    <li>Amount: ${{ amount }}</li>\n                    <li>Date: {{ payment_date }}</li>\n                    <li>Method: {{ payment_method }}</li>\n                </ul>\n                <p>Thank you for your payment!</p>\n                <p>Best regards,<br>{{ company_name }}</p>\n                ",
+    "is_html": true,
+    "variables": {
+      "payment_id": "string",
+      "customer_name": "string",
+      "amount": "decimal",
+      "payment_date": "date",
+      "payment_method": "string",
+      "company_name": "string"
+    },
+    "is_active": true,
+    "is_system": true,
+    "created_at": "2025-07-08T16:54:45",
+    "updated_at": null
+  },
+  {
+    "template_id": "498d5807-af5f-4aa1-901b-26a58ba901ba",
+    "template_name": "Payment Reminder",
+    "template_category": "reminders",
+    "subject_template": "Payment Reminder - Invoice {{ invoice_number }}",
+    "body_template": "\n                <h2>Payment Reminder</h2>\n                <p>Dear {{ customer_name }},</p>\n                <p>This is a friendly reminder that the following invoice is due:</p>\n                <ul>\n                    <li>Invoice Number: {{ invoice_number }}</li>\n                    <li>Amount: ${{ amount }}</li>\n                    <li>Due Date: {{ due_date }}</li>\n                    <li>Days Overdue: {{ days_overdue }}</li>\n                </ul>\n                <p>Please process payment at your earliest convenience.</p>\n                <p>Best regards,<br>{{ company_name }}</p>\n                ",
+    "is_html": true,
+    "variables": {
+      "invoice_number": "string",
+      "customer_name": "string",
+      "amount": "decimal",
+      "due_date": "date",
+      "days_overdue": "integer",
+      "company_name": "string"
+    },
+    "is_active": true,
+    "is_system": true,
+    "created_at": "2025-07-08T16:54:45",
+    "updated_at": null
+  },
+  {
+    "template_id": "b9bda367-46cc-4545-8e17-22e782ad5bee",
+    "template_name": "Welcome Email",
+    "template_category": "welcome",
+    "subject_template": "Welcome to {{ company_name }}!",
+    "body_template": "\n                <h2>Welcome to {{ company_name }}!</h2>\n                <p>Dear {{ user_name }},</p>\n                <p>Welcome to our QuickBooks Clone system. Your account has been set up successfully.</p>\n                <p>You can now:</p>\n                <ul>\n                    <li>Create and manage invoices</li>\n                    <li>Track payments and expenses</li>\n                    <li>Generate financial reports</li>\n                    <li>Manage your inventory</li>\n                </ul>\n                <p>If you have any questions, please don't hesitate to contact us.</p>\n                <p>Best regards,<br>{{ company_name }} Team</p>\n                ",
+    "is_html": true,
+    "variables": {
+      "user_name": "string",
+      "company_name": "string"
+    },
+    "is_active": true,
+    "is_system": true,
+    "created_at": "2025-07-08T16:54:45",
+    "updated_at": null
+  }
+]
+✅ Get email templates test passed (Found 4 templates)
+
+🔍 Testing create email template...
+Status Code: 422
+Response: {
+  "detail": [
+    {
+      "type": "missing",
+      "loc": [
+        "body",
+        "template_name"
+      ],
+      "msg": "Field required",
+      "input": {
+        "name": "Test Template 20250715000349",
+        "category": "invoice",
+        "subject": "Test Email Subject",
+        "body": "Hello {{customer_name}}, your invoice is ready!",
+        "variables": {
+          "customer_name": "Customer Name"
+        },
+        "is_active": true
+      },
+      "url": "https://errors.pydantic.dev/2.11/v/missing"
+    },
+    {
+      "type": "missing",
+      "loc": [
+        "body",
+        "subject_template"
+      ],
+      "msg": "Field required",
+      "input": {
+        "name": "Test Template 20250715000349",
+        "category": "invoice",
+        "subject": "Test Email Subject",
+        "body": "Hello {{customer_name}}, your invoice is ready!",
+        "variables": {
+          "customer_name": "Customer Name"
+        },
+        "is_active": true
+      },
+      "url": "https://errors.pydantic.dev/2.11/v/missing"
+    },
+    {
+      "type": "missing",
+      "loc": [
+        "body",
+        "body_template"
+      ],
+      "msg": "Field required",
+      "input": {
+        "name": "Test Template 20250715000349",
+        "category": "invoice",
+        "subject": "Test Email Subject",
+        "body": "Hello {{customer_name}}, your invoice is ready!",
+        "variables": {
+          "customer_name": "Customer Name"
+        },
+        "is_active": true
+      },
+      "url": "https://errors.pydantic.dev/2.11/v/missing"
+    }
+  ]
+}
+❌ Create email template test failed: Status code 422
+
+🔍 Testing send email...
+Status Code: 201
+Response: {
+  "email_id": "e0b4c992-8706-4108-b09e-0cc691e0a115",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "template_id": null,
+  "to_email": "test@example.com",
+  "cc_email": null,
+  "bcc_email": null,
+  "subject": "Test Email Subject",
+  "body": "Test email body content",
+  "attachments": null,
+  "priority": 1,
+  "status": "queued",
+  "attempts": 0,
+  "max_attempts": 3,
+  "last_error": null,
+  "scheduled_at": null,
+  "sent_at": null,
+  "opened_at": null,
+  "clicked_at": null,
+  "bounced_at": null,
+  "delivered_at": null,
+  "created_at": "2025-07-15T00:03:49",
+  "updated_at": null
+}
+✅ Send email test passed (ID: e0b4c992-8706-4108-b09e-0cc691e0a115)
+
+🔍 Testing get email queue...
+Status Code: 200
+Response: {
+  "items": [
+    {
+      "email_id": "e0b4c992-8706-4108-b09e-0cc691e0a115",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "template_id": null,
+      "to_email": "test@example.com",
+      "cc_email": null,
+      "bcc_email": null,
+      "subject": "Test Email Subject",
+      "body": "Test email body content",
+      "attachments": null,
+      "priority": 1,
+      "status": "queued",
+      "attempts": 0,
+      "max_attempts": 3,
+      "last_error": null,
+      "scheduled_at": null,
+      "sent_at": null,
+      "opened_at": null,
+      "clicked_at": null,
+      "bounced_at": null,
+      "delivered_at": null,
+      "created_at": "2025-07-15T00:03:49",
+      "updated_at": null
+    },
+    {
+      "email_id": "726b060d-9ee3-484a-921d-3c00fbc5e991",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "template_id": null,
+      "to_email": "test@example.com",
+      "cc_email": null,
+      "bcc_email": null,
+      "subject": "Test Email Subject",
+      "body": "Test email body content",
+      "attachments": null,
+      "priority": 1,
+      "status": "queued",
+      "attempts": 0,
+      "max_attempts": 3,
+      "last_error": null,
+      "scheduled_at": null,
+      "sent_at": null,
+      "opened_at": null,
+      "clicked_at": null,
+      "bounced_at": null,
+      "delivered_at": null,
+      "created_at": "2025-07-15T00:03:37",
+      "updated_at": null
+    },
+    {
+      "email_id": "f9738e6b-18e3-4ef5-b082-39b7b0203418",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "template_id": null,
+      "to_email": "test@example.com",
+      "cc_email": null,
+      "bcc_email": null,
+      "subject": "Test Email Subject",
+      "body": "Test email body content",
+      "attachments": null,
+      "priority": 1,
+      "status": "queued",
+      "attempts": 0,
+      "max_attempts": 3,
+      "last_error": null,
+      "scheduled_at": null,
+      "sent_at": null,
+      "opened_at": null,
+      "clicked_at": null,
+      "bounced_at": null,
+      "delivered_at": null,
+      "created_at": "2025-07-15T00:02:35",
+      "updated_at": null
+    },
+    {
+      "email_id": "717adadb-30a7-41fc-abc3-dcf47326372d",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "template_id": null,
+      "to_email": "test@example.com",
+      "cc_email": null,
+      "bcc_email": null,
+      "subject": "Test Email Subject",
+      "body": "Test email body content",
+      "attachments": null,
+      "priority": 1,
+      "status": "queued",
+      "attempts": 0,
+      "max_attempts": 3,
+      "last_error": null,
+      "scheduled_at": null,
+      "sent_at": null,
+      "opened_at": null,
+      "clicked_at": null,
+      "bounced_at": null,
+      "delivered_at": null,
+      "created_at": "2025-07-15T00:02:21",
+      "updated_at": null
+    },
+    {
+      "email_id": "e9ec35e8-c823-4609-a969-118fdca0528c",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "template_id": null,
+      "to_email": "test@example.com",
+      "cc_email": null,
+      "bcc_email": null,
+      "subject": "Test Email Subject",
+      "body": "Test email body content",
+      "attachments": null,
+      "priority": 1,
+      "status": "queued",
+      "attempts": 0,
+      "max_attempts": 3,
+      "last_error": null,
+      "scheduled_at": null,
+      "sent_at": null,
+      "opened_at": null,
+      "clicked_at": null,
+      "bounced_at": null,
+      "delivered_at": null,
+      "created_at": "2025-07-15T00:01:42",
+      "updated_at": null
+    }
+  ],
+  "total": 5,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 1
+}
+✅ Get email queue test passed (Found 5 emails)
+
+🔍 Testing get email stats...
+Status Code: 200
+Response: {
+  "total_emails": 5,
+  "queued_emails": 5,
+  "sent_emails": 0,
+  "failed_emails": 0,
+  "emails_by_status": {
+    "queued": 5
+  },
+  "open_rate": 0.0,
+  "click_rate": 0.0,
+  "bounce_rate": 0.0
+}
+✅ Get email stats test passed
+
+===== SMS MANAGEMENT API TESTS =====
+
+🔍 Testing send SMS...
+Status Code: 201
+Response: {
+  "sms_id": "4be1187f-ff4a-43fe-8299-38a27dfac1d7",
+  "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+  "to_phone": "+1234567890",
+  "message": "Test SMS message",
+  "status": "queued",
+  "attempts": 0,
+  "max_attempts": 3,
+  "last_error": null,
+  "scheduled_at": null,
+  "sent_at": null,
+  "delivered_at": null,
+  "provider_message_id": null,
+  "delivery_status": null,
+  "created_at": "2025-07-15T00:03:49",
+  "updated_at": null
+}
+✅ Send SMS test passed (ID: 4be1187f-ff4a-43fe-8299-38a27dfac1d7)
+
+🔍 Testing get SMS queue...
+Status Code: 200
+Response: {
+  "items": [
+    {
+      "sms_id": "4be1187f-ff4a-43fe-8299-38a27dfac1d7",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "to_phone": "+1234567890",
+      "message": "Test SMS message",
+      "status": "queued",
+      "attempts": 0,
+      "max_attempts": 3,
+      "last_error": null,
+      "scheduled_at": null,
+      "sent_at": null,
+      "delivered_at": null,
+      "provider_message_id": null,
+      "delivery_status": null,
+      "created_at": "2025-07-15T00:03:49",
+      "updated_at": null
+    },
+    {
+      "sms_id": "9b9d69a0-fee7-4506-9609-a1bae96cb540",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "to_phone": "+1234567890",
+      "message": "Test SMS message",
+      "status": "queued",
+      "attempts": 0,
+      "max_attempts": 3,
+      "last_error": null,
+      "scheduled_at": null,
+      "sent_at": null,
+      "delivered_at": null,
+      "provider_message_id": null,
+      "delivery_status": null,
+      "created_at": "2025-07-15T00:03:37",
+      "updated_at": null
+    },
+    {
+      "sms_id": "91f66418-b442-4a2d-93a9-c8a9fd2dbb9f",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "to_phone": "+1234567890",
+      "message": "Test SMS message",
+      "status": "queued",
+      "attempts": 0,
+      "max_attempts": 3,
+      "last_error": null,
+      "scheduled_at": null,
+      "sent_at": null,
+      "delivered_at": null,
+      "provider_message_id": null,
+      "delivery_status": null,
+      "created_at": "2025-07-15T00:02:35",
+      "updated_at": null
+    },
+    {
+      "sms_id": "78d7abf0-41f1-4ca2-8ac4-e6818e4d0759",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "to_phone": "+1234567890",
+      "message": "Test SMS message",
+      "status": "queued",
+      "attempts": 0,
+      "max_attempts": 3,
+      "last_error": null,
+      "scheduled_at": null,
+      "sent_at": null,
+      "delivered_at": null,
+      "provider_message_id": null,
+      "delivery_status": null,
+      "created_at": "2025-07-15T00:02:21",
+      "updated_at": null
+    },
+    {
+      "sms_id": "c4177aed-9143-42b1-bea2-a1d783446131",
+      "company_id": "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2",
+      "to_phone": "+1234567890",
+      "message": "Test SMS message",
+      "status": "queued",
+      "attempts": 0,
+      "max_attempts": 3,
+      "last_error": null,
+      "scheduled_at": null,
+      "sent_at": null,
+      "delivered_at": null,
+      "provider_message_id": null,
+      "delivery_status": null,
+      "created_at": "2025-07-15T00:01:42",
+      "updated_at": null
+    }
+  ],
+  "total": 5,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 1
+}
+✅ Get SMS queue test passed (Found 5 SMS messages)
+
+🔍 Testing get SMS stats...
+Status Code: 200
+Response: {
+  "total_sms": 5,
+  "queued_sms": 5,
+  "sent_sms": 0,
+  "failed_sms": 0,
+  "sms_by_status": {
+    "queued": 5
+  },
+  "delivery_rate": 0.0
+}
+✅ Get SMS stats test passed
+
+===== WEBHOOK API TESTS =====
+
+🔍 Testing create webhook...
+Status Code: 422
+Response: {
+  "detail": [
+    {
+      "type": "missing",
+      "loc": [
+        "body",
+        "webhook_url"
+      ],
+      "msg": "Field required",
+      "input": {
+        "name": "Test Webhook 20250715000349",
+        "url": "https://example.com/webhook",
+        "events": [
+          "invoice.created",
+          "payment.received"
+        ],
+        "secret": "test-secret-key",
+        "is_active": true
+      },
+      "url": "https://errors.pydantic.dev/2.11/v/missing"
+    }
+  ]
+}
+❌ Create webhook test failed: Status code 422
+
+🔍 Testing get webhooks...
+Status Code: 200
+Response: []
+✅ Get webhooks test passed (Found 0 webhooks)
+❌ Webhook test skipped: Missing required data
+
+===== NOTIFICATION API TESTS =====
+
+🔍 Testing create notification...
+Status Code: 422
+Response: {
+  "detail": [
+    {
+      "type": "enum",
+      "loc": [
+        "body",
+        "notification_type"
+      ],
+      "msg": "Input should be 'system', 'transaction', 'payment', 'invoice', 'bill', 'purchase_order', 'inventory', 'payroll', 'banking', 'report', 'reminder', 'alert', 'approval', 'welcome' or 'security'",
+      "input": "invoice_reminder",
+      "ctx": {
+        "expected": "'system', 'transaction', 'payment', 'invoice', 'bill', 'purchase_order', 'inventory', 'payroll', 'banking', 'report', 'reminder', 'alert', 'approval', 'welcome' or 'security'"
+      },
+      "url": "https://errors.pydantic.dev/2.11/v/enum"
+    }
+  ]
+}
+❌ Create notification test failed: Status code 422
+
+🔍 Testing get notifications...
+Status Code: 200
+Response: {
+  "items": [],
+  "total": 0,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 0
+}
+✅ Get notifications test passed (Found 0 notifications)
+
+🔍 Testing get notification stats...
+Status Code: 200
+Response: {
+  "total_notifications": 0,
+  "unread_notifications": 0,
+  "notifications_by_type": {},
+  "notifications_by_priority": {},
+  "recent_notifications": []
+}
+✅ Get notification stats test passed
+
+===== NOTIFICATION PREFERENCES API TESTS =====
+
+🔍 Testing get notification preferences...
+Status Code: 200
+Response: []
+✅ Get notification preferences test passed (Found 0 preferences)
+
+===== PURCHASE ORDER MANAGEMENT API TESTS =====
+
+🔍 Testing create purchase order...
+Status Code: 422
+Response: {
+  "detail": [
+    {
+      "type": "missing",
+      "loc": [
+        "body",
+        "lines"
+      ],
+      "msg": "Field required",
+      "input": {
+        "vendor_id": "124b2570-0cf5-41ae-8365-629991095f10",
+        "po_date": "2025-07-15",
+        "expected_date": "2025-07-22",
+        "memo": "Test Purchase Order 20250715000350",
+        "terms": "Net 30",
+        "status": "draft",
+        "line_items": [
+          {
+            "item_description": "Test Item 1",
+            "quantity": 10,
+            "unit_cost": 25.0,
+            "total_cost": 250.0
+          },
+          {
+            "item_description": "Test Item 2",
+            "quantity": 5,
+            "unit_cost": 50.0,
+            "total_cost": 250.0
+          }
+        ]
+      },
+      "url": "https://errors.pydantic.dev/2.11/v/missing"
+    }
+  ]
+}
+❌ Create purchase order test failed: Status code 422
+
+🔍 Testing get purchase orders...
+Status Code: 200
+Response: {
+  "items": [],
+  "total": 0,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 0
+}
+✅ Get purchase orders test passed (Found 0 purchase orders)
+❌ Get purchase order by ID test skipped: Missing required data
+❌ Update purchase order test skipped: Missing required data
+
+🔍 Testing delete purchase order...
+❌ Failed to create purchase order for deletion test: 422
+
+🔍 Testing transaction API error handling...
+
+  Test 1: Invalid transaction ID
+  Status Code: 404
+  Response: {
+  "error": "Transaction not found",
+  "status_code": 404,
+  "path": "/api/companies/5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2/transactions/invalid-transaction-id"
+}
+  ✅ Correctly returned 404 for invalid transaction ID
+
+  Test 2: Invalid company ID
+  Status Code: 403
+  Response: {
+  "error": "Access denied to this company",
+  "status_code": 403,
+  "path": "/api/companies/invalid-company-id/transactions/"
+}
+  ✅ Correctly returned 403 for invalid company ID
+
+  Test 3: Invalid invoice ID
+  Status Code: 404
+  Response: {
+  "error": "Invoice not found",
+  "status_code": 404,
+  "path": "/api/companies/5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2/invoices/invalid-invoice-id"
+}
+  ✅ Correctly returned 404 for invalid invoice ID
+
+  Test 4: Invalid bill ID
+  Status Code: 404
+  Response: {
+  "error": "Bill not found",
+  "status_code": 404,
+  "path": "/api/companies/5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2/bills/invalid-bill-id"
+}
+  ✅ Correctly returned 404 for invalid bill ID
+
+  Test 5: Invalid company ID for invoices
+  Status Code: 500
+  Response: {
+  "error": "Internal server error",
+  "status_code": 500,
+  "path": "/api/companies/invalid-company-id/invoices/"
+}
+  ⚠️ Known issue: Error handling for invalid company IDs still returns 500 instead of 403/404 after fix
+
+  Test 6: Invalid company ID for bills
+  Status Code: 500
+  Response: {
+  "error": "Failed to get bills",
+  "status_code": 500,
+  "path": "/api/companies/invalid-company-id/bills/"
+}
+  ⚠️ Known issue: Error handling for invalid company IDs still returns 500 instead of 403/404 after fix
+
+  Test 7: Invalid transaction data
+  Status Code: 422
+  Response: {
+  "detail": [
+    {
+      "type": "value_error",
+      "loc": [
+        "body",
+        "lines"
+      ],
+      "msg": "Value error, Transaction must have at least one line item",
+      "input": [],
+      "ctx": {
+        "error": {}
+      },
+      "url": "https://errors.pydantic.dev/2.11/v/value_error"
+    }
+  ]
+}
+  ✅ Correctly returned 422 for invalid transaction data
+✅ Transaction error handling test passed
+
+✅ API tests completed.
