@@ -63,6 +63,7 @@ import ProductInfo from "./components/help/ProductInfo";
 
 // Template Customization Components
 import TemplateDesigner from "./components/templates/TemplateDesigner";
+import DashboardCustomize from "./components/dashboard/DashboardCustomize";
 
 // Inventory Components  
 import InventoryCenter from "./components/inventory/InventoryCenter";
