@@ -704,7 +704,7 @@
 
   - task: "Dashboard Integration - Phase 2.1"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/components/dashboard/Dashboard.js, /app/frontend/src/services/dashboardService.js"
     stuck_count: 1
     priority: "high"
@@ -716,6 +716,9 @@
         - working: true
           agent: "testing"
           comment: "✅ PHASE 2.1 DASHBOARD INTEGRATION TESTING RESULTS: Dashboard Summary API working perfectly with proper data structure including total_income, total_expenses, net_income, outstanding_invoices, and accounts_receivable. Recent Transactions API and Outstanding Invoices API currently experiencing 403 authentication timeout issues (Company Access timeout at 10 seconds). Dashboard core functionality is working (1/3 APIs functional) with proper data formatting and no .toFixed errors. Performance is excellent for working APIs (under 1 second response time). Authentication flow works correctly for login and company selection."
+        - working: false
+          agent: "testing"
+          comment: "❌ DASHBOARD INTEGRATION ROOT CAUSE IDENTIFIED: Comprehensive investigation reveals the dashboard timeout issue is caused by redundant database queries, not the company access endpoint itself. DETAILED FINDINGS: 1) ✅ Dashboard Summary API - Working perfectly (0.08s response time). 2) ❌ Recent Transactions API - Times out after 15 seconds due to TransactionService.verify_company_access() making redundant database queries AFTER user already has company access. 3) ❌ Outstanding Invoices API - Returns 403 Forbidden (0.09s) due to same redundant verification. ROOT CAUSE: Each dashboard API performs additional CompanyMembership database queries via BaseListService.verify_company_access() even though user already passed /auth/companies/{id}/access. This creates cumulative database load and timeouts. SOLUTION NEEDED: Implement company access caching or optimize verification to prevent redundant queries on every API call. The architecture should not re-verify company access for every subsequent API call after initial access grant."
   - task: "Reports Integration - Phase 2.2"
     implemented: true
     working: true
