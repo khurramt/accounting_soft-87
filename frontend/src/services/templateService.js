@@ -139,6 +139,37 @@ export const templateService = {
       isValid: errors.length === 0,
       errors
     };
+  },
+
+  // Additional template operations for the Template Designer
+  async saveTemplate(companyId, templateData) {
+    try {
+      const response = await apiClient.post(`/companies/${companyId}/templates/design`, templateData);
+      return response.data;
+    } catch (error) {
+      console.error('Error saving template:', error);
+      throw error;
+    }
+  },
+
+  async resetTemplate(companyId, templateId) {
+    try {
+      const response = await apiClient.post(`/companies/${companyId}/templates/${templateId}/reset`);
+      return response.data;
+    } catch (error) {
+      console.error('Error resetting template:', error);
+      throw error;
+    }
+  },
+
+  async duplicateTemplate(companyId, templateId) {
+    try {
+      const response = await apiClient.post(`/companies/${companyId}/templates/${templateId}/duplicate`);
+      return response.data;
+    } catch (error) {
+      console.error('Error duplicating template:', error);
+      throw error;
+    }
   }
 };
 
