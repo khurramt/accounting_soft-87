@@ -43,10 +43,18 @@ export const CompanyProvider = ({ children }) => {
       
       console.log("Loading companies for authenticated user...");
       const companiesData = await companyService.getCompanies();
-      setCompanies(companiesData);
+      
+      // Transform company data to ensure 'id' field exists
+      const transformedCompanies = companiesData.map(company => ({
+        ...company,
+        id: company.company_id || company.id, // Use company_id if available, fallback to id
+        name: company.company_name || company.name // Also ensure name field consistency
+      }));
+      
+      setCompanies(transformedCompanies);
       
       // Store in localStorage for caching
-      localStorage.setItem("qb_companies", JSON.stringify(companiesData));
+      localStorage.setItem("qb_companies", JSON.stringify(transformedCompanies));
     } catch (err) {
       console.error("Error loading companies:", err);
       setError(err.message || "Failed to load companies");
