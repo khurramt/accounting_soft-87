@@ -6682,6 +6682,10 @@ if __name__ == "__main__":
         invoices_result = test_invoices_api_with_status_filter()
         transactions_result = test_transactions_api_with_recent_filter()
         
+        # Test Recent Transactions API after SQLAlchemy greenlet fix
+        print("\n===== RECENT TRANSACTIONS API GREENLET FIX TEST =====")
+        recent_transactions_result = test_recent_transactions_api()
+        
         # Reports Integration API tests (focus of this testing session)
         print("\n===== REPORTS INTEGRATION API TESTS =====")
         profit_loss_result = test_profit_loss_report()
