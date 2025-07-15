@@ -493,6 +493,28 @@ def test_cash_flow_report():
         print(f"❌ Cash Flow report API test failed: {str(e)}")
         return False
 
+def grant_company_access():
+    """Grant company access after login"""
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Company access skipped: Missing access token or company ID")
+        return False
+    
+    try:
+        print("\n🔍 Granting company access...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        response = requests.post(f"{API_URL}/auth/companies/{COMPANY_ID}/access", headers=headers, timeout=TIMEOUT)
+        
+        if response.status_code == 200:
+            print("✅ Company access granted")
+            return True
+        else:
+            print(f"❌ Company access failed: Status code {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Company access failed: {str(e)}")
+        return False
+
 def test_authentication_flow():
     """Test the complete authentication flow"""
     print("\n🔍 Testing Authentication Flow...")
@@ -505,20 +527,11 @@ def test_authentication_flow():
     if not get_company_id():
         return False
     
-    # Step 3: Test company access
-    try:
-        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
-        response = requests.post(f"{API_URL}/auth/companies/{COMPANY_ID}/access", headers=headers, timeout=TIMEOUT)
-        
-        if response.status_code == 200:
-            print("✅ Company access granted")
-            return True
-        else:
-            print(f"❌ Company access failed: Status code {response.status_code}")
-            return False
-    except Exception as e:
-        print(f"❌ Company access test failed: {str(e)}")
+    # Step 3: Grant company access
+    if not grant_company_access():
         return False
+    
+    return True
 
 if __name__ == "__main__":
     print("🚀 Phase 2 Financial Reporting & Analytics Backend API Tests")
