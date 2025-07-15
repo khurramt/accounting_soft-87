@@ -6582,6 +6582,81 @@ def test_get_dashboard_widgets():
         print(f"❌ Get dashboard widgets test failed: {str(e)}")
         return False
 
+def test_recent_transactions_api():
+    """Test the Recent Transactions API after SQLAlchemy greenlet fix"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Recent Transactions API test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing Recent Transactions API after SQLAlchemy greenlet fix...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Record start time for performance measurement
+        start_time = time.time()
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/transactions?recent=true", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        
+        # Calculate response time
+        response_time = time.time() - start_time
+        
+        print(f"Status Code: {response.status_code}")
+        print(f"Response Time: {response_time:.2f} seconds")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        # Check if the API returns 200 status code (not 400)
+        if response.status_code == 200:
+            # Verify response structure includes transaction lines properly
+            if "items" in data and "total" in data:
+                print(f"✅ Recent Transactions API test passed")
+                print(f"   - Status: 200 (not 400 - greenlet issue resolved)")
+                print(f"   - Response time: {response_time:.2f}s (under 10s requirement)")
+                print(f"   - Found {data['total']} recent transactions")
+                print(f"   - Response structure includes proper transaction data")
+                
+                # Check if transactions have lines properly loaded
+                if data["total"] > 0 and "items" in data:
+                    for transaction in data["items"][:3]:  # Check first 3 transactions
+                        if "lines" in transaction:
+                            print(f"   - Transaction {transaction.get('transaction_id', 'N/A')} has {len(transaction['lines'])} lines")
+                        else:
+                            print(f"   - Transaction {transaction.get('transaction_id', 'N/A')} missing lines data")
+                
+                return True
+            else:
+                print(f"❌ Recent Transactions API test failed: Unexpected response structure")
+                return False
+        elif response.status_code == 400:
+            print(f"❌ Recent Transactions API test failed: Still returning 400 status code")
+            print(f"   - This indicates the SQLAlchemy greenlet issue is NOT resolved")
+            if "greenlet" in response.text.lower():
+                print(f"   - Greenlet error still present in response")
+            return False
+        else:
+            print(f"❌ Recent Transactions API test failed: Status code {response.status_code}")
+            return False
+            
+    except requests.exceptions.Timeout:
+        print(f"❌ Recent Transactions API test failed: Request timed out after {TIMEOUT} seconds")
+        print(f"   - Performance requirement: Response should be under 10 seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Recent Transactions API test failed: {str(e)}")
+        return False
+
 if __name__ == "__main__":
     # Run tests
     print("\n🔍 Starting QuickBooks Clone API tests...")
