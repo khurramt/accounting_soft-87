@@ -186,6 +186,106 @@ class DashboardService {
       throw error;
     }
   }
+
+  /**
+   * Get dashboard layout configuration
+   * @param {string} companyId - Company ID
+   * @returns {Promise<Object>} Dashboard layout configuration
+   */
+  async getDashboardLayout(companyId) {
+    try {
+      const response = await apiClient.get(`/companies/${companyId}/dashboard/layout`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching dashboard layout:', error);
+      // Return default layout if API fails
+      return {
+        widgets: [
+          {
+            id: '1',
+            type: 'financial_overview',
+            title: 'Financial Overview',
+            size: 'large',
+            position: { x: 0, y: 0 },
+            settings: {},
+            refreshInterval: 300000,
+            isVisible: true
+          },
+          {
+            id: '2',
+            type: 'recent_transactions',
+            title: 'Recent Transactions',
+            size: 'medium',
+            position: { x: 1, y: 0 },
+            settings: {},
+            refreshInterval: 300000,
+            isVisible: true
+          },
+          {
+            id: '3',
+            type: 'quick_actions',
+            title: 'Quick Actions',
+            size: 'small',
+            position: { x: 2, y: 0 },
+            settings: {},
+            refreshInterval: 300000,
+            isVisible: true
+          }
+        ],
+        layout: 'grid',
+        columns: 3,
+        theme: 'light',
+        showTitles: true,
+        autoRefresh: true,
+        refreshInterval: 300000
+      };
+    }
+  }
+
+  /**
+   * Save dashboard layout configuration
+   * @param {string} companyId - Company ID
+   * @param {Object} layoutData - Layout configuration data
+   * @returns {Promise<Object>} Response data
+   */
+  async saveDashboardLayout(companyId, layoutData) {
+    try {
+      const response = await apiClient.put(`/companies/${companyId}/dashboard/layout`, layoutData);
+      return response.data;
+    } catch (error) {
+      console.error('Error saving dashboard layout:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get available widgets for dashboard
+   * @param {string} companyId - Company ID
+   * @returns {Promise<Array>} Available widgets
+   */
+  async getAvailableWidgets(companyId) {
+    try {
+      const response = await apiClient.get(`/companies/${companyId}/dashboard/widgets`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching available widgets:', error);
+      // Return default widgets if API fails
+      return [
+        { id: 'financial_overview', name: 'Financial Overview', description: 'Overview of financial metrics' },
+        { id: 'recent_transactions', name: 'Recent Transactions', description: 'Latest transactions' },
+        { id: 'quick_actions', name: 'Quick Actions', description: 'Common actions' },
+        { id: 'sales_chart', name: 'Sales Chart', description: 'Sales performance chart' },
+        { id: 'expense_chart', name: 'Expense Chart', description: 'Expense breakdown' },
+        { id: 'invoice_status', name: 'Invoice Status', description: 'Invoice status overview' },
+        { id: 'customer_overview', name: 'Customer Overview', description: 'Customer metrics' },
+        { id: 'inventory_status', name: 'Inventory Status', description: 'Inventory levels' },
+        { id: 'calendar', name: 'Calendar', description: 'Calendar events' },
+        { id: 'notifications', name: 'Notifications', description: 'System notifications' },
+        { id: 'cash_flow', name: 'Cash Flow', description: 'Cash flow analysis' },
+        { id: 'payment_status', name: 'Payment Status', description: 'Payment tracking' }
+      ];
+    }
+  }
 }
 
 export default new DashboardService();
