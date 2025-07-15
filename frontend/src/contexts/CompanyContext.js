@@ -62,7 +62,14 @@ export const CompanyProvider = ({ children }) => {
       // Fallback to localStorage if API fails
       const storedCompanies = localStorage.getItem("qb_companies");
       if (storedCompanies) {
-        setCompanies(JSON.parse(storedCompanies));
+        const parsedCompanies = JSON.parse(storedCompanies);
+        // Transform stored companies to ensure they have the correct structure
+        const transformedCompanies = parsedCompanies.map(company => ({
+          ...company,
+          id: company.company_id || company.id,
+          name: company.company_name || company.name
+        }));
+        setCompanies(transformedCompanies);
       }
     } finally {
       setLoading(false);
