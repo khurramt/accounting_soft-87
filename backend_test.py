@@ -6698,6 +6698,7 @@ if __name__ == "__main__":
         print(f"Dashboard API: {'✅ PASSED' if dashboard_result else '❌ FAILED'}")
         print(f"Invoices API with status filter: {'✅ PASSED' if invoices_result else '❌ FAILED'}")
         print(f"Transactions API with recent filter: {'✅ PASSED' if transactions_result else '❌ FAILED'}")
+        print(f"Recent Transactions API (Greenlet Fix): {'✅ PASSED' if recent_transactions_result else '❌ FAILED'}")
         
         # Print summary of Reports Integration tests
         print("\n📋 Reports Integration Test Summary:")
