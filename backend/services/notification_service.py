@@ -27,17 +27,33 @@ from schemas.notification_schemas import (
 import structlog
 import re
 from jinja2 import Template, Environment, BaseLoader
+from typing import Dict, Tuple
+import time
 
 logger = structlog.get_logger()
 
 class BaseNotificationService:
     """Base service for notification operations"""
     
-    @staticmethod
-    async def verify_company_access(db: AsyncSession, user_id: str, company_id: str) -> bool:
-        """Verify user has access to company"""
+    # Class-level cache for company access verification
+    _company_access_cache: Dict[Tuple[str, str], Tuple[bool, float]] = {}
+    _cache_ttl = 300  # 5 minutes TTL for cache
+    
+    @classmethod
+    async def verify_company_access(cls, db: AsyncSession, user_id: str, company_id: str) -> bool:
+        """Verify user has access to company with caching"""
         try:
-            # Check if user has access to company through membership
+            # Check cache first
+            cache_key = (user_id, company_id)
+            current_time = time.time()
+            
+            if cache_key in cls._company_access_cache:
+                cached_result, cached_time = cls._company_access_cache[cache_key]
+                if current_time - cached_time < cls._cache_ttl:
+                    logger.debug("Company access verification served from cache", user_id=user_id, company_id=company_id)
+                    return cached_result
+            
+            # Cache miss or expired, query database
             from models.user import CompanyMembership
             result = await db.execute(
                 select(CompanyMembership).where(
@@ -47,7 +63,15 @@ class BaseNotificationService:
                     )
                 )
             )
-            return result.scalar_one_or_none() is not None
+            membership = result.scalar_one_or_none()
+            has_access = membership is not None
+            
+            # Cache the result
+            cls._company_access_cache[cache_key] = (has_access, current_time)
+            
+            logger.debug("Company access verification queried and cached", user_id=user_id, company_id=company_id, has_access=has_access)
+            return has_access
+            
         except Exception as e:
             logger.error("Error verifying company access", error=str(e))
             return False
