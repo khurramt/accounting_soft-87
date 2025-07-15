@@ -90,8 +90,15 @@ export const CompanyProvider = ({ children }) => {
   }, [user, authLoading]);
 
   const selectCompany = (company) => {
-    setCurrentCompany(company);
-    localStorage.setItem("qb_current_company", JSON.stringify(company));
+    // Ensure the company object has the required fields
+    const transformedCompany = {
+      ...company,
+      id: company.company_id || company.id, // Ensure id field exists
+      name: company.company_name || company.name // Ensure name field exists
+    };
+    
+    setCurrentCompany(transformedCompany);
+    localStorage.setItem("qb_current_company", JSON.stringify(transformedCompany));
   };
 
   const createCompany = async (companyData) => {
