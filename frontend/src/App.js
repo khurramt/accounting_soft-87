@@ -125,6 +125,7 @@ const AppRouter = () => {
       }>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="dashboard/customize" element={<DashboardCustomize />} />
         
         {/* Customer Routes */}
         <Route path="customers" element={<CustomerCenter />} />
