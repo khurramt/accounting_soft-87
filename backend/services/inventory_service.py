@@ -26,27 +26,56 @@ from schemas.inventory_schemas import (
     AdjustmentSearchFilters, TransactionSearchFilters, ReorderItem, ReorderReport
 )
 
+from typing import Dict, Tuple
+import time
+
 logger = structlog.get_logger()
 
 class BaseInventoryService:
     """Base service class for inventory operations"""
     
-    @staticmethod
-    async def verify_company_access(db: AsyncSession, user_id: str, company_id: str) -> bool:
-        """Verify user has access to company"""
-        from models.user import CompanyMembership
-        
-        result = await db.execute(
-            select(CompanyMembership).where(
-                and_(
-                    CompanyMembership.user_id == user_id,
-                    CompanyMembership.company_id == company_id,
-                    CompanyMembership.is_active == True
+    # Class-level cache for company access verification
+    _company_access_cache: Dict[Tuple[str, str], Tuple[bool, float]] = {}
+    _cache_ttl = 300  # 5 minutes TTL for cache
+    
+    @classmethod
+    async def verify_company_access(cls, db: AsyncSession, user_id: str, company_id: str) -> bool:
+        """Verify user has access to company with caching"""
+        try:
+            # Check cache first
+            cache_key = (user_id, company_id)
+            current_time = time.time()
+            
+            if cache_key in cls._company_access_cache:
+                cached_result, cached_time = cls._company_access_cache[cache_key]
+                if current_time - cached_time < cls._cache_ttl:
+                    logger.debug("Company access verification served from cache", user_id=user_id, company_id=company_id)
+                    return cached_result
+            
+            # Cache miss or expired, query database
+            from models.user import CompanyMembership
+            
+            result = await db.execute(
+                select(CompanyMembership).where(
+                    and_(
+                        CompanyMembership.user_id == user_id,
+                        CompanyMembership.company_id == company_id,
+                        CompanyMembership.is_active == True
+                    )
                 )
             )
-        )
-        membership = result.scalar_one_or_none()
-        return membership is not None
+            membership = result.scalar_one_or_none()
+            has_access = membership is not None
+            
+            # Cache the result
+            cls._company_access_cache[cache_key] = (has_access, current_time)
+            
+            logger.debug("Company access verification queried and cached", user_id=user_id, company_id=company_id, has_access=has_access)
+            return has_access
+            
+        except Exception as e:
+            logger.error("Error verifying company access", error=str(e), user_id=user_id, company_id=company_id)
+            return False
 
     @staticmethod
     async def get_company(db: AsyncSession, company_id: str) -> Optional[Company]:
