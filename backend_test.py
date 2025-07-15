@@ -7270,10 +7270,10 @@ def test_company_access_caching():
         # Make multiple API calls to test caching
         api_calls = [
             {"name": "Dashboard Summary", "url": f"{API_URL}/companies/{COMPANY_ID}/reports/dashboard"},
-            {"name": "Recent Transactions", "url": f"{API_URL}/companies/{COMPANY_ID}/transactions?recent=true"},
-            {"name": "Outstanding Invoices", "url": f"{API_URL}/companies/{COMPANY_ID}/invoices?status=outstanding"},
+            {"name": "Recent Transactions", "url": f"{API_URL}/companies/{COMPANY_ID}/transactions/?recent=true"},
+            {"name": "Outstanding Invoices", "url": f"{API_URL}/companies/{COMPANY_ID}/invoices/?status=outstanding"},
             {"name": "Dashboard Summary (2nd call)", "url": f"{API_URL}/companies/{COMPANY_ID}/reports/dashboard"},
-            {"name": "Recent Transactions (2nd call)", "url": f"{API_URL}/companies/{COMPANY_ID}/transactions?recent=true"}
+            {"name": "Recent Transactions (2nd call)", "url": f"{API_URL}/companies/{COMPANY_ID}/transactions/?recent=true"}
         ]
         
         response_times = []
