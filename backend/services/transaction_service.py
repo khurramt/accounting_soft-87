@@ -96,13 +96,24 @@ class TransactionService(BaseListService):
         filters: TransactionSearchFilters
     ) -> Tuple[List[Transaction], int]:
         """Get transactions with pagination and filtering"""
-        query = select(Transaction).where(
-            Transaction.company_id == company_id
-        ).options(
-            selectinload(Transaction.lines),
-            selectinload(Transaction.customer),
-            selectinload(Transaction.vendor)
-        )
+        # For recent transactions, optimize the query by only loading essential relationships
+        if filters.page_size <= 10 and filters.sort_by == "created_at":
+            # This is likely a recent transactions request, use optimized query
+            query = select(Transaction).where(
+                Transaction.company_id == company_id
+            ).options(
+                selectinload(Transaction.customer),
+                selectinload(Transaction.vendor)
+            )
+        else:
+            # Full query for regular transaction listing
+            query = select(Transaction).where(
+                Transaction.company_id == company_id
+            ).options(
+                selectinload(Transaction.lines),
+                selectinload(Transaction.customer),
+                selectinload(Transaction.vendor)
+            )
         
         # Apply filters
         if filters.transaction_type:
