@@ -6598,7 +6598,7 @@ def test_recent_transactions_api():
         start_time = time.time()
         
         response = requests.get(
-            f"{API_URL}/companies/{COMPANY_ID}/transactions?recent=true", 
+            f"{API_URL}/companies/{COMPANY_ID}/transactions/?recent=true", 
             headers=headers, 
             timeout=TIMEOUT,
             verify=False
