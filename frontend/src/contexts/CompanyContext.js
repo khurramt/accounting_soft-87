@@ -140,20 +140,27 @@ export const CompanyProvider = ({ children }) => {
       
       const updatedCompany = await companyService.updateCompany(companyId, updateData);
       
+      // Transform the updated company data
+      const transformedCompany = {
+        ...updatedCompany,
+        id: updatedCompany.company_id || updatedCompany.id,
+        name: updatedCompany.company_name || updatedCompany.name
+      };
+      
       // Update local state
       const updatedCompanies = companies.map(company => 
-        company.id === companyId ? updatedCompany : company
+        company.id === companyId ? transformedCompany : company
       );
       setCompanies(updatedCompanies);
       localStorage.setItem("qb_companies", JSON.stringify(updatedCompanies));
       
       // Update current company if it was the one being updated
       if (currentCompany?.id === companyId) {
-        setCurrentCompany(updatedCompany);
-        localStorage.setItem("qb_current_company", JSON.stringify(updatedCompany));
+        setCurrentCompany(transformedCompany);
+        localStorage.setItem("qb_current_company", JSON.stringify(transformedCompany));
       }
       
-      return updatedCompany;
+      return transformedCompany;
     } catch (err) {
       console.error("Error updating company:", err);
       setError(err.message || "Failed to update company");
