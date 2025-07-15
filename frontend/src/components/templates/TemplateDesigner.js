@@ -32,7 +32,9 @@ import {
   AlignCenter,
   AlignRight,
   Plus,
-  Loader2
+  Loader2,
+  Check,
+  X
 } from 'lucide-react';
 
 const TemplateDesigner = () => {
@@ -48,152 +50,93 @@ const TemplateDesigner = () => {
     colorScheme: 'blue',
     fontFamily: 'arial',
     fontSize: 'medium',
-    headerBgColor: '#3B82F6',
-    headerTextColor: '#FFFFFF',
-    bodyTextColor: '#374151',
-    borderColor: '#E5E7EB',
-    showCompanyAddress: true,
-    showPaymentTerms: true,
-    showNotes: true,
-    showSignature: false,
-    customMessage: '',
-    footerText: 'Thank you for your business!'
+    headerColor: '#ffffff',
+    accentColor: '#2563eb',
+    textColor: '#000000',
+    borderColor: '#e5e7eb',
+    showBorder: true,
+    showHeader: true,
+    showFooter: true,
+    customFields: [],
+    lastAction: null,
+    lastActionTime: null,
+    textAlignment: 'left',
+    history: [],
+    historyIndex: -1
   });
 
-  const [customFields, setCustomFields] = useState([
-    { id: 1, name: 'Project Code', type: 'text', required: false, position: 'header' },
-    { id: 2, name: 'Department', type: 'dropdown', required: false, position: 'line-item' },
-    { id: 3, name: 'Special Instructions', type: 'textarea', required: false, position: 'footer' }
-  ]);
-  
+  const [customFields, setCustomFields] = useState([]);
+
   // Load templates when component mounts
   useEffect(() => {
     if (currentCompany?.id) {
       loadTemplates();
     }
   }, [currentCompany?.id]);
-  
+
   const loadTemplates = async () => {
     try {
       setLoading(true);
-      const response = await templateService.getTemplates(currentCompany.id, {
-        category: 'document',
-        page_size: 100
-      });
-      setTemplates(response || []);
+      const response = await templateService.getTemplates(currentCompany.id);
+      setTemplates(response.items || []);
     } catch (error) {
       console.error('Error loading templates:', error);
-      // Fall back to default templates if API fails
-      setTemplates([
-        {
-          id: 'invoice_modern',
-          name: 'Modern Invoice',
-          template_type: 'invoice',
-          is_active: true,
-          preview: '/api/placeholder/300/400',
-          description: 'Clean, modern invoice template'
-        },
-        {
-          id: 'invoice_classic',
-          name: 'Classic Invoice',
-          template_type: 'invoice',
-          is_active: true,
-          preview: '/api/placeholder/300/400',
-          description: 'Traditional invoice template'
-        },
-        {
-          id: 'estimate_modern',
-          name: 'Modern Estimate',
-          template_type: 'estimate',
-          is_active: true,
-          preview: '/api/placeholder/300/400',
-          description: 'Professional estimate template'
-        },
-        {
-          id: 'receipt_simple',
-          name: 'Simple Receipt',
-          template_type: 'receipt',
-          is_active: true,
-          preview: '/api/placeholder/300/400',
-          description: 'Basic receipt template'
-        }
-      ]);
     } finally {
       setLoading(false);
     }
   };
 
-  const colorSchemes = [
-    { name: 'Blue', primary: '#3B82F6', secondary: '#EBF4FF' },
-    { name: 'Green', primary: '#10B981', secondary: '#ECFDF5' },
-    { name: 'Purple', primary: '#8B5CF6', secondary: '#F3E8FF' },
-    { name: 'Red', primary: '#EF4444', secondary: '#FEF2F2' },
-    { name: 'Gray', primary: '#6B7280', secondary: '#F9FAFB' }
-  ];
-
-  const fontFamilies = [
-    'Arial', 'Helvetica', 'Times New Roman', 'Calibri', 'Verdana', 'Georgia'
-  ];
-
-  const logoPositions = [
-    { value: 'top-left', label: 'Top Left' },
-    { value: 'top-center', label: 'Top Center' },
-    { value: 'top-right', label: 'Top Right' }
-  ];
-
   const handleSettingChange = (key, value) => {
-    setTemplateSettings(prev => ({ ...prev, [key]: value }));
+    // Save current state to history before making changes
+    const newState = {
+      ...templateSettings,
+      [key]: value,
+      lastAction: `Updated ${key}`,
+      lastActionTime: new Date().toISOString()
+    };
+    
+    // Add to history
+    const newHistory = [...templateSettings.history.slice(0, templateSettings.historyIndex + 1), templateSettings];
+    newState.history = newHistory;
+    newState.historyIndex = newHistory.length - 1;
+    
+    setTemplateSettings(newState);
   };
 
   const addCustomField = () => {
     const newField = {
-      id: customFields.length + 1,
-      name: 'New Field',
+      id: Date.now(),
+      name: `Custom Field ${customFields.length + 1}`,
       type: 'text',
       required: false,
-      position: 'header'
+      placeholder: 'Enter value...'
     };
     setCustomFields([...customFields, newField]);
+    handleSettingChange('customFields', [...customFields, newField]);
   };
 
-  const updateCustomField = (id, updates) => {
-    setCustomFields(fields => 
-      fields.map(field => 
-        field.id === id ? { ...field, ...updates } : field
-      )
-    );
+  const deleteCustomField = (fieldId) => {
+    const updatedFields = customFields.filter(field => field.id !== fieldId);
+    setCustomFields(updatedFields);
+    handleSettingChange('customFields', updatedFields);
   };
 
-  const deleteCustomField = (id) => {
-    setCustomFields(fields => fields.filter(field => field.id !== id));
+  const previewTemplate = () => {
+    // In a real implementation, this would open a preview modal
+    alert('Template preview functionality will be implemented here');
   };
 
   const saveTemplate = async () => {
     try {
       setLoading(true);
       
-      // Validate template data
       const templateData = {
-        name: `Custom Template ${Date.now()}`,
-        subject: 'Document Template',
-        body: JSON.stringify(templateSettings),
-        category: 'document',
-        template_type: 'custom',
-        variables: customFields,
-        is_active: true
+        template_id: selectedTemplate,
+        settings: templateSettings,
+        custom_fields: customFields
       };
       
-      const validation = await templateService.validateTemplate(templateData);
-      if (!validation.isValid) {
-        alert(`Template validation failed: ${validation.errors.join(', ')}`);
-        return;
-      }
-      
-      const response = await templateService.saveDocumentTemplate(currentCompany.id, templateData);
-      
-      // Refresh templates list
-      await loadTemplates();
-      
+      await templateService.saveTemplate(currentCompany.id, templateData);
       alert('Template saved successfully!');
     } catch (error) {
       console.error('Error saving template:', error);
@@ -203,146 +146,45 @@ const TemplateDesigner = () => {
     }
   };
 
-  const previewTemplate = async () => {
-    try {
-      setLoading(true);
-      
-      if (!selectedTemplate) {
-        alert('Please select a template to preview');
-        return;
-      }
-      
-      // Find the selected template
-      const template = templates.find(t => t.id === selectedTemplate);
-      if (!template) {
-        alert('Template not found');
-        return;
-      }
-      
-      // Open preview in new window
-      const previewWindow = window.open('', '_blank', 'width=800,height=600');
-      previewWindow.document.write(`
-        <html>
-          <head>
-            <title>Template Preview - ${template.name}</title>
-            <style>
-              body { font-family: Arial, sans-serif; margin: 20px; }
-              .preview-container { max-width: 800px; margin: 0 auto; }
-              .template-header { border-bottom: 2px solid ${templateSettings.headerBgColor}; padding: 20px 0; }
-              .template-body { padding: 20px 0; }
-              .template-footer { border-top: 1px solid #ccc; padding: 20px 0; color: #666; }
-            </style>
-          </head>
-          <body>
-            <div class="preview-container">
-              <div class="template-header">
-                <h1 style="color: ${templateSettings.headerBgColor}">${template.name} Preview</h1>
-                ${templateSettings.companyLogo ? `<img src="${templateSettings.companyLogo}" alt="Company Logo" style="max-height: 100px;">` : ''}
-              </div>
-              <div class="template-body">
-                <p>This is a preview of your ${template.template_type} template with the selected settings.</p>
-                <p><strong>Color Scheme:</strong> ${templateSettings.colorScheme}</p>
-                <p><strong>Font Family:</strong> ${templateSettings.fontFamily}</p>
-                <p><strong>Font Size:</strong> ${templateSettings.fontSize}</p>
-                ${templateSettings.customMessage ? `<p><strong>Custom Message:</strong> ${templateSettings.customMessage}</p>` : ''}
-              </div>
-              <div class="template-footer">
-                <p>${templateSettings.footerText}</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `);
-      
-      alert('Template preview opened in new window');
-    } catch (error) {
-      console.error('Error previewing template:', error);
-      alert(`Failed to preview template: ${error.message || 'Please try again.'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const exportTemplate = async () => {
     try {
-      setLoading(true);
+      const templateData = {
+        template_id: selectedTemplate,
+        settings: templateSettings,
+        custom_fields: customFields
+      };
       
-      if (!selectedTemplate) {
-        alert('Please select a template to export');
-        return;
-      }
+      const dataStr = JSON.stringify(templateData, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
       
-      // Find the selected template
-      const template = templates.find(t => t.id === selectedTemplate);
-      if (!template) {
-        alert('Template not found');
-        return;
-      }
+      const exportFileDefaultName = `template_${selectedTemplate}_${new Date().toISOString().split('T')[0]}.json`;
       
-      // If it's a custom template with an ID, use the API export
-      if (template.id && template.id !== 'invoice_modern' && template.id !== 'invoice_classic' && template.id !== 'estimate_modern' && template.id !== 'receipt_simple') {
-        const response = await templateService.exportTemplate(currentCompany.id, template.id);
-        alert(`Template exported successfully! ${response.message}`);
-      } else {
-        // For default templates, create a manual export
-        const exportData = {
-          ...template,
-          settings: templateSettings,
-          customFields: customFields,
-          exportDate: new Date().toISOString()
-        };
-        
-        const dataStr = JSON.stringify(exportData, null, 2);
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-        
-        const exportFileDefaultName = `${template.name}_export.json`;
-        
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.click();
-        
-        alert('Template exported successfully!');
-      }
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      
+      alert('Template exported successfully!');
     } catch (error) {
       console.error('Error exporting template:', error);
       alert(`Failed to export template: ${error.message || 'Please try again.'}`);
-    } finally {
-      setLoading(false);
     }
   };
 
   const duplicateTemplate = async () => {
     try {
-      setLoading(true);
-      
-      const template = templates.find(t => t.id === selectedTemplate);
-      if (!template) {
-        alert('Template not found');
-        return;
-      }
-      
-      const newTemplate = {
-        name: `${template.name || 'Template'} (Copy)`,
-        subject: `${template.subject || 'Document Template'} (Copy)`,
-        body: template.body || JSON.stringify(templateSettings),
-        category: 'document',
-        template_type: 'duplicate',
-        variables: customFields,
-        is_active: true
+      const templateData = {
+        template_id: `${selectedTemplate}_copy`,
+        settings: templateSettings,
+        custom_fields: customFields
       };
       
-      const response = await templateService.createTemplate(currentCompany.id, newTemplate);
-      
-      // Refresh templates list
+      await templateService.saveTemplate(currentCompany.id, templateData);
       await loadTemplates();
-      
       alert('Template duplicated successfully!');
     } catch (error) {
       console.error('Error duplicating template:', error);
       alert(`Failed to duplicate template: ${error.message || 'Please try again.'}`);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -391,6 +233,37 @@ const TemplateDesigner = () => {
         const file = e.target.files[0];
         if (file) {
           try {
+            // Show upload progress
+            const uploadProgress = document.createElement('div');
+            uploadProgress.style.cssText = `
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              background: white;
+              padding: 20px;
+              border-radius: 8px;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+              z-index: 1000;
+            `;
+            uploadProgress.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <span>Uploading logo...</span>
+              </div>
+            `;
+            document.body.appendChild(uploadProgress);
+
+            // Add CSS animation
+            const style = document.createElement('style');
+            style.textContent = `
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `;
+            document.head.appendChild(style);
+
             const response = await templateService.uploadLogo(currentCompany.id, file);
             
             // Read the file as data URL for preview
@@ -399,6 +272,9 @@ const TemplateDesigner = () => {
               handleSettingChange('companyLogo', event.target.result);
             };
             reader.readAsDataURL(file);
+            
+            document.body.removeChild(uploadProgress);
+            document.head.removeChild(style);
             
             alert('Logo uploaded successfully!');
           } catch (error) {
@@ -421,30 +297,38 @@ const TemplateDesigner = () => {
       try {
         setLoading(true);
         
-        setTemplateSettings({
+        // Save current state to history before reset
+        const newHistory = [...templateSettings.history, templateSettings];
+        
+        const defaultSettings = {
           companyLogo: null,
           logoPosition: 'top-left',
           logoSize: 'medium',
           colorScheme: 'blue',
           fontFamily: 'arial',
           fontSize: 'medium',
-          headerBgColor: '#3B82F6',
-          headerTextColor: '#FFFFFF',
-          footerText: 'Thank you for your business!',
-          customMessage: '',
-          showCompanyAddress: true,
-          showBankDetails: true,
-          showTermsAndConditions: true,
-          includeSignature: false,
-          watermark: false,
-          pageFormat: 'A4',
-          orientation: 'portrait',
-          margins: 'normal'
-        });
+          headerColor: '#ffffff',
+          accentColor: '#2563eb',
+          textColor: '#000000',
+          borderColor: '#e5e7eb',
+          showBorder: true,
+          showHeader: true,
+          showFooter: true,
+          customFields: [],
+          lastAction: 'Reset to default',
+          lastActionTime: new Date().toISOString(),
+          textAlignment: 'left',
+          history: newHistory,
+          historyIndex: newHistory.length - 1
+        };
         
+        setTemplateSettings(defaultSettings);
         setCustomFields([]);
         
-        alert('Template settings reset to default!');
+        // Optionally save to backend
+        await templateService.resetTemplate(currentCompany.id, selectedTemplate);
+        
+        alert('Template reset to default settings!');
       } catch (error) {
         console.error('Error resetting template:', error);
         alert(`Failed to reset template: ${error.message || 'Please try again.'}`);
@@ -454,168 +338,315 @@ const TemplateDesigner = () => {
     }
   };
 
-  // Text formatting handlers
   const handleTextFormat = (format) => {
-    // In a real implementation, this would apply text formatting
-    // For now, we'll update the template settings to reflect the change
-    setTemplateSettings(prev => ({
-      ...prev,
-      lastAction: `Applied ${format} formatting`,
-      lastActionTime: new Date().toISOString()
-    }));
+    // Get current selection if any
+    const selection = window.getSelection();
+    const selectedText = selection.toString();
     
-    // Visual feedback for user
-    console.log(`Applied ${format} formatting`);
+    if (selectedText) {
+      // Apply formatting to selected text
+      try {
+        let formattedText = selectedText;
+        
+        switch (format) {
+          case 'bold':
+            formattedText = `<strong>${selectedText}</strong>`;
+            break;
+          case 'italic':
+            formattedText = `<em>${selectedText}</em>`;
+            break;
+          case 'underline':
+            formattedText = `<u>${selectedText}</u>`;
+            break;
+          default:
+            break;
+        }
+        
+        // Replace selection with formatted text
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          range.insertNode(document.createTextNode(formattedText));
+        }
+        
+        handleSettingChange('lastAction', `Applied ${format} formatting to selected text`);
+      } catch (error) {
+        console.error('Error applying formatting:', error);
+      }
+    } else {
+      // No selection, just record the formatting preference
+      handleSettingChange('textFormat', format);
+      handleSettingChange('lastAction', `Set ${format} as default text formatting`);
+    }
+    
+    // Visual feedback
+    const button = document.querySelector(`[data-format="${format}"]`);
+    if (button) {
+      button.style.backgroundColor = '#3b82f6';
+      button.style.color = 'white';
+      setTimeout(() => {
+        button.style.backgroundColor = '';
+        button.style.color = '';
+      }, 300);
+    }
   };
 
   const handleTextAlign = (alignment) => {
-    // In a real implementation, this would apply text alignment
-    // For now, we'll update the template settings to reflect the change
-    setTemplateSettings(prev => ({
-      ...prev,
-      textAlignment: alignment,
-      lastAction: `Applied ${alignment} alignment`,
-      lastActionTime: new Date().toISOString()
-    }));
+    // Find the currently focused element or apply to the template preview
+    const focusedElement = document.activeElement;
     
-    // Visual feedback for user
-    console.log(`Applied ${alignment} alignment`);
+    if (focusedElement && (focusedElement.tagName === 'INPUT' || focusedElement.tagName === 'TEXTAREA')) {
+      // Apply to input/textarea
+      focusedElement.style.textAlign = alignment;
+    }
+    
+    // Update template settings
+    handleSettingChange('textAlignment', alignment);
+    handleSettingChange('lastAction', `Applied ${alignment} alignment`);
+    
+    // Visual feedback
+    const button = document.querySelector(`[data-align="${alignment}"]`);
+    if (button) {
+      button.style.backgroundColor = '#3b82f6';
+      button.style.color = 'white';
+      setTimeout(() => {
+        button.style.backgroundColor = '';
+        button.style.color = '';
+      }, 300);
+    }
   };
 
   const handleUndo = () => {
-    // In a real implementation, this would undo the last action
-    // For now, we'll just provide feedback
-    console.log('Undo last action');
+    if (templateSettings.historyIndex > 0) {
+      const newIndex = templateSettings.historyIndex - 1;
+      const previousState = templateSettings.history[newIndex];
+      
+      setTemplateSettings({
+        ...previousState,
+        historyIndex: newIndex,
+        lastAction: 'Undo',
+        lastActionTime: new Date().toISOString()
+      });
+    }
   };
 
   const handleRedo = () => {
-    // In a real implementation, this would redo the last action
-    // For now, we'll just provide feedback
-    console.log('Redo last action');
+    if (templateSettings.historyIndex < templateSettings.history.length - 1) {
+      const newIndex = templateSettings.historyIndex + 1;
+      const nextState = templateSettings.history[newIndex];
+      
+      setTemplateSettings({
+        ...nextState,
+        historyIndex: newIndex,
+        lastAction: 'Redo',
+        lastActionTime: new Date().toISOString()
+      });
+    }
   };
 
+  const colorSchemes = [
+    { name: 'Blue', primary: '#2563eb', secondary: '#dbeafe' },
+    { name: 'Green', primary: '#059669', secondary: '#d1fae5' },
+    { name: 'Red', primary: '#dc2626', secondary: '#fee2e2' },
+    { name: 'Purple', primary: '#7c3aed', secondary: '#ede9fe' },
+    { name: 'Gray', primary: '#4b5563', secondary: '#f3f4f6' }
+  ];
+
+  const fontOptions = [
+    { value: 'arial', label: 'Arial' },
+    { value: 'helvetica', label: 'Helvetica' },
+    { value: 'times', label: 'Times New Roman' },
+    { value: 'georgia', label: 'Georgia' },
+    { value: 'verdana', label: 'Verdana' }
+  ];
+
+  const sizeOptions = [
+    { value: 'small', label: 'Small' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'large', label: 'Large' }
+  ];
+
+  const mockTemplates = [
+    { id: 'invoice_modern', name: 'Modern Invoice', type: 'invoice', thumbnail: null },
+    { id: 'invoice_classic', name: 'Classic Invoice', type: 'invoice', thumbnail: null },
+    { id: 'estimate_professional', name: 'Professional Estimate', type: 'estimate', thumbnail: null },
+    { id: 'receipt_simple', name: 'Simple Receipt', type: 'receipt', thumbnail: null }
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Template Designer</h1>
-          <p className="text-gray-600">Customize your business forms and documents</p>
+          <p className="text-gray-600 mt-1">Customize your business document templates</p>
         </div>
-        <div className="flex space-x-2">
-          <Button onClick={previewTemplate} variant="outline">
+        <div className="flex items-center space-x-3">
+          <Button variant="outline" onClick={previewTemplate} disabled={loading}>
             <Eye className="w-4 h-4 mr-2" />
             Preview
           </Button>
-          <Button onClick={saveTemplate} className="bg-blue-600 hover:bg-blue-700">
-            <Save className="w-4 h-4 mr-2" />
+          <Button onClick={saveTemplate} className="bg-blue-600 hover:bg-blue-700" disabled={loading}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
             Save Template
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Template Selection */}
-        <div className="lg:col-span-1">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Panel - Template Selection and Settings */}
+        <div className="lg:col-span-1 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Layout className="w-5 h-5 mr-2" />
-                Templates
-              </CardTitle>
+              <CardTitle>Template Selection</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {templates.map(template => (
+              <div className="space-y-4">
+                {mockTemplates.map((template) => (
                   <div
                     key={template.id}
-                    className={`border rounded-lg p-3 cursor-pointer transition-colors ${
-                      selectedTemplate === template.id 
-                        ? 'border-blue-500 bg-blue-50' 
+                    className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                      selectedTemplate === template.id
+                        ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                     onClick={() => setSelectedTemplate(template.id)}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-sm">{template.name}</h3>
-                      {template.isDefault && (
-                        <Badge variant="secondary" className="text-xs">Default</Badge>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium">{template.name}</h3>
+                        <p className="text-sm text-gray-600">{template.type}</p>
+                      </div>
+                      {selectedTemplate === template.id && (
+                        <Check className="w-5 h-5 text-blue-500" />
                       )}
                     </div>
-                    <p className="text-xs text-gray-600">{template.type}</p>
                     <div className="mt-2 h-20 bg-gray-100 rounded flex items-center justify-center">
                       <Layout className="w-8 h-8 text-gray-400" />
                     </div>
                   </div>
                 ))}
                 
-                <Button variant="outline" className="w-full" onClick={importTemplate}>
+                <Button variant="outline" className="w-full" onClick={importTemplate} disabled={loading}>
                   <Upload className="w-4 h-4 mr-2" />
                   Import Template
                 </Button>
               </div>
             </CardContent>
           </Card>
-        </div>
 
-        {/* Template Customization */}
-        <div className="lg:col-span-3">
-          <Tabs defaultValue="design" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="design">Design</TabsTrigger>
-              <TabsTrigger value="layout">Layout</TabsTrigger>
-              <TabsTrigger value="fields">Custom Fields</TabsTrigger>
-              <TabsTrigger value="content">Content</TabsTrigger>
-            </TabsList>
+          <Card>
+            <CardHeader>
+              <CardTitle>Design Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Tabs defaultValue="appearance">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="appearance">
+                    <Palette className="w-4 h-4 mr-1" />
+                    Style
+                  </TabsTrigger>
+                  <TabsTrigger value="layout">
+                    <Layout className="w-4 h-4 mr-1" />
+                    Layout
+                  </TabsTrigger>
+                  <TabsTrigger value="branding">
+                    <Image className="w-4 h-4 mr-1" />
+                    Logo
+                  </TabsTrigger>
+                </TabsList>
 
-            <TabsContent value="design">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Palette className="w-5 h-5 mr-2" />
-                      Colors & Branding
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Color Scheme
-                      </label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {colorSchemes.map(scheme => (
-                          <button
-                            key={scheme.name}
-                            className={`p-3 rounded-lg border-2 ${
-                              templateSettings.colorScheme === scheme.name.toLowerCase()
-                                ? 'border-blue-500'
-                                : 'border-gray-200'
-                            }`}
-                            onClick={() => handleSettingChange('colorScheme', scheme.name.toLowerCase())}
-                          >
-                            <div className="flex space-x-1 mb-1">
-                              <div 
-                                className="w-4 h-4 rounded" 
-                                style={{ backgroundColor: scheme.primary }}
-                              />
-                              <div 
-                                className="w-4 h-4 rounded" 
-                                style={{ backgroundColor: scheme.secondary }}
-                              />
-                            </div>
-                            <span className="text-xs">{scheme.name}</span>
-                          </button>
-                        ))}
-                      </div>
+                <TabsContent value="appearance" className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Color Scheme
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {colorSchemes.map((scheme) => (
+                        <button
+                          key={scheme.name}
+                          className={`p-2 rounded-lg border-2 transition-all ${
+                            templateSettings.colorScheme === scheme.name.toLowerCase()
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                          onClick={() => handleSettingChange('colorScheme', scheme.name.toLowerCase())}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <div 
+                              className="w-4 h-4 rounded-full"
+                              style={{ backgroundColor: scheme.primary }}
+                            />
+                            <span className="text-sm font-medium">{scheme.name}</span>
+                          </div>
+                        </button>
+                      ))}
                     </div>
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Company Logo
-                      </label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Font Family
+                    </label>
+                    <Select
+                      value={templateSettings.fontFamily}
+                      onValueChange={(value) => handleSettingChange('fontFamily', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fontOptions.map((font) => (
+                          <SelectItem key={font.value} value={font.value}>
+                            {font.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Font Size
+                    </label>
+                    <Select
+                      value={templateSettings.fontSize}
+                      onValueChange={(value) => handleSettingChange('fontSize', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sizeOptions.map((size) => (
+                          <SelectItem key={size.value} value={size.value}>
+                            {size.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="branding" className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Company Logo
+                    </label>
+                    <div className="space-y-3">
                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                        <Image className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-600">Drop logo here or click to upload</p>
-                        <Button variant="outline" size="sm" className="mt-2" onClick={uploadLogo}>
+                        {templateSettings.companyLogo ? (
+                          <img 
+                            src={templateSettings.companyLogo} 
+                            alt="Company Logo" 
+                            className="mx-auto max-h-20 max-w-full object-contain"
+                          />
+                        ) : (
+                          <>
+                            <Image className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-600">Drop logo here or click to upload</p>
+                          </>
+                        )}
+                        <Button variant="outline" size="sm" className="mt-2" onClick={uploadLogo} disabled={loading}>
+                          {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                           Choose File
                         </Button>
                       </div>
@@ -625,373 +656,269 @@ const TemplateDesigner = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Logo Position
                       </label>
-                      <select
+                      <Select
                         value={templateSettings.logoPosition}
-                        onChange={(e) => handleSettingChange('logoPosition', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md"
+                        onValueChange={(value) => handleSettingChange('logoPosition', value)}
                       >
-                        {logoPositions.map(pos => (
-                          <option key={pos.value} value={pos.value}>{pos.label}</option>
-                        ))}
-                      </select>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="top-left">Top Left</SelectItem>
+                          <SelectItem value="top-center">Top Center</SelectItem>
+                          <SelectItem value="top-right">Top Right</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Logo Size
                       </label>
-                      <select
+                      <Select
                         value={templateSettings.logoSize}
-                        onChange={(e) => handleSettingChange('logoSize', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md"
+                        onValueChange={(value) => handleSettingChange('logoSize', value)}
                       >
-                        <option value="small">Small</option>
-                        <option value="medium">Medium</option>
-                        <option value="large">Large</option>
-                      </select>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="small">Small</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="large">Large</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </TabsContent>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Type className="w-5 h-5 mr-2" />
-                      Typography
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Font Family
-                      </label>
-                      <select
-                        value={templateSettings.fontFamily}
-                        onChange={(e) => handleSettingChange('fontFamily', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      >
-                        {fontFamilies.map(font => (
-                          <option key={font} value={font.toLowerCase()}>{font}</option>
-                        ))}
-                      </select>
+                <TabsContent value="layout" className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-gray-700">Show Header</label>
+                      <Switch
+                        checked={templateSettings.showHeader}
+                        onCheckedChange={(checked) => handleSettingChange('showHeader', checked)}
+                      />
                     </div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-gray-700">Show Footer</label>
+                      <Switch
+                        checked={templateSettings.showFooter}
+                        onCheckedChange={(checked) => handleSettingChange('showFooter', checked)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-gray-700">Show Border</label>
+                      <Switch
+                        checked={templateSettings.showBorder}
+                        onCheckedChange={(checked) => handleSettingChange('showBorder', checked)}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Font Size
-                      </label>
-                      <select
-                        value={templateSettings.fontSize}
-                        onChange={(e) => handleSettingChange('fontSize', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      >
-                        <option value="small">Small</option>
-                        <option value="medium">Medium</option>
-                        <option value="large">Large</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Header Background Color
-                      </label>
-                      <div className="flex space-x-2">
-                        <input
-                          type="color"
-                          value={templateSettings.headerBgColor}
-                          onChange={(e) => handleSettingChange('headerBgColor', e.target.value)}
-                          className="w-12 h-10 border border-gray-300 rounded"
-                        />
-                        <Input
-                          value={templateSettings.headerBgColor}
-                          onChange={(e) => handleSettingChange('headerBgColor', e.target.value)}
-                          className="flex-1"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Header Text Color
-                      </label>
-                      <div className="flex space-x-2">
-                        <input
-                          type="color"
-                          value={templateSettings.headerTextColor}
-                          onChange={(e) => handleSettingChange('headerTextColor', e.target.value)}
-                          className="w-12 h-10 border border-gray-300 rounded"
-                        />
-                        <Input
-                          value={templateSettings.headerTextColor}
-                          onChange={(e) => handleSettingChange('headerTextColor', e.target.value)}
-                          className="flex-1"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Body Text Color
-                      </label>
-                      <div className="flex space-x-2">
-                        <input
-                          type="color"
-                          value={templateSettings.bodyTextColor}
-                          onChange={(e) => handleSettingChange('bodyTextColor', e.target.value)}
-                          className="w-12 h-10 border border-gray-300 rounded"
-                        />
-                        <Input
-                          value={templateSettings.bodyTextColor}
-                          onChange={(e) => handleSettingChange('bodyTextColor', e.target.value)}
-                          className="flex-1"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+        {/* Middle Panel - Template Preview */}
+        <div className="lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Template Preview</CardTitle>
+                <div className="flex items-center space-x-1">
+                  <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextFormat('bold')} data-format="bold">
+                    <Bold className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextFormat('italic')} data-format="italic">
+                    <Italic className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextFormat('underline')} data-format="underline">
+                    <Underline className="w-4 h-4" />
+                  </Button>
+                  <div className="w-px h-4 bg-gray-300 mx-1" />
+                  <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextAlign('left')} data-align="left">
+                    <AlignLeft className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextAlign('center')} data-align="center">
+                    <AlignCenter className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextAlign('right')} data-align="right">
+                    <AlignRight className="w-4 h-4" />
+                  </Button>
+                  <div className="w-px h-4 bg-gray-300 mx-1" />
+                  <Button size="sm" variant="outline" className="p-2" onClick={handleUndo} disabled={templateSettings.historyIndex <= 0}>
+                    <Undo className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="outline" className="p-2" onClick={handleRedo} disabled={templateSettings.historyIndex >= templateSettings.history.length - 1}>
+                    <Redo className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-            </TabsContent>
-
-            <TabsContent value="layout">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Layout Options</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h3 className="font-medium">Header Section</h3>
-                      <div className="space-y-3">
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id="showCompanyAddress"
-                            checked={templateSettings.showCompanyAddress}
-                            onChange={(e) => handleSettingChange('showCompanyAddress', e.target.checked)}
-                            className="mr-2"
-                          />
-                          <label htmlFor="showCompanyAddress" className="text-sm">
-                            Show Company Address
-                          </label>
-                        </div>
-
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id="showPaymentTerms"
-                            checked={templateSettings.showPaymentTerms}
-                            onChange={(e) => handleSettingChange('showPaymentTerms', e.target.checked)}
-                            className="mr-2"
-                          />
-                          <label htmlFor="showPaymentTerms" className="text-sm">
-                            Show Payment Terms
-                          </label>
-                        </div>
-                      </div>
+            </CardHeader>
+            <CardContent>
+              <div 
+                className="min-h-96 bg-white border rounded-lg p-4 shadow-sm"
+                style={{
+                  fontFamily: templateSettings.fontFamily,
+                  fontSize: templateSettings.fontSize === 'small' ? '12px' : templateSettings.fontSize === 'large' ? '16px' : '14px',
+                  color: templateSettings.textColor,
+                  textAlign: templateSettings.textAlignment,
+                  borderColor: templateSettings.showBorder ? templateSettings.borderColor : 'transparent'
+                }}
+              >
+                {templateSettings.showHeader && (
+                  <div 
+                    className="mb-4 p-3 rounded"
+                    style={{ backgroundColor: templateSettings.headerColor }}
+                  >
+                    {templateSettings.companyLogo && (
+                      <img 
+                        src={templateSettings.companyLogo} 
+                        alt="Company Logo" 
+                        className={`${templateSettings.logoPosition === 'top-center' ? 'mx-auto' : templateSettings.logoPosition === 'top-right' ? 'ml-auto' : ''} ${templateSettings.logoSize === 'small' ? 'h-8' : templateSettings.logoSize === 'large' ? 'h-16' : 'h-12'}`}
+                      />
+                    )}
+                    <h2 className="text-lg font-bold" style={{ color: templateSettings.accentColor }}>
+                      {selectedTemplate.replace('_', ' ').toUpperCase()}
+                    </h2>
+                  </div>
+                )}
+                
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-medium mb-2">Invoice Information</h3>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>Invoice #: INV-001</div>
+                      <div>Date: {new Date().toLocaleDateString()}</div>
+                      <div>Due Date: {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</div>
+                      <div>Status: Draft</div>
                     </div>
-
-                    <div className="space-y-4">
-                      <h3 className="font-medium">Footer Section</h3>
-                      <div className="space-y-3">
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id="showNotes"
-                            checked={templateSettings.showNotes}
-                            onChange={(e) => handleSettingChange('showNotes', e.target.checked)}
-                            className="mr-2"
-                          />
-                          <label htmlFor="showNotes" className="text-sm">
-                            Show Notes Section
-                          </label>
-                        </div>
-
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id="showSignature"
-                            checked={templateSettings.showSignature}
-                            onChange={(e) => handleSettingChange('showSignature', e.target.checked)}
-                            className="mr-2"
-                          />
-                          <label htmlFor="showSignature" className="text-sm">
-                            Show Signature Line
-                          </label>
-                        </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-medium mb-2">Bill To</h3>
+                    <div className="text-sm">
+                      <div>Sample Customer</div>
+                      <div>123 Main Street</div>
+                      <div>City, State 12345</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-medium mb-2">Items</h3>
+                    <div className="text-sm">
+                      <div className="grid grid-cols-4 gap-2 font-medium border-b pb-1">
+                        <div>Description</div>
+                        <div>Qty</div>
+                        <div>Rate</div>
+                        <div>Amount</div>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 py-1">
+                        <div>Sample Item</div>
+                        <div>1</div>
+                        <div>$100.00</div>
+                        <div>$100.00</div>
                       </div>
                     </div>
                   </div>
-
-                  <div className="mt-6">
-                    <h3 className="font-medium mb-3">Text Formatting Toolbar</h3>
-                    <div className="flex space-x-2 p-2 border rounded-lg bg-gray-50">
-                      <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextFormat('bold')}>
-                        <Bold className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextFormat('italic')}>
-                        <Italic className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextFormat('underline')}>
-                        <Underline className="w-4 h-4" />
-                      </Button>
-                      <div className="border-l mx-2"></div>
-                      <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextAlign('left')}>
-                        <AlignLeft className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextAlign('center')}>
-                        <AlignCenter className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="p-2" onClick={() => handleTextAlign('right')}>
-                        <AlignRight className="w-4 h-4" />
-                      </Button>
-                      <div className="border-l mx-2"></div>
-                      <Button size="sm" variant="outline" className="p-2" onClick={handleUndo}>
-                        <Undo className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="p-2" onClick={handleRedo}>
-                        <Redo className="w-4 h-4" />
-                      </Button>
+                  
+                  <div className="border-t pt-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Subtotal:</span>
+                      <span>$100.00</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Tax:</span>
+                      <span>$8.00</span>
+                    </div>
+                    <div className="flex justify-between font-bold">
+                      <span>Total:</span>
+                      <span>$108.00</span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+                
+                {templateSettings.showFooter && (
+                  <div className="mt-4 pt-3 border-t text-xs text-gray-600">
+                    <p>Thank you for your business!</p>
+                    <p>Questions? Contact us at support@company.com</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-            <TabsContent value="fields">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Custom Fields</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {customFields.map(field => (
-                      <div key={field.id} className="border rounded-lg p-4">
-                        <div className="grid grid-cols-4 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Field Name
-                            </label>
-                            <Input
-                              value={field.name}
-                              onChange={(e) => updateCustomField(field.id, { name: e.target.value })}
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Type
-                            </label>
-                            <select
-                              value={field.type}
-                              onChange={(e) => updateCustomField(field.id, { type: e.target.value })}
-                              className="w-full p-2 border border-gray-300 rounded-md"
-                            >
-                              <option value="text">Text</option>
-                              <option value="textarea">Text Area</option>
-                              <option value="dropdown">Dropdown</option>
-                              <option value="checkbox">Checkbox</option>
-                              <option value="date">Date</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Position
-                            </label>
-                            <select
-                              value={field.position}
-                              onChange={(e) => updateCustomField(field.id, { position: e.target.value })}
-                              className="w-full p-2 border border-gray-300 rounded-md"
-                            >
-                              <option value="header">Header</option>
-                              <option value="line-item">Line Item</option>
-                              <option value="footer">Footer</option>
-                            </select>
-                          </div>
-
-                          <div className="flex items-end">
-                            <div className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                id={`required_${field.id}`}
-                                checked={field.required}
-                                onChange={(e) => updateCustomField(field.id, { required: e.target.checked })}
-                              />
-                              <label htmlFor={`required_${field.id}`} className="text-sm">
-                                Required
-                              </label>
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => deleteCustomField(field.id)}
-                              className="ml-2 text-red-600 hover:text-red-700"
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    <Button onClick={addCustomField} variant="outline" className="w-full">
-                      Add Custom Field
+        {/* Right Panel - Custom Fields and Actions */}
+        <div className="lg:col-span-1 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Custom Fields</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {customFields.map((field) => (
+                  <div key={field.id} className="flex items-center justify-between p-2 border rounded">
+                    <span className="text-sm">{field.name}</span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => deleteCustomField(field.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                ))}
+                
+                <Button onClick={addCustomField} variant="outline" className="w-full">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Custom Field
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-            <TabsContent value="content">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Content Settings</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Custom Message
-                    </label>
-                    <textarea
-                      value={templateSettings.customMessage}
-                      onChange={(e) => handleSettingChange('customMessage', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                      rows="3"
-                      placeholder="Enter a custom message for your documents..."
-                    />
-                  </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Template Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <Button onClick={duplicateTemplate} variant="outline" disabled={loading}>
+                    <Copy className="w-4 h-4 mr-2" />
+                    Duplicate
+                  </Button>
+                  <Button onClick={exportTemplate} variant="outline" disabled={loading}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
+                  <Button variant="outline" onClick={resetToDefault} disabled={loading}>
+                    <X className="w-4 h-4 mr-2" />
+                    Reset to Default
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Footer Text
-                    </label>
-                    <Input
-                      value={templateSettings.footerText}
-                      onChange={(e) => handleSettingChange('footerText', e.target.value)}
-                      placeholder="Thank you for your business!"
-                    />
-                  </div>
-
-                  <div className="pt-4 border-t">
-                    <h3 className="font-medium mb-3">Template Actions</h3>
-                    <div className="flex space-x-2">
-                      <Button onClick={duplicateTemplate} variant="outline">
-                        <Copy className="w-4 h-4 mr-2" />
-                        Duplicate
-                      </Button>
-                      <Button onClick={exportTemplate} variant="outline">
-                        <Download className="w-4 h-4 mr-2" />
-                        Export
-                      </Button>
-                      <Button variant="outline" onClick={resetToDefault}>
-                        Reset to Default
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+          {templateSettings.lastAction && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm space-y-1">
+                  <p><strong>Last Action:</strong> {templateSettings.lastAction}</p>
+                  <p><strong>Time:</strong> {templateSettings.lastActionTime ? new Date(templateSettings.lastActionTime).toLocaleString() : 'N/A'}</p>
+                  <p><strong>History:</strong> {templateSettings.history.length} changes</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
