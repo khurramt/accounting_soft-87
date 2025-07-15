@@ -57,7 +57,7 @@
     - "Inventory Center Component Integration - COMPLETED"
     - "PHASE 4 COMPLETE - ALL COMPONENTS INTEGRATED"
   stuck_tasks: 
-    - "None - All Phase 3 issues resolved successfully"
+    - "Dashboard Integration - Phase 2.1 - Company access timeout causing Recent Transactions and Outstanding Invoices APIs to fail"
   test_all: false
   test_priority: "high_first"
 ##
