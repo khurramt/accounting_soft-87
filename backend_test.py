@@ -6147,6 +6147,47 @@ if __name__ == "__main__":
         test_get_audit_summary()
         test_generate_audit_report()
         
+        # Communication APIs tests (Phase 5)
+        print("\n===== COMMUNICATION API TESTS =====")
+        
+        # Email Management tests
+        print("\n===== EMAIL MANAGEMENT API TESTS =====")
+        test_get_email_templates()
+        test_create_email_template()
+        test_send_email()
+        test_get_email_queue()
+        test_get_email_stats()
+        
+        # SMS Management tests
+        print("\n===== SMS MANAGEMENT API TESTS =====")
+        test_send_sms()
+        test_get_sms_queue()
+        test_get_sms_stats()
+        
+        # Webhooks tests
+        print("\n===== WEBHOOK API TESTS =====")
+        test_create_webhook()
+        test_get_webhooks()
+        test_webhook_test()
+        
+        # Notifications tests
+        print("\n===== NOTIFICATION API TESTS =====")
+        test_create_notification()
+        test_get_notifications()
+        test_get_notification_stats()
+        
+        # Notification Preferences tests
+        print("\n===== NOTIFICATION PREFERENCES API TESTS =====")
+        test_get_notification_preferences()
+        
+        # Purchase Order Management tests (Phase 5)
+        print("\n===== PURCHASE ORDER MANAGEMENT API TESTS =====")
+        test_create_purchase_order()
+        test_get_purchase_orders()
+        test_get_purchase_order_by_id()
+        test_update_purchase_order()
+        test_delete_purchase_order()
+        
         # Error handling tests
         test_transaction_error_handling()
     
