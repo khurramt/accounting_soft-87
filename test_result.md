@@ -49,13 +49,10 @@
 ##
 ## test_plan:
   current_focus:
-    - "Phase 4.1 Security & Audit Integration - COMPLETED"
-    - "Phase 4.2 Inventory Management Integration - COMPLETED"
-    - "User Management Component Integration - COMPLETED"
-    - "Access Control Component Integration - COMPLETED"
-    - "Activity Tracking Component Integration - COMPLETED"
-    - "Inventory Center Component Integration - COMPLETED"
-    - "PHASE 4 COMPLETE - ALL COMPONENTS INTEGRATED"
+    - "Dashboard Integration - Phase 2.1 - Fix company access timeout issue"
+    - "Recent Transactions API - Optimize TransactionService.verify_company_access()"
+    - "Outstanding Invoices API - Optimize company access verification"
+    - "BaseListService.verify_company_access() - Implement caching or optimization"
   stuck_tasks: 
     - "Dashboard Integration - Phase 2.1 - Company access timeout causing Recent Transactions and Outstanding Invoices APIs to fail"
   test_all: false
