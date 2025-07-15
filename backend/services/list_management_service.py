@@ -14,16 +14,33 @@ from schemas.list_management_schemas import (
 import uuid
 import structlog
 from datetime import datetime
+from typing import Dict, Tuple
+import time
 
 logger = structlog.get_logger()
 
 class BaseListService:
     """Base service class for list management operations"""
     
-    @staticmethod
-    async def verify_company_access(db: AsyncSession, user_id: str, company_id: str) -> bool:
-        """Verify user has access to company"""
+    # Class-level cache for company access verification
+    _company_access_cache: Dict[Tuple[str, str], Tuple[bool, float]] = {}
+    _cache_ttl = 300  # 5 minutes TTL for cache
+    
+    @classmethod
+    async def verify_company_access(cls, db: AsyncSession, user_id: str, company_id: str) -> bool:
+        """Verify user has access to company with caching"""
         try:
+            # Check cache first
+            cache_key = (user_id, company_id)
+            current_time = time.time()
+            
+            if cache_key in cls._company_access_cache:
+                cached_result, cached_time = cls._company_access_cache[cache_key]
+                if current_time - cached_time < cls._cache_ttl:
+                    logger.debug("Company access verification served from cache", user_id=user_id, company_id=company_id)
+                    return cached_result
+            
+            # Cache miss or expired, query database
             from models.user import CompanyMembership
             
             result = await db.execute(
@@ -36,7 +53,14 @@ class BaseListService:
                 )
             )
             membership = result.scalar_one_or_none()
-            return membership is not None
+            has_access = membership is not None
+            
+            # Cache the result
+            cls._company_access_cache[cache_key] = (has_access, current_time)
+            
+            logger.debug("Company access verification queried and cached", user_id=user_id, company_id=company_id, has_access=has_access)
+            return has_access
+            
         except Exception as e:
             logger.error("Error verifying company access", error=str(e), user_id=user_id, company_id=company_id)
             return False
