@@ -717,7 +717,7 @@
 
   - task: "Reports Integration - Phase 2.2"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/services/reportService.js, /app/frontend/src/components/reports/ProfitLossReport.js, /app/frontend/src/components/reports/BalanceSheetReport.js, /app/frontend/src/components/reports/CashFlowReport.js"
     stuck_count: 5
     priority: "high"
