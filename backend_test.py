@@ -5009,6 +5009,1013 @@ def test_transactions_api_with_recent_filter():
     except Exception as e:
         print(f"❌ Transactions API test failed: {str(e)}")
         return False
+
+# ===== COMMUNICATION API TESTS =====
+
+def test_get_email_templates():
+    """Test getting email templates"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get email templates test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get email templates...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/emails/templates", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if isinstance(data, list):
+                print(f"✅ Get email templates test passed (Found {len(data)} templates)")
+                return True
+            else:
+                print(f"❌ Get email templates test failed: Unexpected response format")
+                return False
+        else:
+            print(f"❌ Get email templates test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get email templates test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get email templates test failed: {str(e)}")
+        return False
+
+def test_create_email_template():
+    """Test creating an email template"""
+    global ACCESS_TOKEN, COMPANY_ID, EMAIL_TEMPLATE_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create email template test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing create email template...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        payload = {
+            "name": f"Test Template {timestamp}",
+            "category": "invoice",
+            "subject": "Test Email Subject",
+            "body": "Hello {{customer_name}}, your invoice is ready!",
+            "variables": {"customer_name": "Customer Name"},
+            "is_active": True
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/emails/templates", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 201:
+            if "template_id" in data:
+                EMAIL_TEMPLATE_ID = data["template_id"]
+                print(f"✅ Create email template test passed (ID: {EMAIL_TEMPLATE_ID})")
+                return True
+            else:
+                print(f"❌ Create email template test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Create email template test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Create email template test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Create email template test failed: {str(e)}")
+        return False
+
+def test_send_email():
+    """Test sending an email"""
+    global ACCESS_TOKEN, COMPANY_ID, EMAIL_TEMPLATE_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Send email test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing send email...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        payload = {
+            "to_email": "test@example.com",
+            "subject": "Test Email Subject",
+            "body": "Test email body content",
+            "priority": 1
+        }
+        
+        if EMAIL_TEMPLATE_ID:
+            payload["template_id"] = EMAIL_TEMPLATE_ID
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/emails/send", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 201:
+            if "email_id" in data:
+                print(f"✅ Send email test passed (ID: {data['email_id']})")
+                return True
+            else:
+                print(f"❌ Send email test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Send email test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Send email test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Send email test failed: {str(e)}")
+        return False
+
+def test_get_email_queue():
+    """Test getting email queue"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get email queue test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get email queue...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/emails/queue", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get email queue test passed (Found {data['total']} emails)")
+                return True
+            else:
+                print(f"❌ Get email queue test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get email queue test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get email queue test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get email queue test failed: {str(e)}")
+        return False
+
+def test_get_email_stats():
+    """Test getting email statistics"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get email stats test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get email stats...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/emails/stats", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "total_emails" in data:
+                print(f"✅ Get email stats test passed")
+                return True
+            else:
+                print(f"❌ Get email stats test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get email stats test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get email stats test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get email stats test failed: {str(e)}")
+        return False
+
+def test_send_sms():
+    """Test sending an SMS"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Send SMS test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing send SMS...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        payload = {
+            "to_phone": "+1234567890",
+            "message": "Test SMS message"
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/sms/send", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 201:
+            if "sms_id" in data:
+                print(f"✅ Send SMS test passed (ID: {data['sms_id']})")
+                return True
+            else:
+                print(f"❌ Send SMS test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Send SMS test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Send SMS test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Send SMS test failed: {str(e)}")
+        return False
+
+def test_get_sms_queue():
+    """Test getting SMS queue"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get SMS queue test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get SMS queue...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/sms/queue", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get SMS queue test passed (Found {data['total']} SMS messages)")
+                return True
+            else:
+                print(f"❌ Get SMS queue test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get SMS queue test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get SMS queue test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get SMS queue test failed: {str(e)}")
+        return False
+
+def test_get_sms_stats():
+    """Test getting SMS statistics"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get SMS stats test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get SMS stats...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/sms/stats", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "total_sms" in data:
+                print(f"✅ Get SMS stats test passed")
+                return True
+            else:
+                print(f"❌ Get SMS stats test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get SMS stats test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get SMS stats test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get SMS stats test failed: {str(e)}")
+        return False
+
+def test_create_webhook():
+    """Test creating a webhook"""
+    global ACCESS_TOKEN, COMPANY_ID, WEBHOOK_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create webhook test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing create webhook...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        payload = {
+            "name": f"Test Webhook {timestamp}",
+            "url": "https://example.com/webhook",
+            "events": ["invoice.created", "payment.received"],
+            "secret": "test-secret-key",
+            "is_active": True
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/webhooks/", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 201:
+            if "webhook_id" in data:
+                WEBHOOK_ID = data["webhook_id"]
+                print(f"✅ Create webhook test passed (ID: {WEBHOOK_ID})")
+                return True
+            else:
+                print(f"❌ Create webhook test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Create webhook test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Create webhook test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Create webhook test failed: {str(e)}")
+        return False
+
+def test_get_webhooks():
+    """Test getting webhooks"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get webhooks test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get webhooks...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/webhooks/", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if isinstance(data, list):
+                print(f"✅ Get webhooks test passed (Found {len(data)} webhooks)")
+                return True
+            else:
+                print(f"❌ Get webhooks test failed: Unexpected response format")
+                return False
+        else:
+            print(f"❌ Get webhooks test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get webhooks test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get webhooks test failed: {str(e)}")
+        return False
+
+def test_webhook_test():
+    """Test webhook test functionality"""
+    global ACCESS_TOKEN, COMPANY_ID, WEBHOOK_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not WEBHOOK_ID:
+        print("❌ Webhook test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing webhook test functionality: {WEBHOOK_ID}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        payload = {
+            "test_event": "invoice.created",
+            "test_data": {"invoice_id": "test-invoice-123"}
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/webhooks/{WEBHOOK_ID}/test", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "message" in data:
+                print(f"✅ Webhook test passed")
+                return True
+            else:
+                print(f"❌ Webhook test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Webhook test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Webhook test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Webhook test failed: {str(e)}")
+        return False
+
+def test_create_notification():
+    """Test creating a notification"""
+    global ACCESS_TOKEN, COMPANY_ID, NOTIFICATION_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Create notification test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing create notification...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        payload = {
+            "notification_type": "invoice_reminder",
+            "title": f"Test Notification {timestamp}",
+            "message": "This is a test notification message",
+            "priority": "normal",
+            "user_id": USER_ID
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/notifications/", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 201:
+            if "notification_id" in data:
+                NOTIFICATION_ID = data["notification_id"]
+                print(f"✅ Create notification test passed (ID: {NOTIFICATION_ID})")
+                return True
+            else:
+                print(f"❌ Create notification test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Create notification test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Create notification test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Create notification test failed: {str(e)}")
+        return False
+
+def test_get_notifications():
+    """Test getting notifications"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get notifications test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get notifications...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/notifications/", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get notifications test passed (Found {data['total']} notifications)")
+                return True
+            else:
+                print(f"❌ Get notifications test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get notifications test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get notifications test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get notifications test failed: {str(e)}")
+        return False
+
+def test_get_notification_stats():
+    """Test getting notification statistics"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get notification stats test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get notification stats...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/notifications/stats", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "total_notifications" in data:
+                print(f"✅ Get notification stats test passed")
+                return True
+            else:
+                print(f"❌ Get notification stats test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get notification stats test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get notification stats test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get notification stats test failed: {str(e)}")
+        return False
+
+def test_get_notification_preferences():
+    """Test getting notification preferences"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get notification preferences test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get notification preferences...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/notification-preferences/", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if isinstance(data, list):
+                print(f"✅ Get notification preferences test passed (Found {len(data)} preferences)")
+                return True
+            else:
+                print(f"❌ Get notification preferences test failed: Unexpected response format")
+                return False
+        else:
+            print(f"❌ Get notification preferences test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get notification preferences test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get notification preferences test failed: {str(e)}")
+        return False
+
+# ===== PURCHASE ORDER MANAGEMENT API TESTS =====
+
+def test_create_purchase_order():
+    """Test creating a purchase order"""
+    global ACCESS_TOKEN, COMPANY_ID, VENDOR_ID, PURCHASE_ORDER_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not VENDOR_ID:
+        print("❌ Create purchase order test skipped: Missing required data")
+        return False
+    
+    try:
+        print("\n🔍 Testing create purchase order...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        payload = {
+            "vendor_id": VENDOR_ID,
+            "po_date": date.today().isoformat(),
+            "expected_date": (date.today() + timedelta(days=7)).isoformat(),
+            "memo": f"Test Purchase Order {timestamp}",
+            "terms": "Net 30",
+            "status": "draft",
+            "line_items": [
+                {
+                    "item_description": "Test Item 1",
+                    "quantity": 10,
+                    "unit_cost": 25.00,
+                    "total_cost": 250.00
+                },
+                {
+                    "item_description": "Test Item 2",
+                    "quantity": 5,
+                    "unit_cost": 50.00,
+                    "total_cost": 250.00
+                }
+            ]
+        }
+        
+        response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/purchase-orders/", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 201:
+            if "po_id" in data:
+                PURCHASE_ORDER_ID = data["po_id"]
+                print(f"✅ Create purchase order test passed (ID: {PURCHASE_ORDER_ID})")
+                return True
+            else:
+                print(f"❌ Create purchase order test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Create purchase order test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Create purchase order test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Create purchase order test failed: {str(e)}")
+        return False
+
+def test_get_purchase_orders():
+    """Test getting purchase orders"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Get purchase orders test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing get purchase orders...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/purchase-orders/", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "items" in data and "total" in data:
+                print(f"✅ Get purchase orders test passed (Found {data['total']} purchase orders)")
+                return True
+            else:
+                print(f"❌ Get purchase orders test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get purchase orders test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get purchase orders test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get purchase orders test failed: {str(e)}")
+        return False
+
+def test_get_purchase_order_by_id():
+    """Test getting a purchase order by ID"""
+    global ACCESS_TOKEN, COMPANY_ID, PURCHASE_ORDER_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not PURCHASE_ORDER_ID:
+        print("❌ Get purchase order by ID test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing get purchase order by ID: {PURCHASE_ORDER_ID}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/purchase-orders/{PURCHASE_ORDER_ID}", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "po_id" in data and data["po_id"] == PURCHASE_ORDER_ID:
+                print(f"✅ Get purchase order by ID test passed")
+                return True
+            else:
+                print(f"❌ Get purchase order by ID test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get purchase order by ID test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get purchase order by ID test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get purchase order by ID test failed: {str(e)}")
+        return False
+
+def test_update_purchase_order():
+    """Test updating a purchase order"""
+    global ACCESS_TOKEN, COMPANY_ID, PURCHASE_ORDER_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not PURCHASE_ORDER_ID:
+        print("❌ Update purchase order test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing update purchase order: {PURCHASE_ORDER_ID}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        payload = {
+            "memo": f"Updated Purchase Order Memo {datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "terms": "Net 45"
+        }
+        
+        response = requests.put(
+            f"{API_URL}/companies/{COMPANY_ID}/purchase-orders/{PURCHASE_ORDER_ID}", 
+            headers=headers, 
+            json=payload,
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "po_id" in data and data["po_id"] == PURCHASE_ORDER_ID:
+                print(f"✅ Update purchase order test passed")
+                return True
+            else:
+                print(f"❌ Update purchase order test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Update purchase order test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Update purchase order test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Update purchase order test failed: {str(e)}")
+        return False
+
+def test_delete_purchase_order():
+    """Test deleting a purchase order"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Delete purchase order test skipped: Missing required data")
+        return False
+    
+    # Create a new purchase order to delete
+    try:
+        print("\n🔍 Testing delete purchase order...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # First create a purchase order to delete
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        create_payload = {
+            "vendor_id": VENDOR_ID,
+            "po_date": date.today().isoformat(),
+            "memo": f"Test PO to Delete {timestamp}",
+            "status": "draft",
+            "line_items": [
+                {
+                    "item_description": "Test Item",
+                    "quantity": 1,
+                    "unit_cost": 25.00,
+                    "total_cost": 25.00
+                }
+            ]
+        }
+        
+        create_response = requests.post(
+            f"{API_URL}/companies/{COMPANY_ID}/purchase-orders/", 
+            headers=headers, 
+            json=create_payload, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        
+        if create_response.status_code != 201:
+            print(f"❌ Failed to create purchase order for deletion test: {create_response.status_code}")
+            return False
+        
+        po_to_delete = create_response.json()["po_id"]
+        print(f"Created purchase order {po_to_delete} for deletion test")
+        
+        # Now delete the purchase order
+        delete_response = requests.delete(
+            f"{API_URL}/companies/{COMPANY_ID}/purchase-orders/{po_to_delete}", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            verify=False
+        )
+        print(f"Status Code: {delete_response.status_code}")
+        
+        try:
+            data = delete_response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {delete_response.text}")
+            return False
+        
+        if delete_response.status_code == 200:
+            if "message" in data and "deleted" in data["message"].lower():
+                print(f"✅ Delete purchase order test passed")
+                return True
+            else:
+                print(f"❌ Delete purchase order test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Delete purchase order test failed: Status code {delete_response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Delete purchase order test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Delete purchase order test failed: {str(e)}")
         return False
 
 if __name__ == "__main__":
