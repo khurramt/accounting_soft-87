@@ -108,15 +108,22 @@ export const CompanyProvider = ({ children }) => {
       
       const newCompany = await companyService.createCompany(companyData);
       
+      // Transform the new company data
+      const transformedCompany = {
+        ...newCompany,
+        id: newCompany.company_id || newCompany.id,
+        name: newCompany.company_name || newCompany.name
+      };
+      
       // Update local state
-      const updatedCompanies = [...companies, newCompany];
+      const updatedCompanies = [...companies, transformedCompany];
       setCompanies(updatedCompanies);
       localStorage.setItem("qb_companies", JSON.stringify(updatedCompanies));
       
       // Select the newly created company
-      selectCompany(newCompany);
+      selectCompany(transformedCompany);
       
-      return newCompany;
+      return transformedCompany;
     } catch (err) {
       console.error("Error creating company:", err);
       setError(err.message || "Failed to create company");
