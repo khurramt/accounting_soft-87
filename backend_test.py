@@ -31,7 +31,7 @@ API_URL = f"{BACKEND_URL}/api"
 print(f"Using API URL: {API_URL}")
 
 # Set a timeout for all requests
-TIMEOUT = 10  # seconds
+TIMEOUT = 30  # seconds - increased for company access timeout fix testing
 
 # Global variables to store auth tokens and IDs
 ACCESS_TOKEN = None
