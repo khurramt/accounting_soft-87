@@ -7169,7 +7169,7 @@ def test_recent_transactions_api():
         
         start_time = time.time()
         response = requests.get(
-            f"{API_URL}/companies/{COMPANY_ID}/transactions?recent=true", 
+            f"{API_URL}/companies/{COMPANY_ID}/transactions/?recent=true",  # Added trailing slash
             headers=headers, 
             timeout=15  # Increased timeout for this specific test
         )
@@ -7219,7 +7219,7 @@ def test_outstanding_invoices_api():
         
         start_time = time.time()
         response = requests.get(
-            f"{API_URL}/companies/{COMPANY_ID}/invoices?status=outstanding", 
+            f"{API_URL}/companies/{COMPANY_ID}/invoices/?status=outstanding",  # Added trailing slash
             headers=headers, 
             timeout=15  # Increased timeout for this specific test
         )
