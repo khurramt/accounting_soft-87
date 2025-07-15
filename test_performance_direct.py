@@ -14,7 +14,7 @@ def test_recent_transactions_performance_direct():
     print("=" * 80)
     
     # Test configuration
-    API_URL = "https://de694fe0-48e7-45ff-bdfe-85ee38465468.preview.emergentagent.com/api"
+    API_URL = "https://98d98d65-70d4-45d1-9cfd-2a58e3d10794.preview.emergentagent.com/api"
     COMPANY_ID = "5e7b5c9b-b5c3-4c9a-8e94-cd978db8b1d2"
     ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDM1NzgwMzktODIxYy00YThjLWI3YzktZTAwZTNhOGZkMjU2Iiwic2Vzc2lvbl9pZCI6IjIzMDk3ZWE3LWMwNjAtNGRmNi1hZmZmLTA1OWZlODM4MmM5ZSIsImV4cCI6MTc1MjYxNTM3MSwiaWF0IjoxNzUyNjE0NDcxLCJ0eXBlIjoiYWNjZXNzIn0.G2-OrsDFXbHbQbvDVU4nyt0-QbVfMtmXA0y0eS29M_E"
     
