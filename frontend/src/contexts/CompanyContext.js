@@ -91,7 +91,14 @@ export const CompanyProvider = ({ children }) => {
     if (user) {
       const storedCurrentCompany = localStorage.getItem("qb_current_company");
       if (storedCurrentCompany) {
-        setCurrentCompany(JSON.parse(storedCurrentCompany));
+        const parsedCompany = JSON.parse(storedCurrentCompany);
+        // Transform the stored company to ensure it has the correct structure
+        const transformedCompany = {
+          ...parsedCompany,
+          id: parsedCompany.company_id || parsedCompany.id,
+          name: parsedCompany.company_name || parsedCompany.name
+        };
+        setCurrentCompany(transformedCompany);
       }
     }
   }, [user, authLoading]);
