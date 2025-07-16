@@ -7347,6 +7347,75 @@ def test_cash_flow_report_phase2():
         print(f"❌ Cash Flow report test failed: {str(e)}")
         return False
 
+def main_bill_tracker():
+    """Main test function focused on Bill Tracker API endpoints"""
+    print("🚀 Starting Bill Tracker API Backend Tests")
+    print(f"Testing against: {API_URL}")
+    
+    # Track test results
+    test_results = []
+    
+    # Basic endpoint tests
+    test_results.append(("Root Endpoint", test_root_endpoint()))
+    test_results.append(("Health Endpoint", test_health_endpoint()))
+    
+    # Authentication tests
+    test_results.append(("Demo User Login", test_login_demo_user()))
+    test_results.append(("Get User Companies", test_get_user_companies()))
+    test_results.append(("Company Access", test_company_access()))
+    
+    # Get required data for bill tests
+    test_results.append(("Get Vendors", test_get_vendors()))
+    test_results.append(("Get Accounts", test_get_accounts()))
+    
+    print("\n" + "="*80)
+    print("🎯 BILL TRACKER API TESTS")
+    print("="*80)
+    
+    # Bill Tracker specific tests
+    test_results.append(("Bill Tracker API Comprehensive", test_bill_tracker_api_comprehensive()))
+    test_results.append(("Create Bill", test_create_bill()))
+    test_results.append(("Get Bills with Filtering", test_get_bills()))
+    test_results.append(("Get Bill by ID", test_get_bill_by_id()))
+    test_results.append(("Update Bill", test_update_bill()))
+    test_results.append(("Delete Bill", test_delete_bill()))
+    
+    # Print summary
+    print("\n" + "="*80)
+    print("📊 BILL TRACKER API TEST SUMMARY")
+    print("="*80)
+    
+    passed = 0
+    failed = 0
+    
+    for test_name, result in test_results:
+        status = "✅ PASSED" if result else "❌ FAILED"
+        print(f"{test_name:<40} {status}")
+        if result:
+            passed += 1
+        else:
+            failed += 1
+    
+    print("="*80)
+    print(f"Total Tests: {len(test_results)}")
+    print(f"Passed: {passed}")
+    print(f"Failed: {failed}")
+    print(f"Success Rate: {(passed/len(test_results)*100):.1f}%")
+    
+    # Bill-specific summary
+    bill_tests = test_results[7:]  # Bill-specific tests
+    bill_passed = sum(1 for _, result in bill_tests if result)
+    
+    print("\n📈 BILL TRACKER SPECIFIC RESULTS:")
+    print(f"Bill Tracker APIs: {bill_passed}/{len(bill_tests)} working")
+    
+    if failed == 0:
+        print("\n🎉 All Bill Tracker APIs are working!")
+        return True
+    else:
+        print(f"\n⚠️ {failed} test(s) failed in Bill Tracker API testing")
+        return False
+
 def main():
     """Main test function focused on Phase 2 Financial Reporting & Analytics"""
     print("🚀 Starting Phase 2 Financial Reporting & Analytics Backend API Tests")
