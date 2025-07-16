@@ -732,7 +732,7 @@ const ReportCenter = () => {
                             <p className="text-sm text-gray-600">{report.description}</p>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" onClick={() => handlePreviewReport(report.name)}>
                               <Eye className="w-4 h-4" />
                             </Button>
                             <Button size="sm" variant="outline">
