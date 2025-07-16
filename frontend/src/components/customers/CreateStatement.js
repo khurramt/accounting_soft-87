@@ -187,9 +187,11 @@ const CreateStatement = () => {
             {/* Statement Date */}
             <div className="space-y-2">
               <Label htmlFor="statementDate">Statement Date</Label>
-              <DatePicker
-                date={statementData.statementDate}
-                onDateChange={(date) => handleInputChange("statementDate", date)}
+              <Input
+                id="statementDate"
+                type="date"
+                value={statementData.statementDate.toISOString().split('T')[0]}
+                onChange={(e) => handleInputChange("statementDate", new Date(e.target.value))}
               />
             </div>
 
