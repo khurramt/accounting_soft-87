@@ -105,7 +105,7 @@ const CustomerCenter = () => {
     if (!currentCompany || !customerId) return;
     
     try {
-      const response = await customerService.getCustomerBalance(currentCompany.company_id, customerId);
+      const response = await customerService.getCustomerBalance(currentCompany.id, customerId);
       setCustomerBalance(response.balance || 0);
     } catch (err) {
       console.error("Error loading customer balance:", err);
