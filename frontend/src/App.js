@@ -18,6 +18,7 @@ import VendorCenter from "./components/vendors/VendorCenter";
 import EnterBills from "./components/vendors/EnterBills";
 import PayBills from "./components/vendors/PayBills";
 import WriteCheck from "./components/vendors/WriteCheck";
+import BillTracker from "./components/vendors/BillTracker";
 import ItemsList from "./components/items/ItemsList";
 import ChartOfAccounts from "./components/banking/ChartOfAccounts";
 import BankFeeds from "./components/banking/BankFeeds";
