@@ -690,7 +690,7 @@ const ReportCenter = () => {
                               </div>
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-2">
-                                  <Button size="sm" variant="outline" onClick={() => handlePreviewReport(report.name)}>
+                                  <Button size="sm" variant="outline" onClick={() => handlePreviewReport(report.name)} data-testid={`preview-button-${report.name}`}>
                                     <Eye className="w-4 h-4" />
                                   </Button>
                                   <Button size="sm" variant="outline" onClick={() => handleMemorizeReport(report.name)}>
