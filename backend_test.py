@@ -1505,7 +1505,7 @@ def test_bill_tracker_api_comprehensive():
         print("\n  5. Testing company access validation...")
         fake_company_id = "fake-company-id-12345"
         response_fake_company = requests.get(
-            f"{API_URL}/companies/{fake_company_id}/bills", 
+            f"{API_URL}/companies/{fake_company_id}/bills/", 
             headers=headers,
             timeout=TIMEOUT
         )
