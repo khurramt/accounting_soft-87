@@ -702,7 +702,7 @@ const ReportCenter = () => {
                                     <Calendar className="w-4 h-4 mr-1" />
                                     Schedule
                                   </Button>
-                                  <Button size="sm" onClick={() => handleRunReport(report.name, selectedCategory)}>
+                                  <Button size="sm" onClick={() => handleRunReport(report.name, selectedCategory)} data-testid={`run-button-${report.name}`}>
                                     <Play className="w-4 h-4 mr-1" />
                                     Run
                                   </Button>
