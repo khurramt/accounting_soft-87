@@ -13,6 +13,7 @@ import CreateInvoice from "./components/customers/CreateInvoice";
 import ReceivePayment from "./components/customers/ReceivePayment";
 import CreateSalesReceipt from "./components/customers/CreateSalesReceipt";
 import CreateStatement from "./components/customers/CreateStatement";
+import IncomeTracker from "./components/customers/IncomeTracker";
 import VendorCenter from "./components/vendors/VendorCenter";
 import EnterBills from "./components/vendors/EnterBills";
 import PayBills from "./components/vendors/PayBills";
