@@ -4,7 +4,7 @@ import axios from "axios";
 const AuthContext = createContext();
 
 // Get the backend URL from environment variables with HTTPS enforcement
-let API_URL = process.env.REACT_APP_BACKEND_URL || "https://960ee9ec-2a59-4d04-add6-370ea18fffbf.preview.emergentagent.com";
+let API_URL = process.env.REACT_APP_BACKEND_URL || "https://localhost:8001";
 
 // Force HTTPS if we're on a production domain or if environment variable is HTTPS
 const isProductionOrHTTPS = typeof window !== 'undefined' && 
@@ -14,9 +14,9 @@ if (isProductionOrHTTPS) {
   // Ensure the URL uses HTTPS
   API_URL = API_URL.replace('http:', 'https:');
   
-  // Additional safety check - if the URL somehow doesn't start with https, force it
-  if (!API_URL.startsWith('https:')) {
-    API_URL = 'https://960ee9ec-2a59-4d04-add6-370ea18fffbf.preview.emergentagent.com';
+  // Additional safety check - if no environment variable is set, use current domain
+  if (!process.env.REACT_APP_BACKEND_URL && typeof window !== 'undefined') {
+    API_URL = `${window.location.protocol}//${window.location.host}`;
   }
 }
 
