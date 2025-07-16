@@ -474,15 +474,18 @@
 
   - task: "Payroll Module"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/components/payroll/PayrollCenter.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
         - working: true
           agent: "main"
           comment: "Complete payroll center with employee management, payroll runs, liabilities, forms, and payroll summary"
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL ISSUE IDENTIFIED: Payroll Centre page (/payroll) is showing error messages and not functioning properly. Page loads with 817 characters of content but displays error state to users. This confirms user reports of non-working pages. The page is not blank but shows errors that prevent normal functionality. Authentication works correctly, but the component itself has issues that need immediate attention."
 
   - task: "Time Tracking Module"
     implemented: true
