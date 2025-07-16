@@ -7464,9 +7464,119 @@ def test_company_access_timeout_fix():
         print(f"\n⚠️ {failed} tests failed - Company Access timeout fix needs attention")
         return False
 
+def test_customer_api_endpoints():
+    """Test customer API endpoints specifically for Customer Center page diagnosis"""
+    print("\n" + "="*80)
+    print("🎯 TESTING CUSTOMER API ENDPOINTS FOR CUSTOMER CENTER DIAGNOSIS")
+    print("="*80)
+    print("Testing the specific endpoints that the Customer Center page is calling:")
+    print("1. Login with demo credentials (demo@quickbooks.com / Password123!)")
+    print("2. Get company access and ID")
+    print("3. Test GET /api/companies/{company_id}/customers endpoint")
+    print("4. Test GET /api/companies/{company_id}/customers/{customer_id}/transactions endpoint")
+    print("5. Test GET /api/companies/{company_id}/customers/{customer_id}/balance endpoint")
+    
+    # Test authentication flow first
+    test_results = []
+    
+    print("\n" + "-"*60)
+    print("STEP 1: Authentication Flow")
+    print("-"*60)
+    
+    test_results.append(("Demo User Login", test_login_demo_user()))
+    test_results.append(("Get User Companies", test_get_user_companies()))
+    test_results.append(("Company Access", test_company_access()))
+    
+    # Check if authentication was successful
+    auth_success = all(result for _, result in test_results[-3:])
+    if not auth_success:
+        print("❌ Authentication failed - cannot test customer endpoints")
+        return False
+    
+    print("\n" + "-"*60)
+    print("STEP 2: Customer API Endpoints Testing")
+    print("-"*60)
+    
+    # Test the specific customer endpoints
+    test_results.append(("GET /customers (Customer List)", test_get_customers()))
+    test_results.append(("GET /customers/{id}/transactions", test_get_customer_transactions()))
+    test_results.append(("GET /customers/{id}/balance", test_get_customer_balance()))
+    
+    # Summary
+    print("\n" + "="*80)
+    print("🎯 CUSTOMER API ENDPOINTS TEST RESULTS")
+    print("="*80)
+    
+    passed = 0
+    failed = 0
+    
+    for test_name, result in test_results:
+        if result:
+            print(f"✅ {test_name}: PASSED")
+            passed += 1
+        else:
+            print(f"❌ {test_name}: FAILED")
+            failed += 1
+    
+    print(f"\nTotal: {passed} passed, {failed} failed")
+    
+    # Specific analysis for Customer Center page
+    customer_endpoints = test_results[-3:]  # Last 3 tests are customer-specific
+    customer_passed = sum(1 for _, result in customer_endpoints if result)
+    
+    print("\n" + "-"*60)
+    print("CUSTOMER CENTER PAGE DIAGNOSIS:")
+    print("-"*60)
+    
+    if customer_passed == 3:
+        print("✅ All customer API endpoints are working correctly")
+        print("✅ The Customer Center page backend APIs are functional")
+        print("🔍 Issue might be in frontend component or data handling")
+    elif customer_passed == 0:
+        print("❌ All customer API endpoints are failing")
+        print("🔍 This explains why the Customer Center page shows error messages")
+        print("🔧 Backend customer API implementation needs attention")
+    else:
+        print(f"⚠️ {customer_passed}/3 customer API endpoints are working")
+        print("🔍 Partial functionality - some customer features may work")
+        print("🔧 Failed endpoints need to be fixed for full Customer Center functionality")
+    
+    # Detailed recommendations
+    print("\n" + "-"*60)
+    print("RECOMMENDATIONS:")
+    print("-"*60)
+    
+    if not test_results[3][1]:  # GET /customers failed
+        print("🔧 Fix GET /api/companies/{company_id}/customers endpoint")
+        print("   - This is the primary endpoint for loading customer list")
+        print("   - Customer Center page cannot display customers without this")
+    
+    if not test_results[4][1]:  # GET /customers/{id}/transactions failed
+        print("🔧 Fix GET /api/companies/{company_id}/customers/{customer_id}/transactions endpoint")
+        print("   - This affects customer transaction history display")
+        print("   - Customer details page will show incomplete information")
+    
+    if not test_results[5][1]:  # GET /customers/{id}/balance failed
+        print("🔧 Fix GET /api/companies/{company_id}/customers/{customer_id}/balance endpoint")
+        print("   - This affects customer balance display")
+        print("   - Customer financial information will be missing")
+    
+    if failed == 0:
+        print("\n🎉 ALL CUSTOMER API ENDPOINTS ARE WORKING!")
+        print("✅ Customer Center page backend is functional")
+        print("🔍 If Customer Center still shows errors, check frontend component")
+        return True
+    else:
+        print(f"\n⚠️ {failed} tests failed - Customer Center page issues identified")
+        print("🔧 Fix the failing endpoints to resolve Customer Center page errors")
+        return False
+
 if __name__ == "__main__":
+    # Run the specific customer API tests for Customer Center diagnosis
+    if len(sys.argv) > 1 and sys.argv[1] == "customer-center":
+        test_customer_api_endpoints()
     # Run the specific Company Access timeout fix test
-    if len(sys.argv) > 1 and sys.argv[1] == "company-access-fix":
+    elif len(sys.argv) > 1 and sys.argv[1] == "company-access-fix":
         test_company_access_timeout_fix()
     else:
         main()
