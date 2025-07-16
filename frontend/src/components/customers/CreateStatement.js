@@ -199,16 +199,20 @@ const CreateStatement = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="fromDate">From Date</Label>
-                <DatePicker
-                  date={statementData.fromDate}
-                  onDateChange={(date) => handleInputChange("fromDate", date)}
+                <Input
+                  id="fromDate"
+                  type="date"
+                  value={statementData.fromDate.toISOString().split('T')[0]}
+                  onChange={(e) => handleInputChange("fromDate", new Date(e.target.value))}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="toDate">To Date</Label>
-                <DatePicker
-                  date={statementData.toDate}
-                  onDateChange={(date) => handleInputChange("toDate", date)}
+                <Input
+                  id="toDate"
+                  type="date"
+                  value={statementData.toDate.toISOString().split('T')[0]}
+                  onChange={(e) => handleInputChange("toDate", new Date(e.target.value))}
                 />
               </div>
             </div>
