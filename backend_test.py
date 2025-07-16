@@ -1403,7 +1403,7 @@ def test_bill_tracker_api_comprehensive():
         # Test 1: GET /companies/{company_id}/bills - Basic endpoint test
         print("\n  1. Testing GET /companies/{company_id}/bills (basic)...")
         response = requests.get(
-            f"{API_URL}/companies/{COMPANY_ID}/bills", 
+            f"{API_URL}/companies/{COMPANY_ID}/bills/", 
             headers=headers, 
             timeout=TIMEOUT
         )
