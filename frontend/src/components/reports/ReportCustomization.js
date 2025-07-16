@@ -93,16 +93,36 @@ const ReportCustomization = () => {
     setIsGenerating(true);
     console.log('Generating report with settings:', reportSettings);
     
-    // Simulate report generation
-    setTimeout(() => {
-      setPreviewData({
-        generatedAt: new Date().toISOString(),
-        format: 'HTML',
-        pages: 1,
-        size: '142 KB'
-      });
-      setIsGenerating(false);
-    }, 2000);
+    // Navigate to the specific report page based on report name
+    const getReportRoute = (reportName) => {
+      switch (reportName) {
+        case 'Statement of Cash Flows':
+          return '/reports/cash-flow';
+        case 'Profit & Loss':
+          return '/reports/profit-loss';
+        case 'Balance Sheet':
+          return '/reports/balance-sheet';
+        default:
+          return '/reports';
+      }
+    };
+    
+    const reportRoute = getReportRoute(reportName);
+    
+    // Navigate to the report page with query parameters
+    const queryParams = new URLSearchParams({
+      report: reportName,
+      category: reportCategory,
+      dateRange: reportSettings.dateRange,
+      fromDate: reportSettings.fromDate,
+      toDate: reportSettings.toDate,
+      reportBasis: reportSettings.reportBasis,
+      columns: reportSettings.columns
+    });
+    
+    navigate(`${reportRoute}?${queryParams.toString()}`);
+    
+    setIsGenerating(false);
   };
 
   const handleSaveSettings = () => {
