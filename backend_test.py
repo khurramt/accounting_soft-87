@@ -243,6 +243,376 @@ def test_company_access():
         print(f"❌ Company access test failed: {str(e)}")
         return False
 
+# ===== COMPANY & FINANCIAL REPORTS API TESTS =====
+
+def test_company_financial_reports_comprehensive():
+    """Comprehensive test for Company & Financial Reports APIs as requested"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Company & Financial Reports test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing Company & Financial Reports APIs comprehensively...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test results tracking
+        test_results = []
+        
+        # Test 1: Profit & Loss Report API
+        print("\n  1. Testing Profit & Loss Report API...")
+        
+        # Test current month P&L
+        from datetime import date, timedelta
+        today = date.today()
+        start_of_month = today.replace(day=1)
+        
+        pl_params = {
+            "start_date": start_of_month.isoformat(),
+            "end_date": today.isoformat(),
+            "comparison_type": "none",
+            "include_subtotals": True,
+            "show_cents": True
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/profit-loss",
+            headers=headers,
+            params=pl_params,
+            timeout=TIMEOUT
+        )
+        print(f"     Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            required_fields = ["report_name", "company_name", "sections", "grand_total", "currency"]
+            if all(field in data for field in required_fields):
+                print(f"     ✅ Profit & Loss Report: All required fields present")
+                print(f"     Report: {data.get('report_name', 'N/A')} for {data.get('company_name', 'N/A')}")
+                print(f"     Grand Total: {data.get('grand_total', 0)} {data.get('currency', 'USD')}")
+                test_results.append(("Profit & Loss Report", True))
+            else:
+                print(f"     ❌ Profit & Loss Report: Missing required fields")
+                print(f"     Available fields: {list(data.keys())}")
+                test_results.append(("Profit & Loss Report", False))
+        else:
+            print(f"     ❌ Profit & Loss Report failed: Status code {response.status_code}")
+            try:
+                error_data = response.json()
+                print(f"     Error: {pretty_print_json(error_data)}")
+            except:
+                print(f"     Error: {response.text}")
+            test_results.append(("Profit & Loss Report", False))
+        
+        # Test 2: Balance Sheet Report API
+        print("\n  2. Testing Balance Sheet Report API...")
+        
+        bs_params = {
+            "as_of_date": today.isoformat(),
+            "include_subtotals": True,
+            "show_cents": True
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/balance-sheet",
+            headers=headers,
+            params=bs_params,
+            timeout=TIMEOUT
+        )
+        print(f"     Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            required_fields = ["report_name", "company_name", "sections", "grand_total", "currency"]
+            if all(field in data for field in required_fields):
+                print(f"     ✅ Balance Sheet Report: All required fields present")
+                print(f"     Report: {data.get('report_name', 'N/A')} for {data.get('company_name', 'N/A')}")
+                print(f"     Grand Total: {data.get('grand_total', 0)} {data.get('currency', 'USD')}")
+                test_results.append(("Balance Sheet Report", True))
+            else:
+                print(f"     ❌ Balance Sheet Report: Missing required fields")
+                print(f"     Available fields: {list(data.keys())}")
+                test_results.append(("Balance Sheet Report", False))
+        else:
+            print(f"     ❌ Balance Sheet Report failed: Status code {response.status_code}")
+            try:
+                error_data = response.json()
+                print(f"     Error: {pretty_print_json(error_data)}")
+            except:
+                print(f"     Error: {response.text}")
+            test_results.append(("Balance Sheet Report", False))
+        
+        # Test 3: Cash Flow Report API (Multiple scenarios)
+        print("\n  3. Testing Cash Flow Report API...")
+        
+        # Test 3a: Current Month Cash Flow (Indirect Method)
+        cf_params_indirect = {
+            "start_date": start_of_month.isoformat(),
+            "end_date": today.isoformat(),
+            "method": "indirect",
+            "include_subtotals": True,
+            "show_cents": True
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/cash-flow",
+            headers=headers,
+            params=cf_params_indirect,
+            timeout=TIMEOUT
+        )
+        print(f"     Status Code (Indirect): {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            required_fields = ["report_name", "company_name", "sections", "grand_total", "currency"]
+            if all(field in data for field in required_fields):
+                print(f"     ✅ Cash Flow Report (Indirect): All required fields present")
+                print(f"     Report: {data.get('report_name', 'N/A')} for {data.get('company_name', 'N/A')}")
+                print(f"     Grand Total: {data.get('grand_total', 0)} {data.get('currency', 'USD')}")
+                test_results.append(("Cash Flow Report (Indirect)", True))
+            else:
+                print(f"     ❌ Cash Flow Report (Indirect): Missing required fields")
+                test_results.append(("Cash Flow Report (Indirect)", False))
+        else:
+            print(f"     ❌ Cash Flow Report (Indirect) failed: Status code {response.status_code}")
+            test_results.append(("Cash Flow Report (Indirect)", False))
+        
+        # Test 3b: Current Month Cash Flow (Direct Method)
+        cf_params_direct = {
+            "start_date": start_of_month.isoformat(),
+            "end_date": today.isoformat(),
+            "method": "direct",
+            "include_subtotals": True,
+            "show_cents": True
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/cash-flow",
+            headers=headers,
+            params=cf_params_direct,
+            timeout=TIMEOUT
+        )
+        print(f"     Status Code (Direct): {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            required_fields = ["report_name", "company_name", "sections", "grand_total", "currency"]
+            if all(field in data for field in required_fields):
+                print(f"     ✅ Cash Flow Report (Direct): All required fields present")
+                test_results.append(("Cash Flow Report (Direct)", True))
+            else:
+                print(f"     ❌ Cash Flow Report (Direct): Missing required fields")
+                test_results.append(("Cash Flow Report (Direct)", False))
+        else:
+            print(f"     ❌ Cash Flow Report (Direct) failed: Status code {response.status_code}")
+            test_results.append(("Cash Flow Report (Direct)", False))
+        
+        # Test 4: Trial Balance Report API
+        print("\n  4. Testing Trial Balance Report API...")
+        
+        tb_params = {
+            "as_of_date": today.isoformat(),
+            "include_zero_balances": False,
+            "show_cents": True
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/trial-balance",
+            headers=headers,
+            params=tb_params,
+            timeout=TIMEOUT
+        )
+        print(f"     Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            required_fields = ["report_name", "company_name", "sections", "grand_total", "currency"]
+            if all(field in data for field in required_fields):
+                print(f"     ✅ Trial Balance Report: All required fields present")
+                test_results.append(("Trial Balance Report", True))
+            else:
+                print(f"     ❌ Trial Balance Report: Missing required fields")
+                test_results.append(("Trial Balance Report", False))
+        else:
+            print(f"     ❌ Trial Balance Report failed: Status code {response.status_code}")
+            test_results.append(("Trial Balance Report", False))
+        
+        # Test 5: AR Aging Report API
+        print("\n  5. Testing AR Aging Report API...")
+        
+        ar_params = {
+            "as_of_date": today.isoformat(),
+            "aging_periods": [30, 60, 90, 120],
+            "include_zero_balances": False
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/ar-aging",
+            headers=headers,
+            params=ar_params,
+            timeout=TIMEOUT
+        )
+        print(f"     Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            required_fields = ["report_name", "company_name", "sections", "grand_total", "currency"]
+            if all(field in data for field in required_fields):
+                print(f"     ✅ AR Aging Report: All required fields present")
+                test_results.append(("AR Aging Report", True))
+            else:
+                print(f"     ❌ AR Aging Report: Missing required fields")
+                test_results.append(("AR Aging Report", False))
+        else:
+            print(f"     ❌ AR Aging Report failed: Status code {response.status_code}")
+            test_results.append(("AR Aging Report", False))
+        
+        # Test 6: AP Aging Report API
+        print("\n  6. Testing AP Aging Report API...")
+        
+        ap_params = {
+            "as_of_date": today.isoformat(),
+            "aging_periods": [30, 60, 90, 120],
+            "include_zero_balances": False
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/ap-aging",
+            headers=headers,
+            params=ap_params,
+            timeout=TIMEOUT
+        )
+        print(f"     Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            required_fields = ["report_name", "company_name", "sections", "grand_total", "currency"]
+            if all(field in data for field in required_fields):
+                print(f"     ✅ AP Aging Report: All required fields present")
+                test_results.append(("AP Aging Report", True))
+            else:
+                print(f"     ❌ AP Aging Report: Missing required fields")
+                test_results.append(("AP Aging Report", False))
+        else:
+            print(f"     ❌ AP Aging Report failed: Status code {response.status_code}")
+            test_results.append(("AP Aging Report", False))
+        
+        # Test 7: Dashboard Summary API
+        print("\n  7. Testing Dashboard Summary API...")
+        
+        dashboard_params = {
+            "date_range": "this-month"
+        }
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/dashboard",
+            headers=headers,
+            params=dashboard_params,
+            timeout=TIMEOUT
+        )
+        print(f"     Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            required_fields = ["date_range", "stats", "recent_transactions", "accounts_receivable"]
+            if all(field in data for field in required_fields):
+                print(f"     ✅ Dashboard Summary: All required fields present")
+                print(f"     Date Range: {data.get('date_range', 'N/A')}")
+                stats = data.get('stats', {})
+                print(f"     Total Income: ${stats.get('total_income', {}).get('value', 0)}")
+                print(f"     Total Expenses: ${stats.get('total_expenses', {}).get('value', 0)}")
+                print(f"     Net Income: ${stats.get('net_income', {}).get('value', 0)}")
+                test_results.append(("Dashboard Summary", True))
+            else:
+                print(f"     ❌ Dashboard Summary: Missing required fields")
+                test_results.append(("Dashboard Summary", False))
+        else:
+            print(f"     ❌ Dashboard Summary failed: Status code {response.status_code}")
+            test_results.append(("Dashboard Summary", False))
+        
+        # Test 8: Authentication & Authorization Tests
+        print("\n  8. Testing Authentication & Authorization...")
+        
+        # Test without authentication
+        response_no_auth = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/profit-loss",
+            params=pl_params,
+            timeout=TIMEOUT
+        )
+        
+        if response_no_auth.status_code in [401, 403]:
+            print(f"     ✅ Authentication properly required (Status: {response_no_auth.status_code})")
+            test_results.append(("Authentication Required", True))
+        else:
+            print(f"     ❌ Authentication not properly enforced (Status: {response_no_auth.status_code})")
+            test_results.append(("Authentication Required", False))
+        
+        # Test with invalid company ID
+        fake_company_id = "fake-company-id-12345"
+        response_fake_company = requests.get(
+            f"{API_URL}/companies/{fake_company_id}/reports/profit-loss",
+            headers=headers,
+            params=pl_params,
+            timeout=TIMEOUT
+        )
+        
+        if response_fake_company.status_code == 403:
+            print(f"     ✅ Company access validation working (Status: {response_fake_company.status_code})")
+            test_results.append(("Company Access Validation", True))
+        else:
+            print(f"     ❌ Company access validation failed (Status: {response_fake_company.status_code})")
+            test_results.append(("Company Access Validation", False))
+        
+        # Test 9: Parameter Validation Tests
+        print("\n  9. Testing Parameter Validation...")
+        
+        # Test missing required parameters for P&L
+        response_missing_params = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/profit-loss",
+            headers=headers,
+            timeout=TIMEOUT
+        )
+        
+        if response_missing_params.status_code == 422:
+            print(f"     ✅ Parameter validation working (Status: {response_missing_params.status_code})")
+            test_results.append(("Parameter Validation", True))
+        else:
+            print(f"     ❌ Parameter validation failed (Status: {response_missing_params.status_code})")
+            test_results.append(("Parameter Validation", False))
+        
+        # Calculate final results
+        passed_tests = sum(1 for _, result in test_results if result)
+        total_tests = len(test_results)
+        success_rate = (passed_tests / total_tests) * 100
+        
+        print(f"\n  📊 Company & Financial Reports API Test Summary:")
+        print(f"     Total Tests: {total_tests}")
+        print(f"     Passed: {passed_tests}")
+        print(f"     Failed: {total_tests - passed_tests}")
+        print(f"     Success Rate: {success_rate:.1f}%")
+        
+        # Print individual test results
+        print(f"\n  📋 Individual Test Results:")
+        for test_name, result in test_results:
+            status = "✅" if result else "❌"
+            print(f"     {status} {test_name}")
+        
+        # Return overall success (all tests must pass)
+        if passed_tests == total_tests:
+            print("✅ Company & Financial Reports API comprehensive test PASSED")
+            return True
+        else:
+            print("❌ Company & Financial Reports API comprehensive test FAILED")
+            return False
+            
+    except requests.exceptions.Timeout:
+        print(f"❌ Company & Financial Reports test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Company & Financial Reports test failed: {str(e)}")
+        return False
+
 # ===== CUSTOMER TESTS =====
 
 def test_customer_center_trailing_slash_fix():
