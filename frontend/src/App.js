@@ -144,6 +144,7 @@ const AppRouter = () => {
         <Route path="vendors/bills/new" element={<EnterBills />} />
         <Route path="vendors/bills/pay" element={<PayBills />} />
         <Route path="vendors/checks/new" element={<WriteCheck />} />
+        <Route path="vendors/bill-tracker" element={<BillTracker />} />
         
         {/* Items & Inventory */}
         <Route path="items" element={<ItemsList />} />
