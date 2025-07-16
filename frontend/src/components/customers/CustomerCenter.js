@@ -168,7 +168,7 @@ const CustomerCenter = () => {
     
     if (window.confirm(`Are you sure you want to delete ${selectedCustomer.customer_name}?`)) {
       try {
-        await customerService.deleteCustomer(currentCompany.company_id, selectedCustomer.customer_id);
+        await customerService.deleteCustomer(currentCompany.id, selectedCustomer.customer_id);
         await loadCustomers(); // Reload customers list
         setSelectedCustomer(customers.length > 1 ? customers[0] : null);
       } catch (err) {
