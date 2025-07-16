@@ -1491,7 +1491,7 @@ def test_bill_tracker_api_comprehensive():
         # Test 4: Test authentication requirements
         print("\n  4. Testing authentication requirements...")
         response_no_auth = requests.get(
-            f"{API_URL}/companies/{COMPANY_ID}/bills", 
+            f"{API_URL}/companies/{COMPANY_ID}/bills/", 
             timeout=TIMEOUT
         )
         
