@@ -1452,7 +1452,7 @@ def test_bill_tracker_api_comprehensive():
                 
             print(f"     Testing {filter_test['name']}...")
             response = requests.get(
-                f"{API_URL}/companies/{COMPANY_ID}/bills", 
+                f"{API_URL}/companies/{COMPANY_ID}/bills/", 
                 headers=headers, 
                 params=filter_test["params"],
                 timeout=TIMEOUT
