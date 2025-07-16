@@ -738,7 +738,7 @@ const ReportCenter = () => {
                             <Button size="sm" variant="outline">
                               <Calendar className="w-4 h-4" />
                             </Button>
-                            <Button size="sm" onClick={() => handleRunReport(report.name, selectedCategory)}>
+                            <Button size="sm" onClick={() => handleRunReport(report.name, selectedCategory)} data-testid={`run-button-${report.name}`}>
                               Run Report
                             </Button>
                           </div>
