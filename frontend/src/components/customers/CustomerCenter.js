@@ -90,7 +90,7 @@ const CustomerCenter = () => {
     
     try {
       setLoadingTransactions(true);
-      const response = await customerService.getCustomerTransactions(currentCompany.company_id, customerId);
+      const response = await customerService.getCustomerTransactions(currentCompany.id, customerId);
       setCustomerTransactions(response.transactions || []);
     } catch (err) {
       console.error("Error loading customer transactions:", err);
