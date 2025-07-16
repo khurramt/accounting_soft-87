@@ -62,7 +62,7 @@ const CustomerCenter = () => {
         ...filters
       };
 
-      const response = await customerService.getCustomers(currentCompany.company_id, filterParams);
+      const response = await customerService.getCustomers(currentCompany.id, filterParams);
       
       setCustomers(response.items || []);
       setPagination({
