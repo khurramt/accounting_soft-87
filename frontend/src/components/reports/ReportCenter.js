@@ -517,6 +517,26 @@ const ReportCenter = () => {
     navigate(`/reports/customize?report=${encodeURIComponent(reportName)}&category=${encodeURIComponent(reportCategory)}`);
   };
 
+  const handlePreviewReport = (reportName) => {
+    console.log("Previewing report:", reportName);
+    // Navigate directly to specific report pages for available reports
+    const getReportRoute = (reportName) => {
+      switch (reportName) {
+        case 'Statement of Cash Flows':
+          return '/reports/cash-flow';
+        case 'Profit & Loss':
+          return '/reports/profit-loss';
+        case 'Balance Sheet':
+          return '/reports/balance-sheet';
+        default:
+          return `/reports/customize?report=${encodeURIComponent(reportName)}&category=Company & Financial`;
+      }
+    };
+    
+    const reportRoute = getReportRoute(reportName);
+    navigate(reportRoute);
+  };
+
   const handleScheduleReport = (reportName) => {
     console.log("Scheduling report:", reportName);
     // Open scheduling dialog
