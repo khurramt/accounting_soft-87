@@ -49,12 +49,13 @@
 ##
 ## test_plan:
   current_focus:
-    - "Dashboard Integration - Phase 2.1 - Fix company access timeout issue"
-    - "Recent Transactions API - Optimize TransactionService.verify_company_access()"
-    - "Outstanding Invoices API - Optimize company access verification"
-    - "BaseListService.verify_company_access() - Implement caching or optimization"
+    - "Customer Center Module - Fix error state preventing normal functionality"
+    - "Chart of Accounts Module - Fix error state preventing normal functionality"
+    - "Payroll Module - Fix error state preventing normal functionality"
   stuck_tasks: 
-    - "Dashboard Integration - Phase 2.1 - Company access timeout causing Recent Transactions and Outstanding Invoices APIs to fail"
+    - "Customer Center Module - Shows error messages instead of working interface"
+    - "Chart of Accounts Module - Shows error messages instead of working interface"
+    - "Payroll Module - Shows error messages instead of working interface"
   test_all: false
   test_priority: "high_first"
 ##
