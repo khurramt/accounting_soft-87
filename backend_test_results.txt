@@ -1,4 +1,4 @@
-Using API URL: https://0a7f83f1-f423-4ff7-9913-854eb5c58d4c.preview.emergentagent.com/api
+Using API URL: https://f74dcb5f-b780-43c0-ba64-4a0872cb24fa.preview.emergentagent.com/api
 
 🔍 Starting QuickBooks Clone API tests...
 🕒 Test time: 2025-07-15 00:03:44
