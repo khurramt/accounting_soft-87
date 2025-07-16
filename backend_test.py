@@ -7529,6 +7529,274 @@ def main_bill_tracker():
         print(f"\n⚠️ {failed} test(s) failed in Bill Tracker API testing")
         return False
 
+def test_cash_flow_reports_api():
+    """Comprehensive test for Cash Flow Reports API specifically"""
+    global ACCESS_TOKEN, COMPANY_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Cash Flow Reports API test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 TESTING CASH FLOW REPORTS API COMPREHENSIVELY...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test parameters for different scenarios
+        from datetime import date, timedelta
+        
+        today = date.today()
+        current_month_start = today.replace(day=1)
+        last_month_end = current_month_start - timedelta(days=1)
+        last_month_start = last_month_end.replace(day=1)
+        current_year_start = date(today.year, 1, 1)
+        
+        test_scenarios = [
+            {
+                "name": "Current Month - Indirect Method",
+                "params": {
+                    "start_date": current_month_start.isoformat(),
+                    "end_date": today.isoformat(),
+                    "method": "indirect",
+                    "include_subtotals": True,
+                    "show_cents": True
+                }
+            },
+            {
+                "name": "Current Month - Direct Method", 
+                "params": {
+                    "start_date": current_month_start.isoformat(),
+                    "end_date": today.isoformat(),
+                    "method": "direct",
+                    "include_subtotals": True,
+                    "show_cents": True
+                }
+            },
+            {
+                "name": "Last Month - Indirect Method",
+                "params": {
+                    "start_date": last_month_start.isoformat(),
+                    "end_date": last_month_end.isoformat(),
+                    "method": "indirect",
+                    "include_subtotals": False,
+                    "show_cents": False
+                }
+            },
+            {
+                "name": "Current Year - Indirect Method",
+                "params": {
+                    "start_date": current_year_start.isoformat(),
+                    "end_date": today.isoformat(),
+                    "method": "indirect",
+                    "include_subtotals": True,
+                    "show_cents": True
+                }
+            },
+            {
+                "name": "30-day Period - Direct Method",
+                "params": {
+                    "start_date": (today - timedelta(days=30)).isoformat(),
+                    "end_date": today.isoformat(),
+                    "method": "direct",
+                    "include_subtotals": True,
+                    "show_cents": True
+                }
+            }
+        ]
+        
+        success_count = 0
+        total_tests = len(test_scenarios)
+        
+        for i, scenario in enumerate(test_scenarios, 1):
+            print(f"\n  {i}. Testing {scenario['name']}...")
+            
+            try:
+                response = requests.get(
+                    f"{API_URL}/companies/{COMPANY_ID}/reports/cash-flow",
+                    headers=headers,
+                    params=scenario["params"],
+                    timeout=TIMEOUT
+                )
+                
+                print(f"     Status Code: {response.status_code}")
+                
+                if response.status_code == 200:
+                    try:
+                        data = response.json()
+                        
+                        # Validate response structure
+                        required_fields = ["report_name", "company_name", "sections", "grand_total", "currency"]
+                        missing_fields = [field for field in required_fields if field not in data]
+                        
+                        if missing_fields:
+                            print(f"     ❌ Missing required fields: {missing_fields}")
+                            continue
+                        
+                        # Validate sections structure
+                        if not isinstance(data["sections"], list):
+                            print(f"     ❌ Sections should be a list, got: {type(data['sections'])}")
+                            continue
+                        
+                        # Check for expected cash flow sections
+                        section_names = [section.get("section_name", "") for section in data["sections"]]
+                        expected_sections = ["Operating Activities", "Investing Activities", "Financing Activities"]
+                        
+                        found_sections = []
+                        for expected in expected_sections:
+                            if any(expected.lower() in name.lower() for name in section_names):
+                                found_sections.append(expected)
+                        
+                        print(f"     ✅ Report Name: {data['report_name']}")
+                        print(f"     ✅ Company: {data['company_name']}")
+                        print(f"     ✅ Method: {scenario['params']['method']}")
+                        print(f"     ✅ Date Range: {scenario['params']['start_date']} to {scenario['params']['end_date']}")
+                        print(f"     ✅ Sections Found: {len(data['sections'])} ({', '.join(found_sections)})")
+                        print(f"     ✅ Grand Total: {data['grand_total']} {data['currency']}")
+                        
+                        # Validate each section has required structure
+                        for section in data["sections"]:
+                            if "section_name" not in section or "items" not in section or "section_total" not in section:
+                                print(f"     ⚠️ Section missing required fields: {section.get('section_name', 'Unknown')}")
+                            else:
+                                print(f"       - {section['section_name']}: {len(section['items'])} items, Total: {section['section_total']}")
+                        
+                        success_count += 1
+                        print(f"     ✅ {scenario['name']} test PASSED")
+                        
+                    except json.JSONDecodeError:
+                        print(f"     ❌ Invalid JSON response")
+                        print(f"     Response: {response.text[:500]}...")
+                        
+                elif response.status_code == 403:
+                    print(f"     ❌ 403 Forbidden - Authentication/Authorization issue")
+                    try:
+                        error_data = response.json()
+                        print(f"     Error: {error_data}")
+                    except:
+                        print(f"     Error response: {response.text}")
+                        
+                elif response.status_code == 422:
+                    print(f"     ❌ 422 Validation Error - Invalid parameters")
+                    try:
+                        error_data = response.json()
+                        print(f"     Validation errors: {error_data}")
+                    except:
+                        print(f"     Error response: {response.text}")
+                        
+                else:
+                    print(f"     ❌ Unexpected status code: {response.status_code}")
+                    try:
+                        error_data = response.json()
+                        print(f"     Error response: {pretty_print_json(error_data)}")
+                    except:
+                        print(f"     Error response: {response.text}")
+                
+            except requests.exceptions.Timeout:
+                print(f"     ❌ Request timed out after {TIMEOUT} seconds")
+            except Exception as e:
+                print(f"     ❌ Request failed: {str(e)}")
+        
+        # Test error conditions
+        print(f"\n  {total_tests + 1}. Testing error conditions...")
+        
+        # Test missing required parameters
+        print("     Testing missing start_date...")
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/cash-flow",
+            headers=headers,
+            params={"end_date": today.isoformat(), "method": "indirect"},
+            timeout=TIMEOUT
+        )
+        if response.status_code == 422:
+            print("     ✅ Correctly returns 422 for missing start_date")
+        else:
+            print(f"     ❌ Expected 422 for missing start_date, got {response.status_code}")
+        
+        # Test missing end_date
+        print("     Testing missing end_date...")
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/cash-flow",
+            headers=headers,
+            params={"start_date": current_month_start.isoformat(), "method": "indirect"},
+            timeout=TIMEOUT
+        )
+        if response.status_code == 422:
+            print("     ✅ Correctly returns 422 for missing end_date")
+        else:
+            print(f"     ❌ Expected 422 for missing end_date, got {response.status_code}")
+        
+        # Test invalid method
+        print("     Testing invalid method...")
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/cash-flow",
+            headers=headers,
+            params={
+                "start_date": current_month_start.isoformat(),
+                "end_date": today.isoformat(),
+                "method": "invalid_method"
+            },
+            timeout=TIMEOUT
+        )
+        if response.status_code in [400, 422]:
+            print("     ✅ Correctly handles invalid method parameter")
+        else:
+            print(f"     ⚠️ Invalid method returned status {response.status_code} (may be handled gracefully)")
+        
+        # Test authentication requirement
+        print("     Testing authentication requirement...")
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/reports/cash-flow",
+            params={
+                "start_date": current_month_start.isoformat(),
+                "end_date": today.isoformat(),
+                "method": "indirect"
+            },
+            timeout=TIMEOUT
+        )
+        if response.status_code in [401, 403]:
+            print("     ✅ Correctly requires authentication")
+        else:
+            print(f"     ❌ Authentication not properly enforced (Status: {response.status_code})")
+        
+        # Test invalid company access
+        print("     Testing invalid company access...")
+        fake_company_id = "fake-company-id-12345"
+        response = requests.get(
+            f"{API_URL}/companies/{fake_company_id}/reports/cash-flow",
+            headers=headers,
+            params={
+                "start_date": current_month_start.isoformat(),
+                "end_date": today.isoformat(),
+                "method": "indirect"
+            },
+            timeout=TIMEOUT
+        )
+        if response.status_code == 403:
+            print("     ✅ Correctly validates company access")
+        else:
+            print(f"     ❌ Company access validation issue (Status: {response.status_code})")
+        
+        # Final assessment
+        print(f"\n📊 CASH FLOW REPORTS API TEST SUMMARY:")
+        print(f"   ✅ Successful scenarios: {success_count}/{total_tests}")
+        print(f"   📈 Success rate: {(success_count/total_tests)*100:.1f}%")
+        
+        if success_count == total_tests:
+            print("✅ Cash Flow Reports API test PASSED - All scenarios working correctly")
+            return True
+        elif success_count > 0:
+            print("⚠️ Cash Flow Reports API test PARTIAL - Some scenarios working")
+            return False
+        else:
+            print("❌ Cash Flow Reports API test FAILED - No scenarios working")
+            return False
+            
+    except requests.exceptions.Timeout:
+        print(f"❌ Cash Flow Reports API test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Cash Flow Reports API test failed: {str(e)}")
+        return False
+
 def main():
     """Main test function focused on Phase 2 Financial Reporting & Analytics"""
     print("🚀 Starting Phase 2 Financial Reporting & Analytics Backend API Tests")
