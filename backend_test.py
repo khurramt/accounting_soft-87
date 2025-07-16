@@ -522,8 +522,121 @@ def test_get_vendors():
 
 # ===== ACCOUNT TESTS =====
 
+def test_accounts_trailing_slash_fix():
+    """Test Accounts API trailing slash fix - both paths should work without redirects"""
+    global ACCESS_TOKEN, COMPANY_ID, ACCOUNT_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Accounts trailing slash test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing Accounts API trailing slash fix...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test 1: GET /api/companies/{company_id}/accounts (without trailing slash)
+        print("\n  Testing WITHOUT trailing slash...")
+        response_without_slash = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/accounts", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            allow_redirects=False  # Don't follow redirects to detect 307s
+        )
+        print(f"  Status Code: {response_without_slash.status_code}")
+        
+        # Test 2: GET /api/companies/{company_id}/accounts/ (with trailing slash)
+        print("\n  Testing WITH trailing slash...")
+        response_with_slash = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/accounts/", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            allow_redirects=False  # Don't follow redirects to detect 307s
+        )
+        print(f"  Status Code: {response_with_slash.status_code}")
+        
+        # Verify both responses
+        success_count = 0
+        
+        # Check response without trailing slash
+        if response_without_slash.status_code == 200:
+            try:
+                data_without = response_without_slash.json()
+                if "items" in data_without and "total" in data_without:
+                    print(f"  ✅ WITHOUT trailing slash: Found {data_without['total']} accounts")
+                    success_count += 1
+                    if data_without["total"] > 0:
+                        # Find an income account for testing
+                        for account in data_without["items"]:
+                            if account.get("account_type") == "income":
+                                ACCOUNT_ID = account["account_id"]
+                                print(f"  Using income account ID: {ACCOUNT_ID}")
+                                break
+                        
+                        # If no income account, use the first account
+                        if not ACCOUNT_ID:
+                            ACCOUNT_ID = data_without["items"][0]["account_id"]
+                            print(f"  Using account ID: {ACCOUNT_ID}")
+                else:
+                    print(f"  ❌ WITHOUT trailing slash: Unexpected response structure")
+            except:
+                print(f"  ❌ WITHOUT trailing slash: Invalid JSON response")
+        elif response_without_slash.status_code == 307:
+            print(f"  ❌ WITHOUT trailing slash: Got 307 redirect (Authorization header lost)")
+        elif response_without_slash.status_code == 403:
+            print(f"  ❌ WITHOUT trailing slash: Got 403 Forbidden (likely due to redirect losing auth)")
+        else:
+            print(f"  ❌ WITHOUT trailing slash: Status code {response_without_slash.status_code}")
+        
+        # Check response with trailing slash
+        if response_with_slash.status_code == 200:
+            try:
+                data_with = response_with_slash.json()
+                if "items" in data_with and "total" in data_with:
+                    print(f"  ✅ WITH trailing slash: Found {data_with['total']} accounts")
+                    success_count += 1
+                    if not ACCOUNT_ID and data_with["total"] > 0:
+                        # Find an income account for testing
+                        for account in data_with["items"]:
+                            if account.get("account_type") == "income":
+                                ACCOUNT_ID = account["account_id"]
+                                print(f"  Using income account ID: {ACCOUNT_ID}")
+                                break
+                        
+                        # If no income account, use the first account
+                        if not ACCOUNT_ID:
+                            ACCOUNT_ID = data_with["items"][0]["account_id"]
+                            print(f"  Using account ID: {ACCOUNT_ID}")
+                else:
+                    print(f"  ❌ WITH trailing slash: Unexpected response structure")
+            except:
+                print(f"  ❌ WITH trailing slash: Invalid JSON response")
+        elif response_with_slash.status_code == 307:
+            print(f"  ❌ WITH trailing slash: Got 307 redirect (Authorization header lost)")
+        elif response_with_slash.status_code == 403:
+            print(f"  ❌ WITH trailing slash: Got 403 Forbidden (likely due to redirect losing auth)")
+        else:
+            print(f"  ❌ WITH trailing slash: Status code {response_with_slash.status_code}")
+        
+        # Final assessment
+        if success_count == 2:
+            print("✅ Accounts trailing slash fix test PASSED - Both endpoints work correctly")
+            return True
+        elif success_count == 1:
+            print("⚠️ Accounts trailing slash fix test PARTIAL - Only one endpoint works")
+            return False
+        else:
+            print("❌ Accounts trailing slash fix test FAILED - Neither endpoint works")
+            return False
+            
+    except requests.exceptions.Timeout:
+        print(f"❌ Accounts trailing slash test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Accounts trailing slash test failed: {str(e)}")
+        return False
+
 def test_get_accounts():
-    """Test getting accounts"""
+    """Test getting accounts (legacy test for compatibility)"""
     global ACCESS_TOKEN, COMPANY_ID, ACCOUNT_ID
     
     if not ACCESS_TOKEN or not COMPANY_ID:
