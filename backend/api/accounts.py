@@ -54,6 +54,7 @@ async def create_account(
             detail="Failed to create account"
         )
 
+@router.get("", response_model=PaginatedResponse)
 @router.get("/", response_model=PaginatedResponse)
 async def get_accounts(
     company_id: str,
