@@ -62,7 +62,7 @@ const MainLayout = () => {
       children: [
         { title: "Customer Center", path: "/customers" },
         { title: "Create Invoice", path: "/customers/invoice/new" },
-        { title: "Receive Payments", path: "/customers/payments" },
+        { title: "Receive Payments", path: "/customers/payments/new" },
         { title: "Create Sales Receipt", path: "/customers/sales-receipt/new" },
         { title: "Create Statement", path: "/customers/statement/new" },
         { title: "Income Tracker", path: "/customers/income-tracker" }
