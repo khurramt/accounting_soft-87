@@ -781,7 +781,7 @@ const ReportCenter = () => {
                                 </div>
                               </div>
                               <div className="flex items-center justify-between">
-                                <Button size="sm" variant="outline">
+                                <Button size="sm" variant="outline" onClick={() => handlePreviewReport(report.name)}>
                                   <Eye className="w-4 h-4 mr-1" />
                                   Preview
                                 </Button>
