@@ -313,11 +313,11 @@
 
   - task: "Customer Center Module"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/components/customers/CustomerCenter.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
@@ -325,6 +325,12 @@
         - working: false
           agent: "testing"
           comment: "❌ CRITICAL ISSUE IDENTIFIED: Customer Centre page (/customers) is showing error messages and not functioning properly. Page loads with 811 characters of content but displays error state to users. This confirms user reports of non-working pages. The page is not blank but shows errors that prevent normal functionality. Authentication works correctly, but the component itself has issues that need immediate attention."
+        - working: true
+          agent: "testing"
+          comment: "Backend testing revealed all customer API endpoints are working correctly: GET /customers (returns 2 customers), GET /customers/{id}/transactions (returns proper structure), GET /customers/{id}/balance (returns balance data). The issue is NOT in the backend APIs."
+        - working: false
+          agent: "main"
+          comment: "User reported Customer Center page is failing. Backend APIs are functional, so the issue is in the frontend CustomerCenter.js component. Frontend testing needed to identify the specific component issue."
         - working: true
           agent: "testing"
           comment: "✅ CUSTOMER API BACKEND TESTING COMPLETED: Comprehensive testing of all customer API endpoints shows that the backend is fully functional. Successfully tested: 1) Authentication flow with demo credentials (demo@quickbooks.com / Password123!) - WORKING, 2) Company access and ID retrieval - WORKING, 3) GET /api/companies/{company_id}/customers endpoint - WORKING (returns 2 customers with complete data structure), 4) GET /api/companies/{company_id}/customers/{customer_id}/transactions endpoint - WORKING (returns proper structure with placeholder message 'Transaction integration pending'), 5) GET /api/companies/{company_id}/customers/{customer_id}/balance endpoint - WORKING (returns customer balance 0.0 USD). All endpoints return 200 status codes with expected data structures. CONCLUSION: The Customer Center page backend APIs are fully functional. The issue causing error messages in the Customer Center frontend component is NOT related to backend API failures. The problem is likely in the frontend component itself, data handling, or API integration logic in the React component. Backend customer APIs are working correctly and ready to support the Customer Center functionality."
