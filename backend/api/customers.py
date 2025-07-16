@@ -43,6 +43,7 @@ async def create_customer(
             detail="Failed to create customer"
         )
 
+@router.get("", response_model=PaginatedResponse)
 @router.get("/", response_model=PaginatedResponse)
 async def get_customers(
     company_id: str,
