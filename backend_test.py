@@ -291,6 +291,92 @@ def test_get_customers():
         print(f"❌ Get customers test failed: {str(e)}")
         return False
 
+def test_get_customer_transactions():
+    """Test getting customer transactions"""
+    global ACCESS_TOKEN, COMPANY_ID, CUSTOMER_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not CUSTOMER_ID:
+        print("❌ Get customer transactions test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing get customer transactions for customer ID: {CUSTOMER_ID}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/customers/{CUSTOMER_ID}/transactions", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "transactions" in data and "total" in data:
+                print(f"✅ Get customer transactions test passed (Found {data['total']} transactions)")
+                return True
+            else:
+                print(f"❌ Get customer transactions test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get customer transactions test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get customer transactions test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get customer transactions test failed: {str(e)}")
+        return False
+
+def test_get_customer_balance():
+    """Test getting customer balance"""
+    global ACCESS_TOKEN, COMPANY_ID, CUSTOMER_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID or not CUSTOMER_ID:
+        print("❌ Get customer balance test skipped: Missing required data")
+        return False
+    
+    try:
+        print(f"\n🔍 Testing get customer balance for customer ID: {CUSTOMER_ID}...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/customers/{CUSTOMER_ID}/balance", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        try:
+            data = response.json()
+            print(f"Response: {pretty_print_json(data)}")
+        except:
+            print(f"Response: {response.text}")
+            return False
+        
+        if response.status_code == 200:
+            if "customer_id" in data and "balance" in data and "currency" in data:
+                print(f"✅ Get customer balance test passed (Balance: {data['balance']} {data['currency']})")
+                return True
+            else:
+                print(f"❌ Get customer balance test failed: Unexpected response")
+                return False
+        else:
+            print(f"❌ Get customer balance test failed: Status code {response.status_code}")
+            return False
+    except requests.exceptions.Timeout:
+        print(f"❌ Get customer balance test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Get customer balance test failed: {str(e)}")
+        return False
+
 # ===== VENDOR TESTS =====
 
 def test_get_vendors():
