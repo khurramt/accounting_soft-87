@@ -245,8 +245,103 @@ def test_company_access():
 
 # ===== CUSTOMER TESTS =====
 
+def test_customer_center_trailing_slash_fix():
+    """Test Customer Center API trailing slash fix - both paths should work without redirects"""
+    global ACCESS_TOKEN, COMPANY_ID, CUSTOMER_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Customer Center trailing slash test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing Customer Center API trailing slash fix...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test 1: GET /api/companies/{company_id}/customers (without trailing slash)
+        print("\n  Testing WITHOUT trailing slash...")
+        response_without_slash = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/customers", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            allow_redirects=False  # Don't follow redirects to detect 307s
+        )
+        print(f"  Status Code: {response_without_slash.status_code}")
+        
+        # Test 2: GET /api/companies/{company_id}/customers/ (with trailing slash)
+        print("\n  Testing WITH trailing slash...")
+        response_with_slash = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/customers/", 
+            headers=headers, 
+            timeout=TIMEOUT,
+            allow_redirects=False  # Don't follow redirects to detect 307s
+        )
+        print(f"  Status Code: {response_with_slash.status_code}")
+        
+        # Verify both responses
+        success_count = 0
+        
+        # Check response without trailing slash
+        if response_without_slash.status_code == 200:
+            try:
+                data_without = response_without_slash.json()
+                if "items" in data_without and "total" in data_without:
+                    print(f"  ✅ WITHOUT trailing slash: Found {data_without['total']} customers")
+                    success_count += 1
+                    if data_without["total"] > 0:
+                        CUSTOMER_ID = data_without["items"][0]["customer_id"]
+                        print(f"  Using customer ID: {CUSTOMER_ID}")
+                else:
+                    print(f"  ❌ WITHOUT trailing slash: Unexpected response structure")
+            except:
+                print(f"  ❌ WITHOUT trailing slash: Invalid JSON response")
+        elif response_without_slash.status_code == 307:
+            print(f"  ❌ WITHOUT trailing slash: Got 307 redirect (Authorization header lost)")
+        elif response_without_slash.status_code == 403:
+            print(f"  ❌ WITHOUT trailing slash: Got 403 Forbidden (likely due to redirect losing auth)")
+        else:
+            print(f"  ❌ WITHOUT trailing slash: Status code {response_without_slash.status_code}")
+        
+        # Check response with trailing slash
+        if response_with_slash.status_code == 200:
+            try:
+                data_with = response_with_slash.json()
+                if "items" in data_with and "total" in data_with:
+                    print(f"  ✅ WITH trailing slash: Found {data_with['total']} customers")
+                    success_count += 1
+                    if not CUSTOMER_ID and data_with["total"] > 0:
+                        CUSTOMER_ID = data_with["items"][0]["customer_id"]
+                        print(f"  Using customer ID: {CUSTOMER_ID}")
+                else:
+                    print(f"  ❌ WITH trailing slash: Unexpected response structure")
+            except:
+                print(f"  ❌ WITH trailing slash: Invalid JSON response")
+        elif response_with_slash.status_code == 307:
+            print(f"  ❌ WITH trailing slash: Got 307 redirect (Authorization header lost)")
+        elif response_with_slash.status_code == 403:
+            print(f"  ❌ WITH trailing slash: Got 403 Forbidden (likely due to redirect losing auth)")
+        else:
+            print(f"  ❌ WITH trailing slash: Status code {response_with_slash.status_code}")
+        
+        # Final assessment
+        if success_count == 2:
+            print("✅ Customer Center trailing slash fix test PASSED - Both endpoints work correctly")
+            return True
+        elif success_count == 1:
+            print("⚠️ Customer Center trailing slash fix test PARTIAL - Only one endpoint works")
+            return False
+        else:
+            print("❌ Customer Center trailing slash fix test FAILED - Neither endpoint works")
+            return False
+            
+    except requests.exceptions.Timeout:
+        print(f"❌ Customer Center trailing slash test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Customer Center trailing slash test failed: {str(e)}")
+        return False
+
 def test_get_customers():
-    """Test getting customers"""
+    """Test getting customers (legacy test for compatibility)"""
     global ACCESS_TOKEN, COMPANY_ID, CUSTOMER_ID
     
     if not ACCESS_TOKEN or not COMPANY_ID:
