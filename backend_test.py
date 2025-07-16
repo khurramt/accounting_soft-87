@@ -1388,6 +1388,144 @@ def test_delete_invoice():
 
 # ===== BILL MANAGEMENT API TESTS =====
 
+def test_bill_tracker_api_comprehensive():
+    """Comprehensive test for Bill Tracker API endpoints"""
+    global ACCESS_TOKEN, COMPANY_ID, VENDOR_ID, ACCOUNT_ID, BILL_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Bill Tracker API test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing Bill Tracker API endpoints comprehensively...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test 1: GET /companies/{company_id}/bills - Basic endpoint test
+        print("\n  1. Testing GET /companies/{company_id}/bills (basic)...")
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/bills", 
+            headers=headers, 
+            timeout=TIMEOUT
+        )
+        print(f"     Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"     Response structure: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
+            if "items" in data and "total" in data:
+                print(f"     ✅ Found {data['total']} bills")
+                # Store a bill ID if available for further testing
+                if data["total"] > 0 and data["items"]:
+                    BILL_ID = data["items"][0].get("transaction_id")
+                    print(f"     Using bill ID for further tests: {BILL_ID}")
+            else:
+                print(f"     ❌ Unexpected response structure: {pretty_print_json(data)}")
+                return False
+        else:
+            print(f"     ❌ Basic bills endpoint failed: Status code {response.status_code}")
+            try:
+                error_data = response.json()
+                print(f"     Error response: {pretty_print_json(error_data)}")
+            except:
+                print(f"     Error response: {response.text}")
+            return False
+        
+        # Test 2: Test various filter parameters
+        print("\n  2. Testing filter parameters...")
+        filter_tests = [
+            {"name": "Search filter", "params": {"search": "test"}},
+            {"name": "Vendor filter", "params": {"vendor_id": VENDOR_ID} if VENDOR_ID else {}},
+            {"name": "Status filter", "params": {"transaction_status": "draft"}},
+            {"name": "Date range filter", "params": {
+                "start_date": (date.today() - timedelta(days=30)).isoformat(),
+                "end_date": date.today().isoformat()
+            }},
+            {"name": "Amount range filter", "params": {"min_amount": 0, "max_amount": 1000}},
+            {"name": "Posted status filter", "params": {"is_posted": False}},
+            {"name": "Sorting", "params": {"sort_by": "transaction_date", "sort_order": "desc"}},
+            {"name": "Pagination", "params": {"page": 1, "page_size": 10}}
+        ]
+        
+        for filter_test in filter_tests:
+            if not filter_test["params"]:  # Skip if no params (e.g., no vendor_id)
+                continue
+                
+            print(f"     Testing {filter_test['name']}...")
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/bills", 
+                headers=headers, 
+                params=filter_test["params"],
+                timeout=TIMEOUT
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"       ✅ {filter_test['name']}: Found {data.get('total', 0)} bills")
+            else:
+                print(f"       ❌ {filter_test['name']}: Status code {response.status_code}")
+                return False
+        
+        # Test 3: Test individual bill retrieval if we have a bill ID
+        if BILL_ID:
+            print(f"\n  3. Testing GET /companies/{{company_id}}/bills/{{bill_id}}...")
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/bills/{BILL_ID}", 
+                headers=headers, 
+                timeout=TIMEOUT
+            )
+            print(f"     Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "transaction_id" in data and data["transaction_id"] == BILL_ID:
+                    print(f"     ✅ Individual bill retrieval successful")
+                else:
+                    print(f"     ❌ Individual bill retrieval: Unexpected response structure")
+                    return False
+            else:
+                print(f"     ❌ Individual bill retrieval failed: Status code {response.status_code}")
+                return False
+        else:
+            print("\n  3. Skipping individual bill test (no bill ID available)")
+        
+        # Test 4: Test authentication requirements
+        print("\n  4. Testing authentication requirements...")
+        response_no_auth = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/bills", 
+            timeout=TIMEOUT
+        )
+        
+        if response_no_auth.status_code == 401 or response_no_auth.status_code == 403:
+            print(f"     ✅ Authentication properly required (Status: {response_no_auth.status_code})")
+        else:
+            print(f"     ❌ Authentication not properly enforced (Status: {response_no_auth.status_code})")
+            return False
+        
+        # Test 5: Test company access validation
+        print("\n  5. Testing company access validation...")
+        fake_company_id = "fake-company-id-12345"
+        response_fake_company = requests.get(
+            f"{API_URL}/companies/{fake_company_id}/bills", 
+            headers=headers,
+            timeout=TIMEOUT
+        )
+        
+        if response_fake_company.status_code == 403:
+            print(f"     ✅ Company access properly validated (Status: {response_fake_company.status_code})")
+        else:
+            print(f"     ❌ Company access not properly validated (Status: {response_fake_company.status_code})")
+            return False
+        
+        print("\n✅ Bill Tracker API comprehensive test PASSED - All endpoints working correctly")
+        return True
+        
+    except requests.exceptions.Timeout:
+        print(f"❌ Bill Tracker API test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Bill Tracker API test failed: {str(e)}")
+        return False
+
 def test_create_bill():
     """Test creating a bill"""
     global ACCESS_TOKEN, COMPANY_ID, VENDOR_ID, ACCOUNT_ID, BILL_ID
