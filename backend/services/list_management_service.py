@@ -402,11 +402,61 @@ class CustomerService(BaseListService):
     @staticmethod
     async def get_customer_balance(
         db: AsyncSession,
-        customer_id: str
+        customer_id: str,
+        company_id: str = None
     ) -> float:
-        """Get customer balance (placeholder)"""
-        # In a real implementation, calculate from transactions
-        return 0.0
+        """Get customer balance from actual transactions"""
+        try:
+            from models.transactions import Transaction, TransactionType
+            from sqlalchemy import and_, func
+            from decimal import Decimal
+            
+            # If company_id is not provided, get it from the customer
+            if not company_id:
+                customer = await db.execute(
+                    select(Customer).where(Customer.customer_id == customer_id)
+                )
+                customer_obj = customer.scalar_one_or_none()
+                if not customer_obj:
+                    return 0.0
+                company_id = customer_obj.company_id
+            
+            # Get invoices (positive balance)
+            invoice_result = await db.execute(
+                select(func.coalesce(func.sum(Transaction.balance_due), 0)).where(
+                    and_(
+                        Transaction.company_id == company_id,
+                        Transaction.customer_id == customer_id,
+                        Transaction.transaction_type == TransactionType.INVOICE,
+                        Transaction.is_void == False,
+                        Transaction.balance_due > 0
+                    )
+                )
+            )
+            invoice_balance = invoice_result.scalar() or Decimal('0.0')
+            
+            # Get credit memos (negative balance)
+            credit_result = await db.execute(
+                select(func.coalesce(func.sum(Transaction.balance_due), 0)).where(
+                    and_(
+                        Transaction.company_id == company_id,
+                        Transaction.customer_id == customer_id,
+                        Transaction.transaction_type == TransactionType.CREDIT_MEMO,
+                        Transaction.is_void == False,
+                        Transaction.balance_due > 0
+                    )
+                )
+            )
+            credit_balance = credit_result.scalar() or Decimal('0.0')
+            
+            # Calculate net balance (invoices - credit memos)
+            net_balance = invoice_balance - credit_balance
+            
+            return float(net_balance)
+            
+        except Exception as e:
+            logger.error("Error calculating customer balance", error=str(e), customer_id=customer_id)
+            return 0.0
     
     @staticmethod
     async def _generate_customer_number(
