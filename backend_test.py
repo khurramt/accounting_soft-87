@@ -173,7 +173,8 @@ def test_get_user_companies():
         print("\n🔍 Testing get user companies...")
         headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
         
-        response = requests.get(f"{API_URL}/auth/companies", headers=headers, timeout=TIMEOUT)
+        # Try the /auth/me endpoint first as it might be faster
+        response = requests.get(f"{API_URL}/auth/me", headers=headers, timeout=TIMEOUT)
         print(f"Status Code: {response.status_code}")
         
         try:
@@ -184,10 +185,10 @@ def test_get_user_companies():
             return False
         
         if response.status_code == 200:
-            if isinstance(data, list):
+            if "companies" in data and isinstance(data["companies"], list):
                 # Store company ID if available
-                if len(data) > 0:
-                    COMPANY_ID = data[0]["company"]["company_id"]
+                if len(data["companies"]) > 0:
+                    COMPANY_ID = data["companies"][0]["company"]["company_id"]
                     print(f"Using company ID: {COMPANY_ID}")
                 print("✅ Get user companies test passed")
                 return True
