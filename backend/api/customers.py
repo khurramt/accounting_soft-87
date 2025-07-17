@@ -301,12 +301,127 @@ async def get_customer_balance(
                 detail="Customer not found"
             )
         
-        balance = await CustomerService.get_customer_balance(db, customer_id)
+        # Import transaction service
+        from services.transaction_service import TransactionService
+        from schemas.transaction_schemas import TransactionSearchFilters
+        from models.transactions import TransactionType
+        from sqlalchemy import and_, func
+        from decimal import Decimal
+        
+        # Calculate customer balance from transactions
+        # Get all unpaid invoices and credit memos for this customer
+        from models.transactions import Transaction
+        
+        # Get invoices (positive balance)
+        invoice_result = await db.execute(
+            select(func.coalesce(func.sum(Transaction.balance_due), 0)).where(
+                and_(
+                    Transaction.company_id == company_id,
+                    Transaction.customer_id == customer_id,
+                    Transaction.transaction_type == TransactionType.INVOICE,
+                    Transaction.is_void == False,
+                    Transaction.balance_due > 0
+                )
+            )
+        )
+        invoice_balance = invoice_result.scalar() or Decimal('0.0')
+        
+        # Get credit memos (negative balance)
+        credit_result = await db.execute(
+            select(func.coalesce(func.sum(Transaction.balance_due), 0)).where(
+                and_(
+                    Transaction.company_id == company_id,
+                    Transaction.customer_id == customer_id,
+                    Transaction.transaction_type == TransactionType.CREDIT_MEMO,
+                    Transaction.is_void == False,
+                    Transaction.balance_due > 0
+                )
+            )
+        )
+        credit_balance = credit_result.scalar() or Decimal('0.0')
+        
+        # Calculate net balance (invoices - credit memos)
+        net_balance = invoice_balance - credit_balance
+        
+        # Get aging information
+        from datetime import date, timedelta
+        today = date.today()
+        
+        # Current (0-30 days)
+        current_result = await db.execute(
+            select(func.coalesce(func.sum(Transaction.balance_due), 0)).where(
+                and_(
+                    Transaction.company_id == company_id,
+                    Transaction.customer_id == customer_id,
+                    Transaction.transaction_type == TransactionType.INVOICE,
+                    Transaction.is_void == False,
+                    Transaction.balance_due > 0,
+                    Transaction.due_date >= today - timedelta(days=30)
+                )
+            )
+        )
+        current_balance = current_result.scalar() or Decimal('0.0')
+        
+        # 31-60 days
+        aging_60_result = await db.execute(
+            select(func.coalesce(func.sum(Transaction.balance_due), 0)).where(
+                and_(
+                    Transaction.company_id == company_id,
+                    Transaction.customer_id == customer_id,
+                    Transaction.transaction_type == TransactionType.INVOICE,
+                    Transaction.is_void == False,
+                    Transaction.balance_due > 0,
+                    Transaction.due_date < today - timedelta(days=30),
+                    Transaction.due_date >= today - timedelta(days=60)
+                )
+            )
+        )
+        aging_60_balance = aging_60_result.scalar() or Decimal('0.0')
+        
+        # 61-90 days
+        aging_90_result = await db.execute(
+            select(func.coalesce(func.sum(Transaction.balance_due), 0)).where(
+                and_(
+                    Transaction.company_id == company_id,
+                    Transaction.customer_id == customer_id,
+                    Transaction.transaction_type == TransactionType.INVOICE,
+                    Transaction.is_void == False,
+                    Transaction.balance_due > 0,
+                    Transaction.due_date < today - timedelta(days=60),
+                    Transaction.due_date >= today - timedelta(days=90)
+                )
+            )
+        )
+        aging_90_balance = aging_90_result.scalar() or Decimal('0.0')
+        
+        # Over 90 days
+        over_90_result = await db.execute(
+            select(func.coalesce(func.sum(Transaction.balance_due), 0)).where(
+                and_(
+                    Transaction.company_id == company_id,
+                    Transaction.customer_id == customer_id,
+                    Transaction.transaction_type == TransactionType.INVOICE,
+                    Transaction.is_void == False,
+                    Transaction.balance_due > 0,
+                    Transaction.due_date < today - timedelta(days=90)
+                )
+            )
+        )
+        over_90_balance = over_90_result.scalar() or Decimal('0.0')
         
         return {
             "customer_id": customer_id,
-            "balance": balance,
-            "currency": "USD"
+            "balance": float(net_balance),
+            "currency": "USD",
+            "aging": {
+                "current": float(current_balance),
+                "aging_31_60": float(aging_60_balance),
+                "aging_61_90": float(aging_90_balance),
+                "aging_over_90": float(over_90_balance)
+            },
+            "invoice_balance": float(invoice_balance),
+            "credit_balance": float(credit_balance),
+            "last_updated": today.isoformat()
         }
         
     except HTTPException:
