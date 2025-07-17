@@ -46,6 +46,7 @@ import AdvancedBankFeeds from "./components/banking/AdvancedBankFeeds";
 import CashFlowReport from "./components/reports/CashFlowReport";
 import ReportCategories from "./components/reports/ReportCategories";
 import CompanyFinancialReports from "./components/reports/CompanyFinancialReports";
+import CustomersReceivablesReports from "./components/reports/CustomersReceivablesReports";
 import PayLiabilities from "./components/payroll/PayLiabilities";
 import PayrollForms from "./components/payroll/PayrollForms";
 
