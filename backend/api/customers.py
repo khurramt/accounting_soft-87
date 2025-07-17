@@ -83,8 +83,55 @@ async def get_customers(
         
         customers, total = await CustomerService.get_customers(db, company_id, filters)
         
+        # Calculate balance for each customer
+        customer_responses = []
+        for customer in customers:
+            # Get customer balance from transactions
+            balance = await CustomerService.get_customer_balance(db, customer.customer_id, company_id)
+            
+            # Create customer response with balance
+            customer_dict = {
+                "customer_id": customer.customer_id,
+                "company_id": customer.company_id,
+                "customer_number": customer.customer_number,
+                "customer_name": customer.customer_name,
+                "company_name": customer.company_name,
+                "customer_type": customer.customer_type,
+                "salutation": customer.salutation,
+                "first_name": customer.first_name,
+                "last_name": customer.last_name,
+                "contact_person": customer.contact_person,
+                "address_line1": customer.address_line1,
+                "address_line2": customer.address_line2,
+                "city": customer.city,
+                "state": customer.state,
+                "zip_code": customer.zip_code,
+                "country": customer.country,
+                "phone": customer.phone,
+                "mobile": customer.mobile,
+                "fax": customer.fax,
+                "email": customer.email,
+                "website": customer.website,
+                "payment_terms": customer.payment_terms,
+                "credit_limit": customer.credit_limit,
+                "price_level": customer.price_level,
+                "sales_tax_code": customer.sales_tax_code,
+                "sales_tax_item": customer.sales_tax_item,
+                "preferred_delivery_method": customer.preferred_delivery_method,
+                "preferred_payment_method": customer.preferred_payment_method,
+                "account_number": customer.account_number,
+                "custom_field1": customer.custom_field1,
+                "custom_field2": customer.custom_field2,
+                "custom_field3": customer.custom_field3,
+                "is_active": customer.is_active,
+                "balance": balance,
+                "created_at": customer.created_at,
+                "updated_at": customer.updated_at
+            }
+            customer_responses.append(CustomerResponse(**customer_dict))
+        
         return PaginatedResponse(
-            items=[CustomerResponse.from_orm(customer) for customer in customers],
+            items=customer_responses,
             total=total,
             page=page,
             page_size=page_size,
