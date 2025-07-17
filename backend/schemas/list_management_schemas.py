@@ -210,6 +210,7 @@ class CustomerResponse(BaseResponse):
     custom_field2: Optional[str]
     custom_field3: Optional[str]
     is_active: bool
+    balance: Optional[float] = 0.0
     created_at: datetime
     updated_at: Optional[datetime]
 
