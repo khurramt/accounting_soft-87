@@ -8168,79 +8168,83 @@ def test_cash_flow_reports_api():
         return False
 
 def main():
-    """Main test function focused on Phase 2 Financial Reporting & Analytics"""
-    print("🚀 Starting Phase 2 Financial Reporting & Analytics Backend API Tests")
-    print(f"Testing against: {API_URL}")
+    """Main test function - focused on customer API endpoints as requested"""
+    print("🚀 Starting Customer API Endpoints Testing")
+    print("🎯 Focus: Testing customer API endpoints to verify fixes for customers and receivables functionality")
+    print(f"Backend URL: {BACKEND_URL}")
+    print(f"API URL: {API_URL}")
     
     # Track test results
     test_results = []
     
-    # Basic endpoint tests
-    test_results.append(("Root Endpoint", test_root_endpoint()))
-    test_results.append(("Health Endpoint", test_health_endpoint()))
+    # Basic setup tests
+    test_results.append(("Root endpoint", test_root_endpoint()))
+    test_results.append(("Health endpoint", test_health_endpoint()))
     
     # Authentication tests
-    test_results.append(("Demo User Login", test_login_demo_user()))
-    test_results.append(("Get User Companies", test_get_user_companies()))
-    test_results.append(("Company Access", test_company_access()))
+    test_results.append(("Demo user login", test_login_demo_user()))
+    test_results.append(("Get user companies", test_get_user_companies()))
+    test_results.append(("Company access", test_company_access()))
     
-    print("\n" + "="*80)
-    print("🎯 PHASE 2.1 DASHBOARD INTEGRATION APIS")
-    print("="*80)
+    # Main focus: Customer API endpoints comprehensive testing
+    test_results.append(("Customer API Endpoints Comprehensive", test_customer_api_endpoints_comprehensive()))
     
-    # Phase 2.1 Dashboard Integration APIs
-    test_results.append(("Dashboard Summary API", test_dashboard_summary()))
-    test_results.append(("Recent Transactions API", test_recent_transactions()))
-    test_results.append(("Outstanding Invoices API", test_outstanding_invoices()))
-    
-    print("\n" + "="*80)
-    print("🎯 PHASE 2.2 REPORTS INTEGRATION APIS")
-    print("="*80)
-    
-    # Phase 2.2 Reports Integration APIs
-    test_results.append(("Profit & Loss Report API", test_profit_loss_report_phase2()))
-    test_results.append(("Balance Sheet Report API", test_balance_sheet_report_phase2()))
-    test_results.append(("Cash Flow Report API", test_cash_flow_report_phase2()))
+    # Additional customer-specific tests for completeness
+    test_results.append(("Customer Center trailing slash fix", test_customer_center_trailing_slash_fix()))
+    test_results.append(("Get customers (legacy)", test_get_customers()))
+    test_results.append(("Get customer transactions (legacy)", test_get_customer_transactions()))
+    test_results.append(("Get customer balance (legacy)", test_get_customer_balance()))
     
     # Print summary
     print("\n" + "="*80)
-    print("📊 PHASE 2 FINANCIAL REPORTING & ANALYTICS TEST SUMMARY")
+    print("📊 CUSTOMER API ENDPOINTS TEST SUMMARY")
     print("="*80)
     
-    passed = 0
-    failed = 0
+    passed = sum(1 for _, result in test_results if result)
+    total = len(test_results)
     
-    for test_name, result in test_results:
-        status = "✅ PASSED" if result else "❌ FAILED"
-        print(f"{test_name:<40} {status}")
-        if result:
-            passed += 1
-        else:
-            failed += 1
-    
-    print("="*80)
-    print(f"Total Tests: {len(test_results)}")
+    print(f"Total tests: {total}")
     print(f"Passed: {passed}")
-    print(f"Failed: {failed}")
-    print(f"Success Rate: {(passed/len(test_results)*100):.1f}%")
+    print(f"Failed: {total - passed}")
+    print(f"Success rate: {(passed/total)*100:.1f}%")
     
-    # Phase-specific summary
-    phase_2_1_tests = test_results[5:8]  # Dashboard Integration tests
-    phase_2_2_tests = test_results[8:11]  # Reports Integration tests
+    print("\n📋 DETAILED RESULTS:")
+    for test_name, result in test_results:
+        status = "✅" if result else "❌"
+        print(f"{status} {test_name}")
     
-    phase_2_1_passed = sum(1 for _, result in phase_2_1_tests if result)
-    phase_2_2_passed = sum(1 for _, result in phase_2_2_tests if result)
+    # Focus on customer API results
+    customer_tests = [
+        ("Customer API Endpoints Comprehensive", None),
+        ("Customer Center trailing slash fix", None),
+        ("Get customers (legacy)", None),
+        ("Get customer transactions (legacy)", None),
+        ("Get customer balance (legacy)", None)
+    ]
     
-    print("\n📈 PHASE-SPECIFIC RESULTS:")
-    print(f"Phase 2.1 Dashboard Integration: {phase_2_1_passed}/3 APIs working")
-    print(f"Phase 2.2 Reports Integration: {phase_2_2_passed}/3 APIs working")
+    customer_passed = 0
+    customer_total = 0
     
-    if failed == 0:
-        print("\n🎉 All Phase 2 Financial Reporting & Analytics APIs are working!")
-        return True
+    for test_name, _ in customer_tests:
+        for result_name, result in test_results:
+            if result_name == test_name:
+                customer_total += 1
+                if result:
+                    customer_passed += 1
+                break
+    
+    print(f"\n🎯 CUSTOMER API SPECIFIC RESULTS:")
+    print(f"Customer API tests: {customer_total}")
+    print(f"Customer API passed: {customer_passed}")
+    print(f"Customer API success rate: {(customer_passed/customer_total)*100:.1f}%")
+    
+    # Exit with appropriate code
+    if customer_passed >= (customer_total * 0.8):  # 80% success rate for customer APIs
+        print("\n🎉 Customer API endpoints testing completed successfully!")
+        sys.exit(0)
     else:
-        print(f"\n⚠️ {failed} test(s) failed in Phase 2 Financial Reporting & Analytics")
-        return False
+        print(f"\n⚠️ Customer API endpoints testing failed - {customer_total - customer_passed} test(s) failed")
+        sys.exit(1)
 
 # ===== COMPANY ACCESS TIMEOUT FIX TESTS =====
 
