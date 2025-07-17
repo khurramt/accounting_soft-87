@@ -177,6 +177,7 @@ const AppRouter = () => {
         <Route path="reports" element={<ReportCenter />} />
         <Route path="reports/categories" element={<ReportCategories />} />
         <Route path="reports/company" element={<CompanyFinancialReports />} />
+        <Route path="reports/customers" element={<CustomersReceivablesReports />} />
         <Route path="reports/cash-flow" element={<CashFlowReport />} />
         <Route path="reports/customize" element={<ReportCustomization />} />
         <Route path="reports/customizer" element={<ReportCustomizer />} />
