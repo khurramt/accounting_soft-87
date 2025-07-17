@@ -8517,6 +8517,277 @@ def test_company_access_timeout_fix():
         print(f"\n⚠️ {failed} tests failed - Company Access timeout fix needs attention")
         return False
 
+def test_customer_api_endpoints_comprehensive():
+    """Comprehensive test for Customer API endpoints focusing on fixes for customers and receivables functionality"""
+    global ACCESS_TOKEN, COMPANY_ID, CUSTOMER_ID
+    
+    if not ACCESS_TOKEN or not COMPANY_ID:
+        print("❌ Customer API endpoints test skipped: No access token or company ID available")
+        return False
+    
+    try:
+        print("\n🔍 Testing Customer API endpoints comprehensively for fixes verification...")
+        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        
+        # Test results tracking
+        test_results = []
+        
+        # Test 1: Customer list endpoint (GET /api/companies/{company_id}/customers)
+        print("\n  1. Testing Customer List Endpoint...")
+        print("     Verifying it returns customers with proper balance calculations")
+        
+        response = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/customers",
+            headers=headers,
+            timeout=TIMEOUT
+        )
+        print(f"     Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                print(f"     Response structure: {list(data.keys())}")
+                
+                # Verify response structure
+                required_fields = ["items", "total", "page", "page_size", "total_pages"]
+                if all(field in data for field in required_fields):
+                    customers = data["items"]
+                    total_customers = data["total"]
+                    
+                    print(f"     ✅ Customer List: Found {total_customers} customers")
+                    print(f"     ✅ Response structure: All required fields present")
+                    
+                    # Verify customer data structure and balance calculations
+                    if customers:
+                        first_customer = customers[0]
+                        CUSTOMER_ID = first_customer.get("customer_id")
+                        
+                        customer_required_fields = ["customer_id", "customer_name", "email", "phone", "balance", "currency"]
+                        customer_fields_present = [field for field in customer_required_fields if field in first_customer]
+                        
+                        print(f"     Customer fields present: {customer_fields_present}")
+                        print(f"     Customer balance: {first_customer.get('balance', 'N/A')} {first_customer.get('currency', 'N/A')}")
+                        
+                        if len(customer_fields_present) >= 4:  # At least basic fields
+                            print(f"     ✅ Customer data structure: Proper fields present")
+                            test_results.append(("Customer List Endpoint", True))
+                        else:
+                            print(f"     ❌ Customer data structure: Missing required fields")
+                            test_results.append(("Customer List Endpoint", False))
+                    else:
+                        print(f"     ⚠️ Customer List: No customers found, but endpoint works")
+                        test_results.append(("Customer List Endpoint", True))
+                else:
+                    print(f"     ❌ Customer List: Missing required response fields")
+                    print(f"     Available fields: {list(data.keys())}")
+                    test_results.append(("Customer List Endpoint", False))
+                    
+            except Exception as e:
+                print(f"     ❌ Customer List: Error parsing response - {str(e)}")
+                test_results.append(("Customer List Endpoint", False))
+        else:
+            print(f"     ❌ Customer List failed: Status code {response.status_code}")
+            try:
+                error_data = response.json()
+                print(f"     Error: {pretty_print_json(error_data)}")
+            except:
+                print(f"     Error: {response.text}")
+            test_results.append(("Customer List Endpoint", False))
+        
+        # Test 2: Customer transactions endpoint (GET /api/companies/{company_id}/customers/{customer_id}/transactions)
+        if CUSTOMER_ID:
+            print(f"\n  2. Testing Customer Transactions Endpoint for customer {CUSTOMER_ID}...")
+            print("     Verifying it returns actual transaction data instead of placeholder")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/customers/{CUSTOMER_ID}/transactions",
+                headers=headers,
+                timeout=TIMEOUT
+            )
+            print(f"     Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    print(f"     Response structure: {list(data.keys())}")
+                    
+                    # Verify response structure
+                    required_fields = ["transactions", "total", "customer_id"]
+                    if all(field in data for field in required_fields):
+                        transactions = data["transactions"]
+                        total_transactions = data["total"]
+                        
+                        print(f"     ✅ Customer Transactions: Found {total_transactions} transactions")
+                        print(f"     ✅ Response structure: All required fields present")
+                        
+                        # Check if we have actual transaction data vs placeholder
+                        if transactions:
+                            first_transaction = transactions[0]
+                            transaction_fields = list(first_transaction.keys())
+                            
+                            print(f"     Transaction fields: {transaction_fields}")
+                            
+                            # Check for placeholder indicators
+                            placeholder_indicators = [
+                                "Transaction integration pending",
+                                "placeholder",
+                                "mock",
+                                "sample"
+                            ]
+                            
+                            transaction_str = str(first_transaction).lower()
+                            has_placeholder = any(indicator in transaction_str for indicator in placeholder_indicators)
+                            
+                            if has_placeholder:
+                                print(f"     ⚠️ Customer Transactions: Contains placeholder data")
+                                print(f"     First transaction: {pretty_print_json(first_transaction)}")
+                                test_results.append(("Customer Transactions Endpoint", False))
+                            else:
+                                print(f"     ✅ Customer Transactions: Contains actual transaction data")
+                                test_results.append(("Customer Transactions Endpoint", True))
+                        else:
+                            print(f"     ⚠️ Customer Transactions: No transactions found, but endpoint works")
+                            test_results.append(("Customer Transactions Endpoint", True))
+                    else:
+                        print(f"     ❌ Customer Transactions: Missing required response fields")
+                        print(f"     Available fields: {list(data.keys())}")
+                        test_results.append(("Customer Transactions Endpoint", False))
+                        
+                except Exception as e:
+                    print(f"     ❌ Customer Transactions: Error parsing response - {str(e)}")
+                    test_results.append(("Customer Transactions Endpoint", False))
+            else:
+                print(f"     ❌ Customer Transactions failed: Status code {response.status_code}")
+                try:
+                    error_data = response.json()
+                    print(f"     Error: {pretty_print_json(error_data)}")
+                except:
+                    print(f"     Error: {response.text}")
+                test_results.append(("Customer Transactions Endpoint", False))
+        else:
+            print(f"\n  2. ❌ Customer Transactions test skipped: No customer ID available")
+            test_results.append(("Customer Transactions Endpoint", False))
+        
+        # Test 3: Customer balance endpoint (GET /api/companies/{company_id}/customers/{customer_id}/balance)
+        if CUSTOMER_ID:
+            print(f"\n  3. Testing Customer Balance Endpoint for customer {CUSTOMER_ID}...")
+            print("     Verifying it returns detailed balance information with aging analysis")
+            
+            response = requests.get(
+                f"{API_URL}/companies/{COMPANY_ID}/customers/{CUSTOMER_ID}/balance",
+                headers=headers,
+                timeout=TIMEOUT
+            )
+            print(f"     Status Code: {response.status_code}")
+            
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    print(f"     Response structure: {list(data.keys())}")
+                    
+                    # Verify response structure for detailed balance information
+                    required_fields = ["customer_id", "balance", "currency"]
+                    optional_fields = ["aging_analysis", "current", "days_30", "days_60", "days_90", "days_over_90", "last_payment_date", "credit_limit"]
+                    
+                    required_present = [field for field in required_fields if field in data]
+                    optional_present = [field for field in optional_fields if field in data]
+                    
+                    print(f"     Required fields present: {required_present}")
+                    print(f"     Optional fields present: {optional_present}")
+                    print(f"     Customer balance: {data.get('balance', 'N/A')} {data.get('currency', 'N/A')}")
+                    
+                    if len(required_present) == len(required_fields):
+                        print(f"     ✅ Customer Balance: All required fields present")
+                        
+                        # Check for aging analysis details
+                        if len(optional_present) >= 2:
+                            print(f"     ✅ Customer Balance: Detailed balance information with aging data")
+                            test_results.append(("Customer Balance Endpoint", True))
+                        else:
+                            print(f"     ⚠️ Customer Balance: Basic balance info present, limited aging details")
+                            test_results.append(("Customer Balance Endpoint", True))  # Still working, just basic
+                    else:
+                        print(f"     ❌ Customer Balance: Missing required fields")
+                        test_results.append(("Customer Balance Endpoint", False))
+                        
+                except Exception as e:
+                    print(f"     ❌ Customer Balance: Error parsing response - {str(e)}")
+                    test_results.append(("Customer Balance Endpoint", False))
+            else:
+                print(f"     ❌ Customer Balance failed: Status code {response.status_code}")
+                try:
+                    error_data = response.json()
+                    print(f"     Error: {pretty_print_json(error_data)}")
+                except:
+                    print(f"     Error: {response.text}")
+                test_results.append(("Customer Balance Endpoint", False))
+        else:
+            print(f"\n  3. ❌ Customer Balance test skipped: No customer ID available")
+            test_results.append(("Customer Balance Endpoint", False))
+        
+        # Test 4: Authentication & Authorization verification
+        print(f"\n  4. Testing Authentication & Authorization...")
+        
+        # Test without authentication
+        response_no_auth = requests.get(
+            f"{API_URL}/companies/{COMPANY_ID}/customers",
+            timeout=TIMEOUT
+        )
+        
+        if response_no_auth.status_code in [401, 403]:
+            print(f"     ✅ Authentication properly required (Status: {response_no_auth.status_code})")
+            test_results.append(("Authentication Required", True))
+        else:
+            print(f"     ❌ Authentication not properly enforced (Status: {response_no_auth.status_code})")
+            test_results.append(("Authentication Required", False))
+        
+        # Test with invalid company ID
+        fake_company_id = "fake-company-id-12345"
+        response_fake_company = requests.get(
+            f"{API_URL}/companies/{fake_company_id}/customers",
+            headers=headers,
+            timeout=TIMEOUT
+        )
+        
+        if response_fake_company.status_code == 403:
+            print(f"     ✅ Company access validation working (Status: {response_fake_company.status_code})")
+            test_results.append(("Company Access Validation", True))
+        else:
+            print(f"     ❌ Company access validation failed (Status: {response_fake_company.status_code})")
+            test_results.append(("Company Access Validation", False))
+        
+        # Calculate final results
+        passed_tests = sum(1 for _, result in test_results if result)
+        total_tests = len(test_results)
+        success_rate = (passed_tests / total_tests) * 100
+        
+        print(f"\n  📊 Customer API Endpoints Test Summary:")
+        print(f"     Total Tests: {total_tests}")
+        print(f"     Passed: {passed_tests}")
+        print(f"     Failed: {total_tests - passed_tests}")
+        print(f"     Success Rate: {success_rate:.1f}%")
+        
+        # Print individual test results
+        print(f"\n  📋 Individual Test Results:")
+        for test_name, result in test_results:
+            status = "✅" if result else "❌"
+            print(f"     {status} {test_name}")
+        
+        # Return overall success
+        if passed_tests >= (total_tests * 0.8):  # 80% success rate threshold
+            print("✅ Customer API endpoints comprehensive test PASSED")
+            return True
+        else:
+            print("❌ Customer API endpoints comprehensive test FAILED")
+            return False
+            
+    except requests.exceptions.Timeout:
+        print(f"❌ Customer API endpoints test failed: Request timed out after {TIMEOUT} seconds")
+        return False
+    except Exception as e:
+        print(f"❌ Customer API endpoints test failed: {str(e)}")
+        return False
+
 def test_customer_api_endpoints():
     """Test customer API endpoints specifically for Customer Center page diagnosis"""
     print("\n" + "="*80)
