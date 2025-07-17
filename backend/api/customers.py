@@ -208,10 +208,12 @@ async def delete_customer(
 async def get_customer_transactions(
     company_id: str,
     customer_id: str,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get customer transactions (placeholder)"""
+    """Get customer transactions"""
     try:
         # Verify user has access to company
         if not await CustomerService.verify_company_access(db, str(user.user_id), company_id):
@@ -227,11 +229,43 @@ async def get_customer_transactions(
                 detail="Customer not found"
             )
         
-        # Placeholder for transaction data
+        # Import transaction service
+        from services.transaction_service import TransactionService
+        from schemas.transaction_schemas import TransactionSearchFilters
+        
+        # Get customer transactions
+        filters = TransactionSearchFilters(
+            customer_id=customer_id,
+            page=page,
+            page_size=page_size,
+            sort_by="transaction_date",
+            sort_order="desc"
+        )
+        
+        transactions, total = await TransactionService.get_transactions(db, company_id, filters)
+        
+        # Format transactions for response
+        formatted_transactions = []
+        for transaction in transactions:
+            formatted_transactions.append({
+                "transaction_id": transaction.transaction_id,
+                "transaction_type": transaction.transaction_type,
+                "transaction_number": transaction.transaction_number,
+                "transaction_date": transaction.transaction_date.isoformat() if transaction.transaction_date else None,
+                "due_date": transaction.due_date.isoformat() if transaction.due_date else None,
+                "total_amount": float(transaction.total_amount),
+                "balance_due": float(transaction.balance_due) if transaction.balance_due else float(transaction.total_amount),
+                "status": transaction.status,
+                "memo": transaction.memo,
+                "currency_code": transaction.currency_code or "USD"
+            })
+        
         return {
-            "transactions": [],
-            "total": 0,
-            "message": "Transaction integration pending"
+            "transactions": formatted_transactions,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size
         }
         
     except HTTPException:
