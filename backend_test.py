@@ -8900,14 +8900,15 @@ def test_customer_api_endpoints():
         return False
 
 if __name__ == "__main__":
-    # Run the specific bill tracker API tests
-    if len(sys.argv) > 1 and sys.argv[1] == "bill-tracker":
-        main_bill_tracker()
     # Run the specific customer API tests for Customer Center diagnosis
-    elif len(sys.argv) > 1 and sys.argv[1] == "customer-center":
+    if len(sys.argv) > 1 and sys.argv[1] == "customer-center":
         test_customer_api_endpoints()
     # Run the specific Company Access timeout fix test
     elif len(sys.argv) > 1 and sys.argv[1] == "company-access-fix":
         test_company_access_timeout_fix()
+    # Run the specific bill tracker API tests
+    elif len(sys.argv) > 1 and sys.argv[1] == "bill-tracker":
+        main_bill_tracker()
     else:
+        # Default: Run customer API endpoints testing
         main()
